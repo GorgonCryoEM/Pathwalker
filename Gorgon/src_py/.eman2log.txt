@@ -1,0 +1,2 @@
+2016/05/17 19:50:55	incomplete         	 36176/    -2	Dans-MacBook-Pro.local	EMAN2/bin/e2proc3d.py EMAN2/bin/sub-A.mrc EMAN2/bin/map.mrc --process normalize.edgemean --process threshold.belowtozero
+2016/05/17 20:34:49	2016/05/17 20:35:00	 36404/    -2	Dans-MacBook-Pro.local	EMAN2/bin/e2proc3d.py EMAN2/bin/sub-A.mrc EMAN2/bin/map.mrc --process normalize.edgemean --process threshold.belowtozero

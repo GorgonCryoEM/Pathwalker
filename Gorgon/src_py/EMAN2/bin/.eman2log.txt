@@ -1,0 +1,3 @@
+2016/05/06 16:06:12	2016/05/06 16:06:18	  2056/    -2	Dans-MacBook-Pro.local	e2proc3d.py sub-A.mrc map.mrc --process normalize.edgemean --process threshold.belowtozero
+2016/05/06 16:14:15	incomplete         	  2077/    -1	Dans-MacBook-Pro.local	/Applications/EMAN2//bin/e2segment3d.py map.mrc pdbout=pseudoatoms.pdb --process=segment.kmeans:ampweight=1:nseg=1022:verbose=1:minsegsep=1:pseudoatom=
+2016/05/06 16:16:10	2016/05/06 16:16:59	  2091/    -1	Dans-MacBook-Pro.local	e2segment3d.py map.mrc --pdbout=pseudoatoms.pdb --process=segment.kmeans:ampweight=1:nseg=1022:verbose=1:minsegsep=1:pseudoatom=1:thr=10

@@ -14,6 +14,7 @@ from atom_visualization_form import AtomVisualizationForm
 from correspondence.StructurePrediction import StructurePrediction
 from calpha_choose_chain_model import CAlphaChooseChainModel
 from calpha_flexible_fitting_form import CAlphaFlexibleFittingForm
+from pathwalker import Pathwalker
 
 from OpenGL.GL import *
 from OpenGL.GLU import *
@@ -510,6 +511,7 @@ class CAlphaViewer(BaseViewer):
         self.manualAtomPlacer = CAlphaAtomPlacerForm(self.app, self, self.main_chain, self.structPred, self)
         self.chooseChainModel = CAlphaChooseChainModel(self.app, self)
         self.flexibleFitter = CAlphaFlexibleFittingForm(self.app, self)
+        self.pathwalker = Pathwalker(self.app, self)
         
     def createActions(self):
         openAct = QtGui.QAction(self.tr("C-&Alpha Atoms..."), self)

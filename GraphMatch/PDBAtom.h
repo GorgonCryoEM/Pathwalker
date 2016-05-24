@@ -57,6 +57,9 @@ namespace wustl_mm {
 			unsigned long long	GetHashKey();
 			unsigned long long  GetPrevCAHash(); // getting the Next and Previous hashes added
 			unsigned long long  GetNextCAHash(); // for rendering purposes
+			unsigned long long GetDeletedBondAtom();
+		
+
 			int				GetFlag();		// Purely for implementation purposes
 			float			GetCorrelationScore();
 			float			GetSkeletonScore();
@@ -86,6 +89,7 @@ namespace wustl_mm {
 			void SetCorrelationScore(float score);
 			void SetSkeletonScore(float score);
 			void SetGeometryScore(float score);
+			void SetDeletedBond(unsigned long long bondedAtom);
 			void Transform(MatrixFloat transformMatrix);
 			void InterpolateTransform(MatrixFloat transformMatrix1, MatrixFloat transformMatrix2, float coefficient);
 			Vector3DFloat GetInterpolateTransformLocation(MatrixFloat transformMatrix1, MatrixFloat transformMatrix2, float coefficient);
@@ -125,6 +129,8 @@ namespace wustl_mm {
 			unsigned long long nextCAHash;
 			bool			prevWasSet;
 			bool			nextWasSet;
+			//bool			deletedBond;
+			unsigned long long deletedBondAtom;
 
 			float			correlationScore;
 			float			skeletonScore;
@@ -166,6 +172,7 @@ namespace wustl_mm {
 			correlationScore = 0;
 			skeletonScore = 0;
 			geometryScore = 0;
+			deletedBondAtom = -1;
 		}
 
 		PDBAtom::PDBAtom(string pdbId, char chainId, unsigned int resSeq, string name) {
@@ -199,6 +206,7 @@ namespace wustl_mm {
 			correlationScore = 0;
 			skeletonScore = 0;
 			geometryScore = 0;
+			deletedBondAtom = -1;
 		}
 
 		PDBAtom::PDBAtom(string PDBLine, string pdbId) {
@@ -233,6 +241,7 @@ namespace wustl_mm {
 			correlationScore = 0;
 			skeletonScore = 0;
 			geometryScore = 0;
+			deletedBondAtom = -1;
 		}
 
 		void PDBAtom::Print() {
@@ -500,6 +509,15 @@ namespace wustl_mm {
 		void PDBAtom::SetNextCAHash(unsigned long long nextHash){
 			nextCAHash = nextHash;
 			nextWasSet = true;
+		}
+
+		void PDBAtom::SetDeletedBond(unsigned long long prevBondedAtom) {
+			//deletedBond = wasDeleted;
+			deletedBondAtom = prevBondedAtom;
+		}
+
+		unsigned long long PDBAtom::GetDeletedBondAtom() {
+			return deletedBondAtom;
 		}
 
 		string PDBAtom::GetPDBString() {

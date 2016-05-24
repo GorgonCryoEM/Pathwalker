@@ -13,6 +13,7 @@ from seq_model.Chain import Chain
 
 from string import split, upper
 
+#todo: if pathwalker mode, allow for calpha_viewer to delete or add using ctrl + click
 class Pathwalker(BaseDockWidget):
 
   def __init__(self, main, parent=None):
@@ -21,11 +22,13 @@ class Pathwalker(BaseDockWidget):
     self.renderer = VolumeRenderer()
     self.volumeName = "volume name"
     self.createUi()
+    self.pathWalkerMode = True
     self.connect(self.ui.preprocessPushButton, QtCore.SIGNAL("clicked()"), self.preprocessButtonPress)
     self.connect(self.ui.pushButtonBrowseAtomScore, QtCore.SIGNAL("clicked (bool)"), self.loadVolume)
     self.connect(self.ui.pushButton_2, QtCore.SIGNAL("clicked()"), self.generateAtomsButtonPress)
     self.connect(self.ui.pushButton_4, QtCore.SIGNAL("clicked()"), self.pathwalkButtonPress)
-    
+    self.connect(self.ui.pushButton_5, QtCore.SIGNAL("clicked()"), self.deleteBonds)      
+    self.connect(self.ui.pushButton_6, QtCore.SIGNAL("clicked()"), self.printDeleted)     
 
   def preprocessButtonPress(self):
       print 'Preprocessing..'
@@ -98,8 +101,16 @@ class Pathwalker(BaseDockWidget):
                   self.app.viewers['calpha'].setAtomColorsAndVisibility(self.app.viewers['calpha'].displayStyle)                        
                   self.app.viewers['calpha'].emitModelLoadedPreDraw()
                   self.app.viewers['calpha'].emitModelLoaded()
-                  self.app.viewers['calpha'].emitViewerSetCenter()    
+                  self.app.viewers['calpha'].emitViewerSetCenter()
+
+  def printDeleted(self):
+       self.app.viewers['calpha'].main_chain.printDeletedBonds()
            
+  def deleteBonds(self):
+      self.app.viewers['calpha'].deleteSelectedBonds()
+      self.app.viewers['calpha'].main_chain.unsetBonds()
+      print self.app.viewers['calpha'].printDeletedBondAtoms()
+
   def createUi(self):
       self.ui = Ui_DialogPathwalker()
       self.ui.setupUi(self)      
@@ -116,4 +127,7 @@ class Pathwalker(BaseDockWidget):
       print str(self.ui.normalizeLine.text())
       subprocess.call(['python','EMAN2/bin/e2proc3d.py',self.volumeName, 'EMAN2/bin/map.mrc','--process',str(self.ui.normalizeLine.text()),'--process',str(self.ui.zeroThresholdLine.text())])
       self.app.viewers["volume"].loadDataFromFile("EMAN2/bin/map.mrc")
+
+
+
         

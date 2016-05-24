@@ -599,6 +599,7 @@ residue.
             bond.setAtom1Ix(atom1.getHashKey())
             viewer.renderer.addBond(bond)
             cnt = cnt + 1
+
             
   def addSideChainBonds(self):
     cnt = 0
@@ -796,6 +797,23 @@ This changes the pdbID and chainID attributes of a Chain instance.
     self.chainID = new_chainID
     self.key = (self.pdbID, self.chainID)
     Chain.chainsDict[self.key] = value
+
+  def printDeletedBonds(self):
+    for i in self.residueRange():
+        atom = self[i].getAtom('CA')
+        if atom.getDeletedBondAtom() != 18446744073709551615 :
+            print atom.getDeletedBondAtom()
+        #if atom.getDeletedBondAtom() != -1:
+         #   print "current deleted bonds" + str(atom.getResSeq())
+
+  def unsetBonds(self):
+    for i in self.residueRange():
+        atom = self[i].getAtom('CA')
+        if atom.getDeletedBondAtom() != -1:
+            if i + 1 in self.residueRange():
+                tempAtom = self[i]
+                self[i] = self[i+1]
+                self[i+1] = tempAtom
 
   def setSelection(self, newSelection=None, removeOne=None, addOne=None, addRange=None):
     '''

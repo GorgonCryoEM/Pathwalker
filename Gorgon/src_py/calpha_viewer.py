@@ -666,12 +666,39 @@ This function loads a SEQ file and creates a StructurePrediction object.
         self.app.menus.addAction("file-export-calpha", self.app.actions.getAction("export_CAlpha"), "file-export")
         self.app.menus.addAction("file-close-calpha", self.app.actions.getAction("unload_CAlpha"), "file-close")
         self.app.menus.addMenu("actions-calpha", self.tr("C-&Alpha Atoms"), "actions")
-        self.app.menus.addAction("showSeqDock", self.app.actions.getAction("seqDock"), "actions-calpha")           
+        self.app.menus.addAction("showSeqDock", self.app.actions.getAction("seqDock"), "actions-calpha")       
 
     def clearSelection(self):
         BaseViewer.clearSelection(self)
         self.main_chain.setSelection([], None, None, None)
-        self.emitAtomSelectionUpdated(self.main_chain.getSelection())      
+        self.emitAtomSelectionUpdated(self.main_chain.getSelection())
+
+    def deleteSelectedBonds(self):
+        CAlphaRenderer.removeSelectedBonds(self.renderer)
+        self.emitAtomSelectionUpdated(self.main_chain.getSelection())
+
+    def printDeletedBondAtoms(self):
+        CAlphaRenderer.getDeletedBonds0Ix(self.renderer)
+
+    '''
+    def printDeletedBondAtoms(self):
+        ix0s = CAlphaRenderer.getDeletedBonds0Ix(self.renderer)
+        ix1s = CAlphaRenderer.getDeletedBonds1Ix(self.renderer)
+        for i in range(len(ix0s)):
+            print str(ix0s[i])+","+str(ix1s[i])
+
+    def getDeletedBonds(self):
+        return CAlphaRenderer.getDeletedBonds(self.renderer)
+    '''
+
+    def findAtom(self, point):
+        for i in range(CAlphaRenderer.getAtomCount(self.renderer)):
+            currentAtom = CAlphaRenderer.getAtom(self.renderer, i)
+            currentAtomPosition = currentAtom.getPosition()
+            print str(CAlphaRenderer.getAtomCount(self.renderer)) + "," + str(point[0])
+            if currentAtomPosition.x() == point[0] and currentAtomPosition.y() == point[1]:
+                return currentAtom
+        return CAlphaRenderer.getAtom(self.renderer, 0)
 
     def processElementClick(self, *argv):
         """
@@ -685,11 +712,23 @@ residues in the Chain object.
         if event.button() == QtCore.Qt.LeftButton:
             if event.modifiers() & QtCore.Qt.CTRL: #Multiple selection mode
                 atom = CAlphaRenderer.getAtomFromHitStack(self.renderer, hits[0], False, *hits[1:])
+                #if event.modifiers() & QtCore.Qt.SHIFT:
+                    #CAlphaRenderer.removeSelectedBonds(self.renderer)
+                    #atomHashes = CAlphaRenderer.getAtomHashes(self.renderer)
+                    #for i in self.main_chain.getSelection():
+                     #   for a in atomHashes:
+                      #      currentBond = CAlphaRenderer.getBondIndex(self.renderer, i, a)
+                       #     if currentBond != -1 :
+                        #        CAlphaRenderer.deleteBond(currentBond)
                 if atom.getResSeq() in self.main_chain.getSelection():
                     self.main_chain.setSelection(removeOne=atom.getResSeq())
                 else:
                     self.main_chain.setSelection(addOne=atom.getResSeq())
                 print self.main_chain.getSelection()
+            elif event.modifiers() & QtCore.Qt.SHIFT:
+                atom = CAlphaRenderer.getAtomFromHitStack(self.renderer, hits[0], False, *hits[1:])
+                CAlphaRenderer.deleteAtom(self.renderer, atom.getHashKey())
+                #CAlphaRenderer.removeSelectedBonds(self.renderer)
             else:
                 atom = CAlphaRenderer.getAtomFromHitStack(self.renderer, hits[0], True, *hits[1:])
                 print 'Residue #:', atom.getResSeq()

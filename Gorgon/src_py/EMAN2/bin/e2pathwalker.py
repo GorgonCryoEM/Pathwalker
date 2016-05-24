@@ -47,7 +47,11 @@ import json
 import tempfile
 import os
 import subprocess
-
+import ctypes
+import calpha_viewer
+from libpyGORGON import CAlphaRenderer
+from libpyGORGON import PDBAtom
+import csv
 
 def check_exists(outfile, overwrite=False):
 	if not outfile:
@@ -88,6 +92,16 @@ def norm_vector(a,b):
 def distance(point1, point2):
 	return math.sqrt(sum([(x[0]-x[1])**2 for x in zip(point1, point2)]))
 
+def determineIfDeleted(self, point1, point2):
+	ca1 = findAtom(self, point1)
+	ca2 = findAtom(self, point2)
+	if ca1.getDeletedBondAtom() != 18446744073709551615:
+		print ca1.getDeletedBondAtom()
+	#print "ca1 getResSeq" + str(ca1.getDeletedBondAtom())
+	if ca1.getDeletedBondAtom() == ca2.getResSeq():	
+		return 10000
+	else:
+		return distance(point1, point2)
 
 
 def read_pdb(filename, atomtype=None, chain=None, noisemodel=None):
@@ -168,7 +182,7 @@ def write_pdbs(filename, paths, points=None, bfactors=None, tree=None):
 					if (k,v2) in connected or (v2,k) in connected:
 						continue
 					count+=1
-					out.write('CONECT %4d %4d\n'%(k,v2))
+					out.write('CONNECT %4d %4d\n'%(k,v2))
 					connected.append((k,v2))
 			print "Wrote %s edges"%count
 	
@@ -187,10 +201,10 @@ def write_pdbs(filename, paths, points=None, bfactors=None, tree=None):
 
 
 class PathWalker(object):
-
 	def __init__(self, filename=None, outfile=None, start=None, end=None, edgefile=None, edges=None, dmin=2.0, dmax=5.0, average=3.78, atomtype='CA', chain=None, noise=0, solver=False, json=True, overwrite=False, mrcfile=None,  mrcweight=1000, mapthresh=0, subunit=1):
 
 		# Run parameters
+		self.renderer = CAlphaRenderer()
 		self.dmin = dmin
 		self.dmax = dmax
 		self.average = average	
@@ -237,19 +251,68 @@ class PathWalker(object):
 			self.itree[i] = set()
 		
 		
-		#d, w = self.calcweight(self.points[start],self.points[end])
-		#print d,w
-		#exit()
+		pseudoatoms0x = []
+		pseudoatoms0y = []
+		pseudoatoms1x = []
+		pseudoatoms1y = []
+		with open('noBondConstraints.csv','rb') as csvfile:
+			reader = csv.reader(csvfile)
+			for row in reader:
+				pseudoatoms0x.append(row[1])
+				pseudoatoms0y.append(row[2])
+				pseudoatoms1x.append(row[4])
+				pseudoatoms1y.append(row[5])
 		
 		for count1, point1 in self.points.items():
 			for count2, point2 in self.points.items():
 				#print count1,count2,
+				
+				point1X = "{0:.2f}".format(round(float(point1[0]),3))
+				point1Y = "{0:.2f}".format(round(float(point1[1]),3))
+
+				point2X = "{0:.2f}".format(round(float(point2[0]),3))
+				point2Y = "{0:.2f}".format(round(float(point2[1]),3))
+
 				d, w = self.calcweight(point1, point2)
 				self.distances[(count1, count2)] = d
 				self.weighted[(count1, count2)] = w
+				for i in range(len(pseudoatoms0x)):
+					currentAtomX = "{0:.2f}".format(round(float(pseudoatoms0x[i]),3))
+					currentAtomY = "{0:.2f}".format(round(float(pseudoatoms0y[i]),3))
+
+					otherAtomX = "{0:.2f}".format(round(float(pseudoatoms1x[i]),3))
+					otherAtomY = "{0:.2f}".format(round(float(pseudoatoms1y[i]),3))
+					
+
+					if str(currentAtomX)==str(point1X) and str(currentAtomY)==str(point1Y):
+						if str(otherAtomX)==str(point2X) and str(otherAtomY)==str(point2Y):
+							d=10000
+							w=0
+							self.distances[(count1, count2)] = d
+							self.weighted[(count1, count2)] = w
+
+					if str(otherAtomX)==str(point2X) and str(otherAtomY)==str(point2Y):
+						if str(currentAtomX)==str(point1X) and str(currentAtomY)==str(point1Y):
+							d=10000
+							w=0
+							self.distances[(count1, count2)] = d
+							self.weighted[(count1, count2)] = w
+
+					if str(currentAtomX)==str(point2X) and str(currentAtomY)==str(point2Y):
+						if str(otherAtomX)==str(point1X) and str(otherAtomY)==str(point1Y):
+							d=10000
+							w=0
+							self.distances[(count1, count2)] = d
+							self.weighted[(count1, count2)] = w
+
+					if str(otherAtomX)==str(point1X) and str(otherAtomY)==str(point1Y):
+						if str(currentAtomX)==str(point2X) and str(currentAtomY)==str(point2Y):
+							d=10000
+							w=0
+							self.distances[(count1, count2)] = d
+							self.weighted[(count1, count2)] = w
 				if self.cutoff(d):
 					self.itree[count1].add(count2)
-				# print count1, count2, self.distances[(count1, count2)], self.weighted[(count1, count2)]
 
 		# Read an edge fragment file... 1 string of points per line, separated space
 		self.fixededges = self.read_fixed(edgefile)
@@ -686,17 +749,15 @@ class PathWalker(object):
 			'dmax': max(distances)
 		}
 		return ret
-		
-		
 			
 
 	def cutoff(self, d):
 		return self.dmin <= d <= self.dmax
 	
 
-
-
 	def calcweight(self, point1, point2):
+		
+
 		d = distance(point1, point2)
 		if self.cutoff(d):
 			w = int(math.fabs(d-self.average)*100)
@@ -998,7 +1059,7 @@ def main():
 			mrcfile=options.mapfile,
 			mrcweight=options.mapweight,
 			mapthresh=options.mapthresh,
-			subunit=options.subunit
+			subunit=options.subunit,
 		)
 		pw.run()
 

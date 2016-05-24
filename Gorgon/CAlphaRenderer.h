@@ -21,6 +21,9 @@
 #include <list>
 #include <GraphMatch/VectorMath.h>
 #include <boost/tuple/tuple.hpp>
+#include <set>
+#include <iostream>
+#include <fstream>
 
 using namespace std;
 using namespace wustl_mm::Protein_Morph;
@@ -181,6 +184,8 @@ namespace wustl_mm {
 			// Vector3DFloats
 			vector<Vector3DFloat> CreateStrandNormals(vector<Vector3DFloat> points, Vector3DFloat previous, Vector3DFloat next); // create line segment normals to be used in drawing Beta
 			// strands
+			vector<PDBBond> getDeletedBonds();
+
 			void CreateHelixAxesTangentsAndPoints(vector<Vector3DFloat>& axes, vector<Vector3DFloat>& tangents, vector<Vector3DFloat>& interpPoints, vector<Vector3DFloat> points, 
 				Vector3DFloat previous, Vector3DFloat next, double HELIX_ALPHA, double HELIX_BETA, double HELIX_HERMITE_FACTOR);
 			void DrawOpenBox(vector<Vector3DFloat> points, vector<Vector3DFloat> normals); // takes a vector of 8 points and draws a rectangular prism with two of its six sides not
@@ -204,6 +209,10 @@ namespace wustl_mm {
 			void ClearOtherHighlights();
 			void SetFeatureVecs(vector<Vector3DFloat> flatFeatureVecs);
 			void SetHelixColor(int helixNum, float r, float g, float b);
+
+			string getDeletedBonds0Ix();
+			vector<unsigned long long> getDeletedBonds1Ix();
+			void RemoveSelectedBonds();
 		private:
 			void DrawBackboneModel(int subSceneIndex, bool selectEnabled);
 			void DrawRibbonModel(int subSceneIndex, bool selectEnabled);
@@ -213,9 +222,12 @@ namespace wustl_mm {
 
 			//TODO: possibly implement mouse picking using ray intersection
 			vector<unsigned long long> atomHashKeys; //glLoadName(index of this vector)... used for selection
+			vector<unsigned long long> ix0s;
+			vector<unsigned long long> ix1s;
 
 			vector<PDBBond> bonds;
 			vector<PDBBond> sidechainBonds;
+			vector<PDBBond> bondsToDelete;
 
 			vector<Secel> aHelices;
 			vector<Secel> bStrands;
@@ -1885,6 +1897,56 @@ namespace wustl_mm {
 			hlt_a = ((double)col)/100.0;
 			cout << "hlt_a: " << hlt_a << endl;
 		}
+
+		vector<PDBBond> CAlphaRenderer::getDeletedBonds() {
+			return bondsToDelete;
+		}
+
+		string CAlphaRenderer::getDeletedBonds0Ix() {
+			string deletedBondAtoms = "";
+			for(int i = 0; i < ix0s.size(); i++) {
+				//cout << atoms[ix0s[i]].GetPosition().X() << endl;
+				deletedBondAtoms += std::to_string(ix0s[i]);
+				PDBAtom atom0Ix = atoms[ix0s[i]];
+				deletedBondAtoms += ",";
+				deletedBondAtoms += std::to_string(atom0Ix.GetPosition().X());
+				deletedBondAtoms += ",";
+				deletedBondAtoms += std::to_string(atom0Ix.GetPosition().Y());
+				deletedBondAtoms += ",";
+				deletedBondAtoms += std::to_string(ix1s[i]);
+				PDBAtom atom1Ix = atoms[ix1s[i]];
+				deletedBondAtoms += ",";
+				deletedBondAtoms += std::to_string(atom1Ix.GetPosition().X());
+				deletedBondAtoms += ",";
+				deletedBondAtoms += std::to_string(atom1Ix.GetPosition().Y());
+				deletedBondAtoms += "\n";
+			}
+			ofstream myfile;
+			myfile.open("noBondConstraints.csv");
+			myfile << deletedBondAtoms;
+			myfile.close();
+			return deletedBondAtoms;
+		}
+
+		vector<unsigned long long> CAlphaRenderer::getDeletedBonds1Ix() {
+			return ix1s;
+		}
+
+		void CAlphaRenderer::RemoveSelectedBonds() {
+			for(int i = 0; i < bonds.size(); i++ ) {
+				if(bonds[i].GetSelected()) {
+					bondsToDelete.push_back(bonds[i]);
+					ix0s.push_back(bonds[i].GetAtom0Ix());
+					ix1s.push_back(bonds[i].GetAtom1Ix());
+					atoms[bonds[i].GetAtom0Ix()].SetDeletedBond(bonds[i].GetAtom1Ix());
+					atoms[bonds[i].GetAtom1Ix()].SetDeletedBond(bonds[i].GetAtom0Ix());
+					DeleteBond(i);
+				}				
+			}
+		}
+
+
+
 	}
 }
 

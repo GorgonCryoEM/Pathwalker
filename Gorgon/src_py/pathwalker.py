@@ -1,6 +1,7 @@
 import sys
 import os
 import subprocess
+import csv
 from PyQt4 import QtCore, QtGui
 from ui_dialog_pathwalker import Ui_DialogPathwalker
 from seq_model.Chain import Chain
@@ -51,6 +52,10 @@ class Pathwalker(BaseDockWidget):
       print 'Finished Pathwalking'
 
   def pathWalk(self):
+      if not os.path.isfile("noBondConstraints.csv"):
+        with open('noBondConstraints.csv','wb') as csvfile:
+          spamwriter = csv.writer(csvfile, delimiter=',',quotechar='|', quoting=csv.QUOTE_MINIMAL)
+          spamwriter.writerow(['0','0','0','0','0','0'])
       dmin = "--dmin="+str(self.ui.lineEdit_9.text())
       dmax = "--dmax="+str(self.ui.lineEdit_10.text())
       threshold = "--mapthresh="+str(self.ui.lineEdit_11.text())
@@ -127,7 +132,9 @@ class Pathwalker(BaseDockWidget):
       print str(self.ui.normalizeLine.text())
       subprocess.call(['python','EMAN2/bin/e2proc3d.py',self.volumeName, 'EMAN2/bin/map.mrc','--process',str(self.ui.normalizeLine.text()),'--process',str(self.ui.zeroThresholdLine.text())])
       self.app.viewers["volume"].loadDataFromFile("EMAN2/bin/map.mrc")
-
+      with open('noBondConstraints.csv','wb') as csvfile:
+        spamwriter = csv.writer(csvfile, delimiter=',',quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        spamwriter.writerow(['0','0','0','0','0','0'])
 
 
         

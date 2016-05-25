@@ -49,6 +49,7 @@ import os
 import subprocess
 import ctypes
 import calpha_viewer
+import os.path
 from libpyGORGON import CAlphaRenderer
 from libpyGORGON import PDBAtom
 import csv

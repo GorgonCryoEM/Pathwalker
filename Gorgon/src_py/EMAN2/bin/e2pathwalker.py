@@ -263,10 +263,26 @@ class PathWalker(object):
 				pseudoatoms0y.append(row[2])
 				pseudoatoms1x.append(row[4])
 				pseudoatoms1y.append(row[5])
+
+		csvfile.close()
+
+		pseudoatoms0xNew = []
+		pseudoatoms0yNew = []
+		pseudoatoms1xNew = []
+		pseudoatoms1yNew = []
+		with open('newBonds.csv','rb') as csvfileNewBonds:
+			reader = csv.reader(csvfileNewBonds)
+			for row in reader:
+				pseudoatoms0xNew.append(row[1])
+				pseudoatoms0yNew.append(row[2])
+				pseudoatoms1xNew.append(row[4])
+				pseudoatoms1yNew.append(row[5])
+
+		csvfileNewBonds.close()
+
 		
 		for count1, point1 in self.points.items():
 			for count2, point2 in self.points.items():
-				#print count1,count2,
 				
 				point1X = "{0:.2f}".format(round(float(point1[0]),3))
 				point1Y = "{0:.2f}".format(round(float(point1[1]),3))
@@ -283,37 +299,73 @@ class PathWalker(object):
 
 					otherAtomX = "{0:.2f}".format(round(float(pseudoatoms1x[i]),3))
 					otherAtomY = "{0:.2f}".format(round(float(pseudoatoms1y[i]),3))
-					
 
 					if str(currentAtomX)==str(point1X) and str(currentAtomY)==str(point1Y):
 						if str(otherAtomX)==str(point2X) and str(otherAtomY)==str(point2Y):
-							d=10000
+							d=100000
 							w=0
 							self.distances[(count1, count2)] = d
 							self.weighted[(count1, count2)] = w
 
 					if str(otherAtomX)==str(point2X) and str(otherAtomY)==str(point2Y):
 						if str(currentAtomX)==str(point1X) and str(currentAtomY)==str(point1Y):
-							d=10000
+							d=100000
 							w=0
 							self.distances[(count1, count2)] = d
 							self.weighted[(count1, count2)] = w
 
 					if str(currentAtomX)==str(point2X) and str(currentAtomY)==str(point2Y):
 						if str(otherAtomX)==str(point1X) and str(otherAtomY)==str(point1Y):
-							d=10000
+							d=100000
 							w=0
 							self.distances[(count1, count2)] = d
 							self.weighted[(count1, count2)] = w
 
 					if str(otherAtomX)==str(point1X) and str(otherAtomY)==str(point1Y):
 						if str(currentAtomX)==str(point2X) and str(currentAtomY)==str(point2Y):
-							d=10000
+							d=100000
 							w=0
 							self.distances[(count1, count2)] = d
 							self.weighted[(count1, count2)] = w
+				for i in range(len(pseudoatoms0xNew)):
+					currentAtomXNew = "{0:.2f}".format(round(float(pseudoatoms0xNew[i]),3))
+					currentAtomYNew = "{0:.2f}".format(round(float(pseudoatoms0yNew[i]),3))
+
+					otherAtomXNew = "{0:.2f}".format(round(float(pseudoatoms1xNew[i]),3))
+					otherAtomYNew = "{0:.2f}".format(round(float(pseudoatoms1yNew[i]),3))
+
+					if str(currentAtomXNew)==str(point1X) and str(currentAtomYNew)==str(point1Y):
+						if str(otherAtomXNew)==str(point2X) and str(otherAtomYNew)==str(point2Y):
+							d=0
+							w=10000
+							self.distances[(count1, count2)] = d
+							self.weighted[(count1, count2)] = w
+
+					if str(otherAtomXNew)==str(point2X) and str(otherAtomYNew)==str(point2Y):
+						if str(currentAtomXNew)==str(point1X) and str(currentAtomYNew)==str(point1Y):
+							d=0
+							w=10000
+							self.distances[(count1, count2)] = d
+							self.weighted[(count1, count2)] = w
+
+					if str(currentAtomXNew)==str(point2X) and str(currentAtomYNew)==str(point2Y):
+						if str(otherAtomXNew)==str(point1X) and str(otherAtomYNew)==str(point1Y):
+							d=0
+							w=10000
+							self.distances[(count1, count2)] = d
+							self.weighted[(count1, count2)] = w
+
+					if str(otherAtomXNew)==str(point1X) and str(otherAtomYNew)==str(point1Y):
+						if str(currentAtomXNew)==str(point2X) and str(currentAtomYNew)==str(point2Y):
+							d=0
+							w=10000
+							self.distances[(count1, count2)] = d
+							self.weighted[(count1, count2)] = w
+
 				if self.cutoff(d):
 					self.itree[count1].add(count2)
+
+			
 
 		# Read an edge fragment file... 1 string of points per line, separated space
 		self.fixededges = self.read_fixed(edgefile)

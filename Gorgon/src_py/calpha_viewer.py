@@ -678,18 +678,11 @@ This function loads a SEQ file and creates a StructurePrediction object.
         self.emitAtomSelectionUpdated(self.main_chain.getSelection())
 
     def printDeletedBondAtoms(self):
-        CAlphaRenderer.getDeletedBonds0Ix(self.renderer)
+        CAlphaRenderer.getDeletedBondAtoms(self.renderer)
 
-    '''
-    def printDeletedBondAtoms(self):
-        ix0s = CAlphaRenderer.getDeletedBonds0Ix(self.renderer)
-        ix1s = CAlphaRenderer.getDeletedBonds1Ix(self.renderer)
-        for i in range(len(ix0s)):
-            print str(ix0s[i])+","+str(ix1s[i])
-
-    def getDeletedBonds(self):
-        return CAlphaRenderer.getDeletedBonds(self.renderer)
-    '''
+    def createSelectedBonds(self):
+        CAlphaRenderer.addSelectedBonds(self.renderer)
+        self.emitAtomSelectionUpdated(self.main_chain.getSelection())
 
     def findAtom(self, point):
         for i in range(CAlphaRenderer.getAtomCount(self.renderer)):
@@ -712,14 +705,6 @@ residues in the Chain object.
         if event.button() == QtCore.Qt.LeftButton:
             if event.modifiers() & QtCore.Qt.CTRL: #Multiple selection mode
                 atom = CAlphaRenderer.getAtomFromHitStack(self.renderer, hits[0], False, *hits[1:])
-                #if event.modifiers() & QtCore.Qt.SHIFT:
-                    #CAlphaRenderer.removeSelectedBonds(self.renderer)
-                    #atomHashes = CAlphaRenderer.getAtomHashes(self.renderer)
-                    #for i in self.main_chain.getSelection():
-                     #   for a in atomHashes:
-                      #      currentBond = CAlphaRenderer.getBondIndex(self.renderer, i, a)
-                       #     if currentBond != -1 :
-                        #        CAlphaRenderer.deleteBond(currentBond)
                 if atom.getResSeq() in self.main_chain.getSelection():
                     self.main_chain.setSelection(removeOne=atom.getResSeq())
                 else:

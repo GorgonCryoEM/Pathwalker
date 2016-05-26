@@ -210,9 +210,10 @@ namespace wustl_mm {
 			void SetFeatureVecs(vector<Vector3DFloat> flatFeatureVecs);
 			void SetHelixColor(int helixNum, float r, float g, float b);
 
-			string getDeletedBonds0Ix();
+			string getDeletedBondAtoms();
 			vector<unsigned long long> getDeletedBonds1Ix();
 			void RemoveSelectedBonds();
+			void addSelectedBonds();
 		private:
 			void DrawBackboneModel(int subSceneIndex, bool selectEnabled);
 			void DrawRibbonModel(int subSceneIndex, bool selectEnabled);
@@ -1902,7 +1903,7 @@ namespace wustl_mm {
 			return bondsToDelete;
 		}
 
-		string CAlphaRenderer::getDeletedBonds0Ix() {
+		string CAlphaRenderer::getDeletedBondAtoms() {
 			string deletedBondAtoms = "";
 			for(int i = 0; i < ix0s.size(); i++) {
 				//cout << atoms[ix0s[i]].GetPosition().X() << endl;
@@ -1942,6 +1943,46 @@ namespace wustl_mm {
 					atoms[bonds[i].GetAtom1Ix()].SetDeletedBond(bonds[i].GetAtom0Ix());
 					DeleteBond(i);
 				}				
+			}
+		}
+
+		void CAlphaRenderer::addSelectedBonds() {
+			int count = 0;
+			for(AtomMapType::iterator it = atoms.begin(); it != atoms.end(); it++) {
+				if(it->second.GetSelected()) {
+					cout << it->second.GetResSeq() << endl;
+					count++;
+				}
+			}
+			if(count == 2) {
+				string atomsToBond;
+				int atomIndex = 0;
+				unsigned int atom1;
+				unsigned int atom2;
+				for(AtomMapType::iterator it = atoms.begin(); it != atoms.end(); it++) {
+					if(it->second.GetSelected()) {
+						atomsToBond += std::to_string(it->second.GetResSeq());
+						atomsToBond += ",";
+						atomsToBond += std::to_string(it->second.GetPosition().X());
+						atomsToBond += ",";
+						atomsToBond += std::to_string(it->second.GetPosition().Y());
+						if(atomIndex%2 == 0) {
+							atom1 = it->second.GetResSeq();
+							atomsToBond += ",";
+						}
+						else {
+							atom2 = it->second.GetResSeq();
+							AddBond(PDBBond((unsigned long long)atom1, (unsigned long long)atom2, true));
+							atomsToBond += "\n";
+						}
+						atomIndex += 1;
+					}
+				}
+
+				ofstream myfile;
+				myfile.open("newBonds.csv", ios::app);
+				myfile << atomsToBond;
+				myfile.close();
 			}
 		}
 

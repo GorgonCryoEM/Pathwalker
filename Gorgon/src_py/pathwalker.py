@@ -29,7 +29,7 @@ class Pathwalker(BaseDockWidget):
     self.connect(self.ui.pushButton_2, QtCore.SIGNAL("clicked()"), self.generateAtomsButtonPress)
     self.connect(self.ui.pushButton_4, QtCore.SIGNAL("clicked()"), self.pathwalkButtonPress)
     self.connect(self.ui.pushButton_5, QtCore.SIGNAL("clicked()"), self.deleteBonds)      
-    self.connect(self.ui.pushButton_6, QtCore.SIGNAL("clicked()"), self.printDeleted)     
+    self.connect(self.ui.pushButton_6, QtCore.SIGNAL("clicked()"), self.createBonds)     
 
   def preprocessButtonPress(self):
       print 'Preprocessing..'
@@ -62,6 +62,9 @@ class Pathwalker(BaseDockWidget):
       mapweight = "--mapweight="+str(self.ui.lineEdit_12.text())
       subprocess.call(['python','EMAN2/bin/e2pathwalker.py','pseudoatoms.pdb', '--mapfile=EMAN2/bin/map.mrc','--output=path0.pdb','--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight])
       self.generateAtoms("path0.pdb")
+      with open('newBonds.csv','wb') as csvfile:
+        spamwriter = csv.writer(csvfile, delimiter=',',quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        spamwriter.writerow(['0','0','0','0','0','0'])
 
   def generateAtoms(self, fileName):
       def setupChain(mychain):            
@@ -113,8 +116,11 @@ class Pathwalker(BaseDockWidget):
            
   def deleteBonds(self):
       self.app.viewers['calpha'].deleteSelectedBonds()
-      self.app.viewers['calpha'].main_chain.unsetBonds()
+      #self.app.viewers['calpha'].main_chain.unsetBonds()
       print self.app.viewers['calpha'].printDeletedBondAtoms()
+
+  def createBonds(self):
+      self.app.viewers['calpha'].createSelectedBonds()
 
   def createUi(self):
       self.ui = Ui_DialogPathwalker()

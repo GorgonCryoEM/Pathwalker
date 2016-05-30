@@ -251,117 +251,174 @@ class PathWalker(object):
 		for i in self.points.keys():
 			self.itree[i] = set()
 		
-		
+		'''
 		pseudoatoms0x = []
 		pseudoatoms0y = []
+		pseudoatoms0z = []
 		pseudoatoms1x = []
 		pseudoatoms1y = []
+		pseudoatoms1z = []
 		with open('noBondConstraints.csv','rb') as csvfile:
 			reader = csv.reader(csvfile)
 			for row in reader:
 				pseudoatoms0x.append(row[1])
 				pseudoatoms0y.append(row[2])
-				pseudoatoms1x.append(row[4])
-				pseudoatoms1y.append(row[5])
+				pseudoatoms0z.append(row[3])
+				pseudoatoms1x.append(row[5])
+				pseudoatoms1y.append(row[6])
+				pseudoatoms1z.append(row[7])
 
 		csvfile.close()
-
+		
 		pseudoatoms0xNew = []
 		pseudoatoms0yNew = []
+		pseudoatoms0zNew = []
 		pseudoatoms1xNew = []
 		pseudoatoms1yNew = []
+		pseudoatoms1zNew = []
+		newBondId1 = []
+		newBondId2 = []
 		with open('newBonds.csv','rb') as csvfileNewBonds:
 			reader = csv.reader(csvfileNewBonds)
 			for row in reader:
 				pseudoatoms0xNew.append(row[1])
 				pseudoatoms0yNew.append(row[2])
-				pseudoatoms1xNew.append(row[4])
-				pseudoatoms1yNew.append(row[5])
+				pseudoatoms0zNew.append(row[3])
+				pseudoatoms1xNew.append(row[5])
+				pseudoatoms1yNew.append(row[6])
+				pseudoatoms1zNew.append(row[7])
+				newBondId1.append(row[0])
+				newBondId2.append(row[4])
 
 		csvfileNewBonds.close()
+		'''
 
 		
 		for count1, point1 in self.points.items():
 			for count2, point2 in self.points.items():
-				
+				'''
 				point1X = "{0:.2f}".format(round(float(point1[0]),3))
 				point1Y = "{0:.2f}".format(round(float(point1[1]),3))
+				point1Z = "{0:.2f}".format(round(float(point1[2]),3))
 
 				point2X = "{0:.2f}".format(round(float(point2[0]),3))
 				point2Y = "{0:.2f}".format(round(float(point2[1]),3))
+				point2Z = "{0:.2f}".format(round(float(point2[2]),3))
+				'''
 
 				d, w = self.calcweight(point1, point2)
 				self.distances[(count1, count2)] = d
 				self.weighted[(count1, count2)] = w
+				'''
+				
 				for i in range(len(pseudoatoms0x)):
 					currentAtomX = "{0:.2f}".format(round(float(pseudoatoms0x[i]),3))
 					currentAtomY = "{0:.2f}".format(round(float(pseudoatoms0y[i]),3))
+					currentAtomZ = "{0:.2f}".format(round(float(pseudoatoms0z[i]),3))
 
 					otherAtomX = "{0:.2f}".format(round(float(pseudoatoms1x[i]),3))
 					otherAtomY = "{0:.2f}".format(round(float(pseudoatoms1y[i]),3))
+					otherAtomZ = "{0:.2f}".format(round(float(pseudoatoms1y[i]),3))
 
-					if str(currentAtomX)==str(point1X) and str(currentAtomY)==str(point1Y):
-						if str(otherAtomX)==str(point2X) and str(otherAtomY)==str(point2Y):
-							d=100000
+					if str(currentAtomX)==str(point1X) and str(currentAtomY)==str(point1Y) and str(currentAtomZ)==str(point1Z):
+						if str(otherAtomX)==str(point2X) and str(otherAtomY)==str(point2Y) and str(otherAtomZ)==str(point2Z):
+							d=1000000
 							w=0
 							self.distances[(count1, count2)] = d
 							self.weighted[(count1, count2)] = w
 
-					if str(otherAtomX)==str(point2X) and str(otherAtomY)==str(point2Y):
-						if str(currentAtomX)==str(point1X) and str(currentAtomY)==str(point1Y):
-							d=100000
+					if str(otherAtomX)==str(point2X) and str(otherAtomY)==str(point2Y) and str(otherAtomZ)==str(point2Z):
+						if str(currentAtomX)==str(point1X) and str(currentAtomY)==str(point1Y) and str(currentAtomZ)==str(point1Z):
+							d=1000000
 							w=0
 							self.distances[(count1, count2)] = d
 							self.weighted[(count1, count2)] = w
 
-					if str(currentAtomX)==str(point2X) and str(currentAtomY)==str(point2Y):
-						if str(otherAtomX)==str(point1X) and str(otherAtomY)==str(point1Y):
-							d=100000
+					if str(currentAtomX)==str(point2X) and str(currentAtomY)==str(point2Y) and str(currentAtomZ)==str(point2Z):
+						if str(otherAtomX)==str(point1X) and str(otherAtomY)==str(point1Y) and str(otherAtomZ)==str(point1Z):
+							d=1000000
 							w=0
 							self.distances[(count1, count2)] = d
 							self.weighted[(count1, count2)] = w
 
-					if str(otherAtomX)==str(point1X) and str(otherAtomY)==str(point1Y):
-						if str(currentAtomX)==str(point2X) and str(currentAtomY)==str(point2Y):
-							d=100000
+					if str(otherAtomX)==str(point1X) and str(otherAtomY)==str(point1Y) and str(otherAtomZ)==str(point1Z):
+						if str(currentAtomX)==str(point2X) and str(currentAtomY)==str(point2Y) and str(currentAtomZ)==str(point2Z):
+							d=1000000
 							w=0
 							self.distances[(count1, count2)] = d
 							self.weighted[(count1, count2)] = w
+				
 				for i in range(len(pseudoatoms0xNew)):
 					currentAtomXNew = "{0:.2f}".format(round(float(pseudoatoms0xNew[i]),3))
 					currentAtomYNew = "{0:.2f}".format(round(float(pseudoatoms0yNew[i]),3))
+					currentAtomZNew = "{0:.2f}".format(round(float(pseudoatoms0zNew[i]),3))
 
 					otherAtomXNew = "{0:.2f}".format(round(float(pseudoatoms1xNew[i]),3))
 					otherAtomYNew = "{0:.2f}".format(round(float(pseudoatoms1yNew[i]),3))
+					otherAtomZNew = "{0:.2f}".format(round(float(pseudoatoms1zNew[i]),3))
+					#print str(currentAtomXNew)+","+str(currentAtomYNew)+","+str(currentAtomZNew)+","+str(otherAtomXNew)+","+str(otherAtomYNew)+","+str(otherAtomZNew)+","+str(point1X)+","+str(point1Y)+","+str(point1Z)
 
-					if str(currentAtomXNew)==str(point1X) and str(currentAtomYNew)==str(point1Y):
-						if str(otherAtomXNew)==str(point2X) and str(otherAtomYNew)==str(point2Y):
-							d=0
-							w=10000
+					if str(currentAtomXNew)==str(point1X) and str(currentAtomYNew)==str(point1Y) and str(currentAtomZNew)==str(point1Z):
+						if str(otherAtomXNew)==str(point2X) and str(otherAtomYNew)==str(point2Y) and str(otherAtomZNew)==str(point2Z):
+							d=3.78
+							w=1000000
 							self.distances[(count1, count2)] = d
 							self.weighted[(count1, count2)] = w
+							#print "create bond?"
 
-					if str(otherAtomXNew)==str(point2X) and str(otherAtomYNew)==str(point2Y):
-						if str(currentAtomXNew)==str(point1X) and str(currentAtomYNew)==str(point1Y):
-							d=0
-							w=10000
+					if str(otherAtomXNew)==str(point2X) and str(otherAtomYNew)==str(point2Y) and str(otherAtomZNew)==str(point2Z):
+						if str(currentAtomXNew)==str(point1X) and str(currentAtomYNew)==str(point1Y) and str(currentAtomZNew)==str(point1Z):
+							d=3.78
+							w=1000000
 							self.distances[(count1, count2)] = d
 							self.weighted[(count1, count2)] = w
+							#print "create bond?"
 
-					if str(currentAtomXNew)==str(point2X) and str(currentAtomYNew)==str(point2Y):
-						if str(otherAtomXNew)==str(point1X) and str(otherAtomYNew)==str(point1Y):
-							d=0
-							w=10000
+					if str(currentAtomXNew)==str(point2X) and str(currentAtomYNew)==str(point2Y) and str(currentAtomZNew)==str(point2Z):
+						if str(otherAtomXNew)==str(point1X) and str(otherAtomYNew)==str(point1Y) and str(otherAtomZNew)==str(point1Z):
+							d=3.78
+							w=1000000
 							self.distances[(count1, count2)] = d
 							self.weighted[(count1, count2)] = w
+							#print "create bond?"
 
-					if str(otherAtomXNew)==str(point1X) and str(otherAtomYNew)==str(point1Y):
-						if str(currentAtomXNew)==str(point2X) and str(currentAtomYNew)==str(point2Y):
-							d=0
-							w=10000
+					if str(otherAtomXNew)==str(point1X) and str(otherAtomYNew)==str(point1Y) and str(otherAtomZNew)==str(point1Z):
+						if str(currentAtomXNew)==str(point2X) and str(currentAtomYNew)==str(point2Y) and str(currentAtomZNew)==str(point2Z):
+							d=3.78
+							w=1000000
 							self.distances[(count1, count2)] = d
 							self.weighted[(count1, count2)] = w
+							#print "create bond?"
+							
+				
+				for i in range(len(newBondId1)):
+					id1 = newBondId1[i]
+					id2 = newBondId2[i]
+					print str(id1)+","+str(id2)+","+str(count1)+","+str(count2)
+					if str(count1) == str(id1):
+						if str(count2) == str(id2):
+							self.distances[(count1, count2)] == 3.78
+							self.weighted[(count1, count2)] = 1000000
+					if str(count1) == str(id2):
+						if str(count2) == str(id1):
+							self.distances[(count1, count2)] == 3.78
+							self.weighted[(count1, count2)] = 1000000
 
+					if str(count2) == str(id2):
+						if str(count1) == str(id1):
+							self.distances[(count1, count2)] == 3.78
+							self.weighted[(count1, count2)] = 1000000
+
+					if str(count2) == str(id1):
+						if str(count1) == str(id2):
+							self.distances[(count1, count2)] == 3.78
+							self.weighted[(count1, count2)] = 1000000
+				if self.distances[(count1, count2)] == 3.78:
+					print str(count1)+","+str(count2)
+				
+				if self.distances[(count1, count2)] == 3.78:
+					print str(count1)+","+str(count2)
+				'''
 				if self.cutoff(d):
 					self.itree[count1].add(count2)
 
@@ -403,6 +460,49 @@ class PathWalker(object):
 			self.start=id1
 			self.end=id2
 		
+		self.deletededges = self.read_deleted_bonds('noBondConstraints')
+		bondAtoms1 = []
+		bondAtoms2 = []
+		for i in range(len(self.deletededges)):
+			if i % 2 == 0:
+				bondAtoms1.append(self.deletededges[i])
+			else:
+				bondAtoms2.append(self.deletededges[i])
+		for i in range(len(bondAtoms1)):
+			print str(bondAtoms1[i])+","+str(bondAtoms2[i])
+
+			#self.distances[(bondAtoms1[i],bondAtoms2[i])]=100000
+			#self.weighted[(bondAtoms1[i],bondAtoms2[i])]=100000
+			#if self.itree[bondAtoms1[i]]:
+			
+			if bondAtoms2[i] in self.itree[bondAtoms1[i]] or bondAtoms1[i] in self.itree[bondAtoms1[i]]:
+				print "bond to delete"
+				self.itree[bondAtoms1[i]].discard(bondAtoms2[i])
+				self.itree[bondAtoms2[i]].discard(bondAtoms1[i])
+				if bondAtoms2[i] > bondAtoms1[i]:
+
+					self.itree[bondAtoms1[i]].add(min(max(self.points),bondAtoms2[i]+1))
+					self.itree[min(max(self.points),bondAtoms2[i]+1)].add(bondAtoms1[i])
+					self.weighted[min(max(self.points),bondAtoms2[i]+1),bondAtoms1[i]] = 0
+					self.weighted[bondAtoms1[i], min(max(self.points),bondAtoms2[i]+1)] = 0
+
+					self.itree[bondAtoms2[i]].add(max(0,bondAtoms1[i]-1))
+					self.itree[max(0,bondAtoms1[i]-1)].add(bondAtoms2[i])
+					self.weighted[bondAtoms2[i], max(0,bondAtoms1[i]-1)] = 0
+					self.weighted[max(0,bondAtoms1[i]-1), bondAtoms2[i]] = 0
+
+				else:
+					self.itree[bondAtoms2[i]].add(min(max(self.points),bondAtoms1[i]+1))
+					self.itree[min(max(self.points),bondAtoms1[i]+1)].add(bondAtoms2[i])
+					self.weighted[min(max(self.points),bondAtoms1[i]+1),bondAtoms2[i]] = 0
+					self.weighted[bondAtoms2[i], min(max(self.points),bondAtoms1[i]+1)] = 0
+
+					self.itree[bondAtoms1[i]].add(max(0,bondAtoms2[i]-1))
+					self.itree[max(0,bondAtoms2[i]-1)].add(bondAtoms1[i])
+					self.weighted[bondAtoms1[i], max(0,bondAtoms2[i]-1)] = 0
+					self.weighted[max(0,bondAtoms2[i]-1), bondAtoms1[i]] = 0
+
+
 		print "Note: linking start/end: ", self.start, self.end
 		self.fixededges.append((self.start, self.end))
 		
@@ -515,6 +615,19 @@ class PathWalker(object):
 			fragment = map(int, fragment.split())
 			for i in range(len(fragment)-1):
 				fixededges.append((fragment[i], fragment[i+1]))
+		return fixededges
+
+	def read_deleted_bonds(self, edgefile):
+		fixededges = []
+		if not edgefile:
+			return fixededges
+		f = open(edgefile)
+		fragments = [i.strip() for i in f.readlines()]
+		f.close()
+		for fragment in fragments:
+			fragment = map(int, fragment.split())
+			for i in range(len(fragment)):
+				fixededges.append(fragment[i])
 		return fixededges
 	
 	

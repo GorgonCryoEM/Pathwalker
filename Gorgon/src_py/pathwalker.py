@@ -2,6 +2,7 @@ import sys
 import os
 import subprocess
 import csv
+#import re
 from PyQt4 import QtCore, QtGui
 from ui_dialog_pathwalker import Ui_DialogPathwalker
 from seq_model.Chain import Chain
@@ -52,19 +53,18 @@ class Pathwalker(BaseDockWidget):
       print 'Finished Pathwalking'
 
   def pathWalk(self):
-      if not os.path.isfile("noBondConstraints.csv"):
-        with open('noBondConstraints.csv','wb') as csvfile:
-          spamwriter = csv.writer(csvfile, delimiter=',',quotechar='|', quoting=csv.QUOTE_MINIMAL)
-          spamwriter.writerow(['0','0','0','0','0','0'])
       dmin = "--dmin="+str(self.ui.lineEdit_9.text())
       dmax = "--dmax="+str(self.ui.lineEdit_10.text())
       threshold = "--mapthresh="+str(self.ui.lineEdit_11.text())
       mapweight = "--mapweight="+str(self.ui.lineEdit_12.text())
-      subprocess.call(['python','EMAN2/bin/e2pathwalker.py','pseudoatoms.pdb', '--mapfile=EMAN2/bin/map.mrc','--output=path0.pdb','--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight])
+      if not os.path.isfile("newBonds"):
+        newFile = open('newBonds','wb')
+      if not os.path.isfile("noBondConstraints"):
+        newFile = open('noBondConstraints','wb')
+      subprocess.call(['python','EMAN2/bin/e2pathwalker.py','pseudoatoms.pdb', '--mapfile=EMAN2/bin/map.mrc','--output=path0.pdb','--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,"--edgefile=newBonds"])
       self.generateAtoms("path0.pdb")
-      with open('newBonds.csv','wb') as csvfile:
-        spamwriter = csv.writer(csvfile, delimiter=',',quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        spamwriter.writerow(['0','0','0','0','0','0'])
+      open('newBonds', 'w').close()
+      open('noBondConstraints', 'w').close()
 
   def generateAtoms(self, fileName):
       def setupChain(mychain):            
@@ -115,12 +115,27 @@ class Pathwalker(BaseDockWidget):
        self.app.viewers['calpha'].main_chain.printDeletedBonds()
            
   def deleteBonds(self):
-      self.app.viewers['calpha'].deleteSelectedBonds()
-      #self.app.viewers['calpha'].main_chain.unsetBonds()
-      print self.app.viewers['calpha'].printDeletedBondAtoms()
+      bondsDeleted = open('noBondConstraints', 'wb')
+      selectedDeleted = self.app.viewers['calpha'].main_chain.getSelection()
+      selectedDeleted = str(selectedDeleted)
+      selectedDeleted = selectedDeleted.translate(None, '![@#]$,')
+      bondsDeleted.write(str(selectedDeleted))
+      self.ui.lineEdit_13.setText(str(selectedDeleted))
+      #bondsDeleted2 = open('noBondConstraints', 'r')
+      #for line in bondsDeleted2:
+       # self.ui.lineEdit_13.setText(str(line))
 
   def createBonds(self):
-      self.app.viewers['calpha'].createSelectedBonds()
+      bondsCreated = open('newBonds', 'wb')
+      selectedCreated = self.app.viewers['calpha'].main_chain.getSelection()
+      selectedCreated = str(selectedCreated)
+      selectedCreated = selectedCreated.translate(None, '![@#]$,')
+      bondsCreated.write(str(selectedCreated))
+      self.ui.lineEdit_14.setText(str(selectedCreated))
+      #self.app.viewers['calpha'].createSelectedBonds()
+      #bondsDeleted = open('newBonds', 'r')
+      #for line in bondsDeleted:
+      #  self.ui.lineEdit_14.setText(str(line))
 
   def createUi(self):
       self.ui = Ui_DialogPathwalker()
@@ -135,12 +150,8 @@ class Pathwalker(BaseDockWidget):
  
 
   def preprocess(self):
-      print str(self.ui.normalizeLine.text())
       subprocess.call(['python','EMAN2/bin/e2proc3d.py',self.volumeName, 'EMAN2/bin/map.mrc','--process',str(self.ui.normalizeLine.text()),'--process',str(self.ui.zeroThresholdLine.text())])
       self.app.viewers["volume"].loadDataFromFile("EMAN2/bin/map.mrc")
-      with open('noBondConstraints.csv','wb') as csvfile:
-        spamwriter = csv.writer(csvfile, delimiter=',',quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        spamwriter.writerow(['0','0','0','0','0','0'])
 
 
         

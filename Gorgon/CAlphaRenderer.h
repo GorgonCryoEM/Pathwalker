@@ -1898,12 +1898,14 @@ namespace wustl_mm {
 			hlt_a = ((double)col)/100.0;
 			cout << "hlt_a: " << hlt_a << endl;
 		}
+		
 
 		vector<PDBBond> CAlphaRenderer::getDeletedBonds() {
 			return bondsToDelete;
 		}
 
 		string CAlphaRenderer::getDeletedBondAtoms() {
+			/**
 			string deletedBondAtoms = "";
 			for(int i = 0; i < ix0s.size(); i++) {
 				//cout << atoms[ix0s[i]].GetPosition().X() << endl;
@@ -1914,19 +1916,49 @@ namespace wustl_mm {
 				deletedBondAtoms += ",";
 				deletedBondAtoms += std::to_string(atom0Ix.GetPosition().Y());
 				deletedBondAtoms += ",";
+				deletedBondAtoms += std::to_string(atom0Ix.GetPosition().Z());
+				deletedBondAtoms += ",";
 				deletedBondAtoms += std::to_string(ix1s[i]);
 				PDBAtom atom1Ix = atoms[ix1s[i]];
 				deletedBondAtoms += ",";
 				deletedBondAtoms += std::to_string(atom1Ix.GetPosition().X());
 				deletedBondAtoms += ",";
 				deletedBondAtoms += std::to_string(atom1Ix.GetPosition().Y());
+				deletedBondAtoms += ",";
+				deletedBondAtoms += std::to_string(atom1Ix.GetPosition().Z());
 				deletedBondAtoms += "\n";
 			}
+			**/
+
 			ofstream myfile;
-			myfile.open("noBondConstraints.csv");
-			myfile << deletedBondAtoms;
+			myfile.open("noBondConstraints");
+			//myfile.open("noBondConstraints.csv");
+			
+			string atomsToNotBond;
+				int atomIndex = 0;
+				unsigned int atom1;
+				unsigned int atom2;
+				for(AtomMapType::iterator it = atoms.begin(); it != atoms.end(); it++) {
+					if(it->second.GetSelected()) {
+						atomsToNotBond += std::to_string(it->second.GetResSeq());
+						if(atomIndex%2 == 0) {
+							atom1 = it->second.GetResSeq();
+							atomsToNotBond += " ";
+							//atomsToBond += ",";
+						}
+						else {
+							atom2 = it->second.GetResSeq();
+							//AddBond(PDBBond((unsigned long long)atom1, (unsigned long long)atom2, true));
+							atomsToNotBond += " ";
+							//atomsToBond += "\n";
+						}
+						atomIndex += 1;
+					}
+			
+		}
+		myfile << atomsToNotBond;
 			myfile.close();
-			return deletedBondAtoms;
+			return atomsToNotBond;
 		}
 
 		vector<unsigned long long> CAlphaRenderer::getDeletedBonds1Ix() {
@@ -1947,14 +1979,8 @@ namespace wustl_mm {
 		}
 
 		void CAlphaRenderer::addSelectedBonds() {
-			int count = 0;
-			for(AtomMapType::iterator it = atoms.begin(); it != atoms.end(); it++) {
-				if(it->second.GetSelected()) {
-					cout << it->second.GetResSeq() << endl;
-					count++;
-				}
-			}
-			if(count == 2) {
+
+			//if(count == 2) {
 				string atomsToBond;
 				int atomIndex = 0;
 				unsigned int atom1;
@@ -1962,25 +1988,23 @@ namespace wustl_mm {
 				for(AtomMapType::iterator it = atoms.begin(); it != atoms.end(); it++) {
 					if(it->second.GetSelected()) {
 						atomsToBond += std::to_string(it->second.GetResSeq());
-						atomsToBond += ",";
-						atomsToBond += std::to_string(it->second.GetPosition().X());
-						atomsToBond += ",";
-						atomsToBond += std::to_string(it->second.GetPosition().Y());
 						if(atomIndex%2 == 0) {
 							atom1 = it->second.GetResSeq();
-							atomsToBond += ",";
+							atomsToBond += " ";
 						}
 						else {
 							atom2 = it->second.GetResSeq();
 							AddBond(PDBBond((unsigned long long)atom1, (unsigned long long)atom2, true));
-							atomsToBond += "\n";
+							atomsToBond += " ";
+							//atomsToBond += "\n";
 						}
 						atomIndex += 1;
 					}
-				}
+				//}
 
 				ofstream myfile;
-				myfile.open("newBonds.csv", ios::app);
+				myfile.open("newBonds");
+				//myfile.open("newBonds", ios::app);
 				myfile << atomsToBond;
 				myfile.close();
 			}
@@ -1989,6 +2013,7 @@ namespace wustl_mm {
 
 
 	}
+
 }
 
 #endif

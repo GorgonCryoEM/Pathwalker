@@ -673,26 +673,6 @@ This function loads a SEQ file and creates a StructurePrediction object.
         self.main_chain.setSelection([], None, None, None)
         self.emitAtomSelectionUpdated(self.main_chain.getSelection())
 
-    def deleteSelectedBonds(self):
-        CAlphaRenderer.removeSelectedBonds(self.renderer)
-        self.emitAtomSelectionUpdated(self.main_chain.getSelection())
-
-    def printDeletedBondAtoms(self):
-        CAlphaRenderer.getDeletedBondAtoms(self.renderer)
-
-    def createSelectedBonds(self):
-        CAlphaRenderer.addSelectedBonds(self.renderer)
-        self.emitAtomSelectionUpdated(self.main_chain.getSelection())
-
-    def findAtom(self, point):
-        for i in range(CAlphaRenderer.getAtomCount(self.renderer)):
-            currentAtom = CAlphaRenderer.getAtom(self.renderer, i)
-            currentAtomPosition = currentAtom.getPosition()
-            print str(CAlphaRenderer.getAtomCount(self.renderer)) + "," + str(point[0])
-            if currentAtomPosition.x() == point[0] and currentAtomPosition.y() == point[1]:
-                return currentAtom
-        return CAlphaRenderer.getAtom(self.renderer, 0)
-
     def processElementClick(self, *argv):
         """
 In response to a click on a C-alpha element, this updates the selected
@@ -767,3 +747,24 @@ If a C-alpha model is loaded, this enables relevent actions.
         
     def emitAtomSelectionUpdated(self, selection):
         self.emit(QtCore.SIGNAL("atomSelectionUpdated(PyQt_PyObject)"), selection)
+
+    def deleteSelectedBonds(self):
+        CAlphaRenderer.removeSelectedBonds(self.renderer)
+        CAlphaRenderer.getDeletedBondAtoms(self.renderer)
+        self.emitAtomSelectionUpdated(self.main_chain.getSelection())
+
+    def printDeletedBondAtoms(self):
+        CAlphaRenderer.getDeletedBondAtoms(self.renderer)
+
+    def createSelectedBonds(self):
+        CAlphaRenderer.addSelectedBonds(self.renderer)
+        self.emitAtomSelectionUpdated(self.main_chain.getSelection())
+
+    def findAtom(self, point):
+        for i in range(CAlphaRenderer.getAtomCount(self.renderer)):
+            currentAtom = CAlphaRenderer.getAtom(self.renderer, i)
+            currentAtomPosition = currentAtom.getPosition()
+            print str(CAlphaRenderer.getAtomCount(self.renderer)) + "," + str(point[0])
+            if currentAtomPosition.x() == point[0] and currentAtomPosition.y() == point[1]:
+                return currentAtom
+        return CAlphaRenderer.getAtom(self.renderer, 0)

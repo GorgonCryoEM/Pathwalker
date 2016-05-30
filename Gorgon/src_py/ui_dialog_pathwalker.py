@@ -227,15 +227,15 @@ class Ui_DialogPathwalker(object):
         self.label_4.setText(_translate("DialogModelVisualization", "Processor 2", None))
         self.label_3.setText(_translate("DialogModelVisualization", "Processor 1", None))
         self.pushButton_7.setText(_translate("DialogModelVisualization", "Set C-Terminus", None))
-        self.label_12.setText(_translate("DialogModelVisualization", "Bonds to remove (Ctrl + left click to select multiple bonds):", None))
+        self.label_12.setText(_translate("DialogModelVisualization", "Bonds removed (Ctrl + left click multiple pseudoatoms):", None))
         self.lineEdit_13.setText(_translate("DialogModelVisualization", "bondToRemove", None))
         self.pushButton_8.setText(_translate("DialogModelVisualization", "Set N-Terminus", None))
         self.pushButton_5.setText(_translate("DialogModelVisualization", "Remove Selected Bonds", None))
         self.label_14.setText(_translate("DialogModelVisualization", "Set Termini (Select one pseudoatom):", None))
-        self.label_13.setText(_translate("DialogModelVisualization", "Bond to create (Ctrl + left click two pseudoatoms):", None))
+        self.label_13.setText(_translate("DialogModelVisualization", "Bonds created (Ctrl + left click multiple pseudoatoms):", None))
         self.pushButton_6.setText(_translate("DialogModelVisualization", "Create Bond", None))
         self.lineEdit_15.setText(_translate("DialogModelVisualization", "setTermini", None))
-        self.lineEdit_14.setText(_translate("DialogModelVisualization", "bondToCreate", None))
+        self.lineEdit_14.setText(_translate("DialogModelVisualization", "No bonds created yet", None))
 
 
 from colored_push_button import ColoredPushButton

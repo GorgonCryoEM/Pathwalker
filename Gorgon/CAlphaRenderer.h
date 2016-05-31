@@ -1967,6 +1967,7 @@ namespace wustl_mm {
 		}
 
 		void CAlphaRenderer::RemoveSelectedBonds() {
+			/**
 			for(int i = 0; i < bonds.size(); i++ ) {
 				if(bonds[i].GetSelected()) {
 					bondsToDelete.push_back(bonds[i]);
@@ -1977,6 +1978,47 @@ namespace wustl_mm {
 					DeleteBond(i);
 				}				
 			}
+			**/
+			ifstream infile("noBondConstraints");
+			if (infile.good()) 
+			{
+				string sLine;
+				getline(infile, sLine);
+				std::stringstream ss(sLine);
+				std::istream_iterator<std::string> begin(ss);
+				std::istream_iterator<std::string> end;
+				std::vector<std::string> strs(begin, end);
+				//std::vector<std::string> strs;
+				//split(sLine, strs,' ');
+				//boost::split(strs, sLine, boost::is_any_of("\t "));
+				std::vector<unsigned int> atomNums;
+				for(int i = 0; i < strs.size(); i++) {
+					unsigned int currentAtomNum = (unsigned int)std::stoi(strs[i]);
+					
+					atomNums.push_back(currentAtomNum);
+				}
+				std::vector<unsigned long long> atomHashes;
+				for(AtomMapType::iterator it = atoms.begin(); it != atoms.end(); it++) {
+					for(int i = 0; i < atomNums.size(); i++) {
+						unsigned int currentAtomNum = atomNums[i];
+						if(it->second.GetResSeq() == currentAtomNum) {
+							atomHashes.push_back(it->second.GetHashKey());
+						}
+					}
+				}
+				for(int i = 0; i < atomHashes.size()-1; i = i+2) {
+					int currentBondIndex = GetBondIndex(atomHashes[i], atomHashes[i+1]);
+					if (currentBondIndex != -1) {
+						DeleteBond(currentBondIndex);
+					}
+				}
+				//for(int i = 0; i < atomNums.size()-1; i++) {
+
+					//AddBond(PDBBond(GetAtom(atomNums[i])->GetHashKey(), GetAtom(atomNums[i+1])->GetHashKey(), true));
+				//}
+
+			}
+			infile.close();
 		}
 
 

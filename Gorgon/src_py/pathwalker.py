@@ -147,12 +147,15 @@ class Pathwalker(BaseDockWidget):
        self.app.viewers['calpha'].main_chain.printDeletedBonds()
            
   def deleteBonds(self):
-      #bondsDeleted = open('noBondConstraints', 'wb')
+      bondsDeleted = open('noBondConstraints', 'wb')
       selectedDeleted = self.app.viewers['calpha'].main_chain.getSelection()
       selectedDeleted = str(selectedDeleted)
       selectedDeleted = selectedDeleted.translate(None, '![@#]$,')
-      #bondsDeleted.write(str(selectedDeleted))
+      bondsDeleted.write(selectedDeleted)
+      bondsDeleted.close()
       self.ui.lineEdit_13.setText(str(selectedDeleted))
+      self.app.viewers['calpha'].renderer.removeSelectedBonds()
+      self.app.viewers['calpha'].emitModelChanged()
       #bondsDeleted2 = open('noBondConstraints', 'r')
       #for line in bondsDeleted2:
        # self.ui.lineEdit_13.setText(str(line))

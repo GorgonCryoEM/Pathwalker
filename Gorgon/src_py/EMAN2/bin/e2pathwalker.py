@@ -463,6 +463,9 @@ class PathWalker(object):
 		self.deletededges = self.read_deleted_bonds('noBondConstraints')
 		bondAtoms1 = []
 		bondAtoms2 = []
+		size = len(self.deletededges)
+		if size % 2 == 1:
+			size -= 1
 		for i in range(len(self.deletededges)):
 			if i % 2 == 0:
 				bondAtoms1.append(self.deletededges[i])
@@ -470,37 +473,34 @@ class PathWalker(object):
 				bondAtoms2.append(self.deletededges[i])
 		for i in range(len(bondAtoms1)):
 			print str(bondAtoms1[i])+","+str(bondAtoms2[i])
-
-			#self.distances[(bondAtoms1[i],bondAtoms2[i])]=100000
-			#self.weighted[(bondAtoms1[i],bondAtoms2[i])]=100000
-			#if self.itree[bondAtoms1[i]]:
-			
 			if bondAtoms2[i] in self.itree[bondAtoms1[i]] or bondAtoms1[i] in self.itree[bondAtoms1[i]]:
 				print "bond to delete"
 				self.itree[bondAtoms1[i]].discard(bondAtoms2[i])
 				self.itree[bondAtoms2[i]].discard(bondAtoms1[i])
-				if bondAtoms2[i] > bondAtoms1[i]:
+				self.weighted[(bondAtoms1[i],bondAtoms2[i])] = 100000
+				self.weighted[(bondAtoms2[i],bondAtoms1[i])] = 100000
+				#if bondAtoms2[i] > bondAtoms1[i]:
 
-					self.itree[bondAtoms1[i]].add(min(max(self.points),bondAtoms2[i]+1))
-					self.itree[min(max(self.points),bondAtoms2[i]+1)].add(bondAtoms1[i])
-					self.weighted[min(max(self.points),bondAtoms2[i]+1),bondAtoms1[i]] = 0
-					self.weighted[bondAtoms1[i], min(max(self.points),bondAtoms2[i]+1)] = 0
+				#	self.itree[bondAtoms1[i]].add(min(max(self.points),bondAtoms2[i]+1))
+				#	self.itree[min(max(self.points),bondAtoms2[i]+1)].add(bondAtoms1[i])
+				#	self.weighted[min(max(self.points),bondAtoms2[i]+1),bondAtoms1[i]] = 0
+				#	self.weighted[bondAtoms1[i], min(max(self.points),bondAtoms2[i]+1)] = 0
 
-					self.itree[bondAtoms2[i]].add(max(0,bondAtoms1[i]-1))
-					self.itree[max(0,bondAtoms1[i]-1)].add(bondAtoms2[i])
-					self.weighted[bondAtoms2[i], max(0,bondAtoms1[i]-1)] = 0
-					self.weighted[max(0,bondAtoms1[i]-1), bondAtoms2[i]] = 0
+				#	self.itree[bondAtoms2[i]].add(max(0,bondAtoms1[i]-1))
+				#	self.itree[max(0,bondAtoms1[i]-1)].add(bondAtoms2[i])
+				#	self.weighted[bondAtoms2[i], max(0,bondAtoms1[i]-1)] = 0
+				#	self.weighted[max(0,bondAtoms1[i]-1), bondAtoms2[i]] = 0
 
-				else:
-					self.itree[bondAtoms2[i]].add(min(max(self.points),bondAtoms1[i]+1))
-					self.itree[min(max(self.points),bondAtoms1[i]+1)].add(bondAtoms2[i])
-					self.weighted[min(max(self.points),bondAtoms1[i]+1),bondAtoms2[i]] = 0
-					self.weighted[bondAtoms2[i], min(max(self.points),bondAtoms1[i]+1)] = 0
+				#else:
+				#	self.itree[bondAtoms2[i]].add(min(max(self.points),bondAtoms1[i]+1))
+				#	self.itree[min(max(self.points),bondAtoms1[i]+1)].add(bondAtoms2[i])
+				#	self.weighted[min(max(self.points),bondAtoms1[i]+1),bondAtoms2[i]] = 0
+				#	self.weighted[bondAtoms2[i], min(max(self.points),bondAtoms1[i]+1)] = 0
 
-					self.itree[bondAtoms1[i]].add(max(0,bondAtoms2[i]-1))
-					self.itree[max(0,bondAtoms2[i]-1)].add(bondAtoms1[i])
-					self.weighted[bondAtoms1[i], max(0,bondAtoms2[i]-1)] = 0
-					self.weighted[max(0,bondAtoms2[i]-1), bondAtoms1[i]] = 0
+				#	self.itree[bondAtoms1[i]].add(max(0,bondAtoms2[i]-1))
+				#	self.itree[max(0,bondAtoms2[i]-1)].add(bondAtoms1[i])
+				#	self.weighted[bondAtoms1[i], max(0,bondAtoms2[i]-1)] = 0
+				#	self.weighted[max(0,bondAtoms2[i]-1), bondAtoms1[i]] = 0
 
 
 		print "Note: linking start/end: ", self.start, self.end

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>359</width>
-    <height>623</height>
+    <width>493</width>
+    <height>661</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -20,6 +20,55 @@
    <string>Visualization</string>
   </property>
   <layout class="QGridLayout">
+   <item row="11" column="0">
+    <widget class="QPushButton" name="pushButton_7">
+     <property name="text">
+      <string>Set selected pseudoatom as C-Terminus</string>
+     </property>
+    </widget>
+   </item>
+   <item row="12" column="0">
+    <widget class="QLabel" name="label_15">
+     <property name="text">
+      <string>Set N-Terminus:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="0">
+    <widget class="QLabel" name="label_14">
+     <property name="text">
+      <string>Set C-Terminus:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLineEdit" name="lineEdit_13">
+     <property name="text">
+      <string>bondToRemove</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0">
+    <widget class="QLabel" name="label_13">
+     <property name="text">
+      <string>Bond to create (Ctrl + left click two pseudoatoms):</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="0">
+    <widget class="QPushButton" name="pushButton_6">
+     <property name="text">
+      <string>Create Bond</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="0">
+    <widget class="QLineEdit" name="lineEdit_14">
+     <property name="text">
+      <string>bondToCreate</string>
+     </property>
+    </widget>
+   </item>
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="sizePolicy">
@@ -265,13 +314,6 @@
      </widget>
     </widget>
    </item>
-   <item row="11" column="0">
-    <widget class="QPushButton" name="pushButton_7">
-     <property name="text">
-      <string>Set C-Terminus</string>
-     </property>
-    </widget>
-   </item>
    <item row="1" column="0">
     <widget class="QLabel" name="label_12">
      <property name="text">
@@ -279,17 +321,10 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="0">
-    <widget class="QLineEdit" name="lineEdit_13">
-     <property name="text">
-      <string>bondToRemove</string>
-     </property>
-    </widget>
-   </item>
-   <item row="12" column="0">
+   <item row="14" column="0">
     <widget class="QPushButton" name="pushButton_8">
      <property name="text">
-      <string>Set N-Terminus</string>
+      <string>Set selected pseudoatom as N-Terminus</string>
      </property>
     </widget>
    </item>
@@ -300,40 +335,15 @@
      </property>
     </widget>
    </item>
-   <item row="9" column="0">
-    <widget class="QLabel" name="label_14">
-     <property name="text">
-      <string>Set Termini (Select one pseudoatom):</string>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="0">
-    <widget class="QLabel" name="label_13">
-     <property name="text">
-      <string>Bond to create (Ctrl + left click two pseudoatoms):</string>
-     </property>
-    </widget>
-   </item>
-   <item row="8" column="0">
-    <widget class="QPushButton" name="pushButton_6">
-     <property name="text">
-      <string>Create Bond</string>
-     </property>
-    </widget>
-   </item>
    <item row="10" column="0">
     <widget class="QLineEdit" name="lineEdit_15">
      <property name="text">
-      <string>setTermini</string>
+      <string/>
      </property>
     </widget>
    </item>
-   <item row="7" column="0">
-    <widget class="QLineEdit" name="lineEdit_14">
-     <property name="text">
-      <string>bondToCreate</string>
-     </property>
-    </widget>
+   <item row="13" column="0">
+    <widget class="QLineEdit" name="lineEdit_16"/>
    </item>
   </layout>
  </widget>

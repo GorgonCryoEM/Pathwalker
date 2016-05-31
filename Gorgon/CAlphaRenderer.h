@@ -105,7 +105,7 @@ namespace wustl_mm {
 		End Hermite Curve code
 		*/
 
-		class CAlphaRenderer : public Renderer{
+		class CAlphaRenderer : public Renderer {
 		public:
 			struct Secel{
 				vector<unsigned long long> atomHashes;
@@ -1570,6 +1570,7 @@ namespace wustl_mm {
 			sidechainBonds.erase(sidechainBonds.begin() + index);
 		}
 
+
 		Vector3DFloat CAlphaRenderer::Get3DCoordinates(int subsceneIndex, int ix0, int ix1, int ix2, int ix3, int ix4) {
 			Vector3DFloat position;
 			switch(subsceneIndex) {
@@ -1978,13 +1979,57 @@ namespace wustl_mm {
 			}
 		}
 
+
+
+
 		void CAlphaRenderer::addSelectedBonds() {
 
 			//if(count == 2) {
+			ifstream infile("newBonds");
+			if (infile.good()) 
+			{
+				string sLine;
+				getline(infile, sLine);
+				std::stringstream ss(sLine);
+				std::istream_iterator<std::string> begin(ss);
+				std::istream_iterator<std::string> end;
+				std::vector<std::string> strs(begin, end);
+				//std::vector<std::string> strs;
+				//split(sLine, strs,' ');
+				//boost::split(strs, sLine, boost::is_any_of("\t "));
+				std::vector<unsigned int> atomNums;
+				for(int i = 0; i < strs.size(); i++) {
+					unsigned int currentAtomNum = (unsigned int)std::stoi(strs[i]);
+					
+					atomNums.push_back(currentAtomNum);
+				}
+				std::vector<unsigned long long> atomHashes;
+				for(AtomMapType::iterator it = atoms.begin(); it != atoms.end(); it++) {
+					for(int i = 0; i < atomNums.size(); i++) {
+						unsigned int currentAtomNum = atomNums[i];
+						if(it->second.GetResSeq() == currentAtomNum) {
+							atomHashes.push_back(it->second.GetHashKey());
+						}
+					}
+				}
+				for(int i = 0; i < atomHashes.size()-1; i++) {
+					AddBond(PDBBond(atomHashes[i], atomHashes[i+1], true));
+				}
+				//for(int i = 0; i < atomNums.size()-1; i++) {
+
+					//AddBond(PDBBond(GetAtom(atomNums[i])->GetHashKey(), GetAtom(atomNums[i+1])->GetHashKey(), true));
+				//}
+
+			}
+			infile.close();
+			/**
 				string atomsToBond;
 				int atomIndex = 0;
 				unsigned int atom1;
 				unsigned int atom2;
+				for(int i = 0; i<atoms.size(); i++) {
+
+				}
 				for(AtomMapType::iterator it = atoms.begin(); it != atoms.end(); it++) {
 					if(it->second.GetSelected()) {
 						atomsToBond += std::to_string(it->second.GetResSeq());
@@ -2000,15 +2045,16 @@ namespace wustl_mm {
 						}
 						atomIndex += 1;
 					}
+					**/
 				//}
 
-				ofstream myfile;
-				myfile.open("newBonds");
+				//ofstream myfile;
+				//myfile.open("newBonds");
 				//myfile.open("newBonds", ios::app);
-				myfile << atomsToBond;
-				myfile.close();
+				//myfile << atomsToBond;
+				//myfile.close();
 			}
-		}
+		
 
 
 

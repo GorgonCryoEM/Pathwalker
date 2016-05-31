@@ -179,7 +179,6 @@ class Ui_DialogModelVisualization(object):
         self.lineEdit_15.setObjectName(_fromUtf8("lineEdit_15"))
         self.gridlayout.addWidget(self.lineEdit_15, 10, 0, 1, 1)
         self.lineEdit_16 = QtGui.QLineEdit(DialogModelVisualization)
-        self.lineEdit_16.setText(_fromUtf8(""))
         self.lineEdit_16.setObjectName(_fromUtf8("lineEdit_16"))
         self.gridlayout.addWidget(self.lineEdit_16, 13, 0, 1, 1)
 

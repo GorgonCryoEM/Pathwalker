@@ -2,13 +2,14 @@ import sys
 import os
 import subprocess
 import csv
-#import re
+import ctypes
 from PyQt4 import QtCore, QtGui
 from ui_dialog_pathwalker import Ui_DialogPathwalker
 from seq_model.Chain import Chain
 from base_dock_widget import BaseDockWidget
 from base_viewer import *
 from libpyGORGON import VolumeRenderer
+from libpyGORGON import PDBBond
 from volume_viewer import *
 from calpha_choose_chain_to_load_form import CAlphaChooseChainToLoadForm
 from seq_model.Chain import Chain
@@ -157,12 +158,24 @@ class Pathwalker(BaseDockWidget):
        # self.ui.lineEdit_13.setText(str(line))
 
   def createBonds(self):
-      #bondsCreated = open('newBonds', 'wb')
+      bondsCreated = open('newBonds', 'wb')
       selectedCreated = self.app.viewers['calpha'].main_chain.getSelection()
       selectedCreated = str(selectedCreated)
       selectedCreated = selectedCreated.translate(None, '![@#]$,')
-      #bondsCreated.write(str(selectedCreated))
+
+      
+      bondsCreated.write(selectedCreated)
+      bondsCreated.close()
       self.ui.lineEdit_14.setText(str(selectedCreated))
+
+      self.app.viewers['calpha'].renderer.addSelectedBonds()
+      self.app.viewers['calpha'].emitModelChanged() 
+      #self.app.viewers['calpha'].emitModelLoaded() 
+      
+      
+      
+      
+
       #self.app.viewers['calpha'].createSelectedBonds()
       #bondsDeleted = open('newBonds', 'r')
       #for line in bondsDeleted:

@@ -212,8 +212,8 @@ namespace wustl_mm {
 
 			string getDeletedBondAtoms();
 			vector<unsigned long long> getDeletedBonds1Ix();
-			void RemoveSelectedBonds();
-			void addSelectedBonds();
+			void RemoveSelectedBonds(string nobonds);
+			void addSelectedBonds(string newBonds);
 		private:
 			void DrawBackboneModel(int subSceneIndex, bool selectEnabled);
 			void DrawRibbonModel(int subSceneIndex, bool selectEnabled);
@@ -1966,7 +1966,7 @@ namespace wustl_mm {
 			return ix1s;
 		}
 
-		void CAlphaRenderer::RemoveSelectedBonds() {
+		void CAlphaRenderer::RemoveSelectedBonds(string nobonds) {
 			/**
 			for(int i = 0; i < bonds.size(); i++ ) {
 				if(bonds[i].GetSelected()) {
@@ -1979,11 +1979,11 @@ namespace wustl_mm {
 				}				
 			}
 			**/
-			ifstream infile("noBondConstraints");
-			if (infile.good()) 
-			{
-				string sLine;
-				getline(infile, sLine);
+			//ifstream infile("noBondConstraints");
+			//if (infile.good()) 
+			//{
+				string sLine = nobonds;
+				//getline(infile, sLine);
 				std::stringstream ss(sLine);
 				std::istream_iterator<std::string> begin(ss);
 				std::istream_iterator<std::string> end;
@@ -2017,21 +2017,21 @@ namespace wustl_mm {
 					//AddBond(PDBBond(GetAtom(atomNums[i])->GetHashKey(), GetAtom(atomNums[i+1])->GetHashKey(), true));
 				//}
 
-			}
-			infile.close();
+			//}
+			//infile.close();
 		}
 
 
 
 
-		void CAlphaRenderer::addSelectedBonds() {
+		void CAlphaRenderer::addSelectedBonds(string newBonds) {
 
 			//if(count == 2) {
-			ifstream infile("newBonds");
-			if (infile.good()) 
-			{
-				string sLine;
-				getline(infile, sLine);
+			//ifstream infile("newBonds");
+			//if (infile.good()) 
+			//{
+				string sLine = newBonds;
+				//getline(infile, sLine);
 				std::stringstream ss(sLine);
 				std::istream_iterator<std::string> begin(ss);
 				std::istream_iterator<std::string> end;
@@ -2062,8 +2062,8 @@ namespace wustl_mm {
 					//AddBond(PDBBond(GetAtom(atomNums[i])->GetHashKey(), GetAtom(atomNums[i+1])->GetHashKey(), true));
 				//}
 
-			}
-			infile.close();
+			//}
+			//infile.close();
 			/**
 				string atomsToBond;
 				int atomIndex = 0;

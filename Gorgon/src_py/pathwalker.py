@@ -24,6 +24,7 @@ class Pathwalker(BaseDockWidget):
     self.app = main
     self.renderer = VolumeRenderer()
     self.volumeName = "volume name"
+    self.nobonds = ""
     self.createUi()
     self.pathWalkerMode = True
     self.connect(self.ui.preprocessPushButton, QtCore.SIGNAL("clicked()"), self.preprocessButtonPress)
@@ -75,26 +76,29 @@ class Pathwalker(BaseDockWidget):
       mapweight = "--mapweight="+str(self.ui.lineEdit_12.text())
       start = "--start="+str(self.ui.lineEdit_15.text())
       end = "--end="+str(self.ui.lineEdit_16.text())
-      bondsDeleted = open('noBondConstraints', 'wb')
-      bondsDeleted.write(str(self.ui.lineEdit_13.text()))
-      bondsCreated = open('newBonds', 'wb')
-      bondsCreated.write(str(self.ui.lineEdit_14.text()))
-      bondsDeleted.close()
-      bondsCreated.close()
+      #bondsDeleted = open('noBondConstraints', 'wb')
+      #bondsDeleted.write(str(self.ui.lineEdit_13.text()))
+      #self.nobonds = str(self.ui.lineEdit_13.text())
+      noBonds = "--nobonds="+str(self.ui.lineEdit_13.text())
+      newBonds = "--newbonds="+str(self.ui.lineEdit_14.text())
+      #bondsCreated = open('newBonds', 'wb')
+      #bondsCreated.write(str(self.ui.lineEdit_14.text()))
+      #bondsDeleted.close()
+      #bondsCreated.close()
       #if not os.path.isfile("newBonds"):
         #newFile = open('newBonds','wb')
       #if not os.path.isfile("noBondConstraints"):
         #newFile = open('noBondConstraints','wb')
       if start == "--start=":
         if end == "--end=":  
-          subprocess.call(['python','EMAN2/bin/e2pathwalker.py','pseudoatoms.pdb', '--mapfile=EMAN2/bin/map.mrc','--output=path0.pdb','--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,"--edgefile=newBonds"])
+          subprocess.call(['python','EMAN2/bin/e2pathwalker.py','pseudoatoms.pdb', '--mapfile=EMAN2/bin/map.mrc','--output=path0.pdb','--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,'--edgefile=newBonds',noBonds,newBonds])
         else:
-          subprocess.call(['python','EMAN2/bin/e2pathwalker.py','pseudoatoms.pdb', '--mapfile=EMAN2/bin/map.mrc','--output=path0.pdb','--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,"--edgefile=newBonds",end])
+          subprocess.call(['python','EMAN2/bin/e2pathwalker.py','pseudoatoms.pdb', '--mapfile=EMAN2/bin/map.mrc','--output=path0.pdb','--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,"--edgefile=newBonds",end,noBonds,newBonds])
       else:
         if end == "--end=":
-          subprocess.call(['python','EMAN2/bin/e2pathwalker.py','pseudoatoms.pdb', '--mapfile=EMAN2/bin/map.mrc','--output=path0.pdb','--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,"--edgefile=newBonds",start])
+          subprocess.call(['python','EMAN2/bin/e2pathwalker.py','pseudoatoms.pdb', '--mapfile=EMAN2/bin/map.mrc','--output=path0.pdb','--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,"--edgefile=newBonds",start,noBonds,newBonds])
         else:
-          subprocess.call(['python','EMAN2/bin/e2pathwalker.py','pseudoatoms.pdb', '--mapfile=EMAN2/bin/map.mrc','--output=path0.pdb','--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,"--edgefile=newBonds",start,end])
+          subprocess.call(['python','EMAN2/bin/e2pathwalker.py','pseudoatoms.pdb', '--mapfile=EMAN2/bin/map.mrc','--output=path0.pdb','--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,"--edgefile=newBonds",start,end,noBonds,newBonds])
       self.generateAtoms("path0.pdb")
       
 
@@ -147,32 +151,35 @@ class Pathwalker(BaseDockWidget):
        self.app.viewers['calpha'].main_chain.printDeletedBonds()
            
   def deleteBonds(self):
-      bondsDeleted = open('noBondConstraints', 'wb')
+      #bondsDeleted = open('noBondConstraints', 'wb')
       selectedDeleted = self.app.viewers['calpha'].main_chain.getSelection()
       selectedDeleted = str(selectedDeleted)
       selectedDeleted = selectedDeleted.translate(None, '![@#]$,')
-      bondsDeleted.write(selectedDeleted)
-      bondsDeleted.close()
+      #bondsDeleted.write(selectedDeleted)
+      #bondsDeleted.close()
       self.ui.lineEdit_13.setText(str(selectedDeleted))
-      self.app.viewers['calpha'].renderer.removeSelectedBonds()
-      self.app.viewers['calpha'].emitModelChanged()
+      self.nobonds = selectedDeleted
+      if self.nobonds:
+        self.app.viewers['calpha'].renderer.removeSelectedBonds(self.nobonds)
+        self.app.viewers['calpha'].emitModelChanged()
       #bondsDeleted2 = open('noBondConstraints', 'r')
       #for line in bondsDeleted2:
        # self.ui.lineEdit_13.setText(str(line))
 
   def createBonds(self):
-      bondsCreated = open('newBonds', 'wb')
+      #bondsCreated = open('newBonds', 'wb')
       selectedCreated = self.app.viewers['calpha'].main_chain.getSelection()
       selectedCreated = str(selectedCreated)
       selectedCreated = selectedCreated.translate(None, '![@#]$,')
 
       
-      bondsCreated.write(selectedCreated)
-      bondsCreated.close()
+      #bondsCreated.write(selectedCreated)
+      #bondsCreated.close()
       self.ui.lineEdit_14.setText(str(selectedCreated))
-
-      self.app.viewers['calpha'].renderer.addSelectedBonds()
-      self.app.viewers['calpha'].emitModelChanged() 
+      self.newBonds = selectedCreated
+      if self.newBonds:
+        self.app.viewers['calpha'].renderer.addSelectedBonds(self.newBonds)
+        self.app.viewers['calpha'].emitModelChanged() 
       #self.app.viewers['calpha'].emitModelLoaded() 
       
       

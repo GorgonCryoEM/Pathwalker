@@ -202,7 +202,7 @@ def write_pdbs(filename, paths, points=None, bfactors=None, tree=None):
 
 
 class PathWalker(object):
-	def __init__(self, filename=None, outfile=None, start=None, end=None, edgefile=None, edges=None, dmin=2.0, dmax=5.0, average=3.78, atomtype='CA', chain=None, noise=0, solver=False, json=True, overwrite=False, mrcfile=None,  mrcweight=1000, mapthresh=0, subunit=1):
+	def __init__(self, filename=None, outfile=None, start=None, end=None, edgefile=None, edges=None, dmin=2.0, dmax=5.0, average=3.78, atomtype='CA', chain=None, noise=0, solver=False, json=True, overwrite=False, mrcfile=None,  mrcweight=1000, mapthresh=0, subunit=1, nobonds=None, newbonds=None):
 
 		# Run parameters
 		self.renderer = CAlphaRenderer()
@@ -219,6 +219,9 @@ class PathWalker(object):
 		self.json = json
 		self.mrcfile=mrcfile
 		self.mrcweight=mrcweight
+		self.nobonds = nobonds
+		self.newbonds = newbonds
+		print self.nobonds
 		if self.mrcfile:
 			self.mrc=EMData(mrcfile)
 			self.apix_x=self.mrc["apix_x"]
@@ -251,181 +254,22 @@ class PathWalker(object):
 		for i in self.points.keys():
 			self.itree[i] = set()
 		
-		'''
-		pseudoatoms0x = []
-		pseudoatoms0y = []
-		pseudoatoms0z = []
-		pseudoatoms1x = []
-		pseudoatoms1y = []
-		pseudoatoms1z = []
-		with open('noBondConstraints.csv','rb') as csvfile:
-			reader = csv.reader(csvfile)
-			for row in reader:
-				pseudoatoms0x.append(row[1])
-				pseudoatoms0y.append(row[2])
-				pseudoatoms0z.append(row[3])
-				pseudoatoms1x.append(row[5])
-				pseudoatoms1y.append(row[6])
-				pseudoatoms1z.append(row[7])
-
-		csvfile.close()
-		
-		pseudoatoms0xNew = []
-		pseudoatoms0yNew = []
-		pseudoatoms0zNew = []
-		pseudoatoms1xNew = []
-		pseudoatoms1yNew = []
-		pseudoatoms1zNew = []
-		newBondId1 = []
-		newBondId2 = []
-		with open('newBonds.csv','rb') as csvfileNewBonds:
-			reader = csv.reader(csvfileNewBonds)
-			for row in reader:
-				pseudoatoms0xNew.append(row[1])
-				pseudoatoms0yNew.append(row[2])
-				pseudoatoms0zNew.append(row[3])
-				pseudoatoms1xNew.append(row[5])
-				pseudoatoms1yNew.append(row[6])
-				pseudoatoms1zNew.append(row[7])
-				newBondId1.append(row[0])
-				newBondId2.append(row[4])
-
-		csvfileNewBonds.close()
-		'''
 
 		
 		for count1, point1 in self.points.items():
 			for count2, point2 in self.points.items():
-				'''
-				point1X = "{0:.2f}".format(round(float(point1[0]),3))
-				point1Y = "{0:.2f}".format(round(float(point1[1]),3))
-				point1Z = "{0:.2f}".format(round(float(point1[2]),3))
-
-				point2X = "{0:.2f}".format(round(float(point2[0]),3))
-				point2Y = "{0:.2f}".format(round(float(point2[1]),3))
-				point2Z = "{0:.2f}".format(round(float(point2[2]),3))
-				'''
 
 				d, w = self.calcweight(point1, point2)
 				self.distances[(count1, count2)] = d
 				self.weighted[(count1, count2)] = w
-				'''
-				
-				for i in range(len(pseudoatoms0x)):
-					currentAtomX = "{0:.2f}".format(round(float(pseudoatoms0x[i]),3))
-					currentAtomY = "{0:.2f}".format(round(float(pseudoatoms0y[i]),3))
-					currentAtomZ = "{0:.2f}".format(round(float(pseudoatoms0z[i]),3))
-
-					otherAtomX = "{0:.2f}".format(round(float(pseudoatoms1x[i]),3))
-					otherAtomY = "{0:.2f}".format(round(float(pseudoatoms1y[i]),3))
-					otherAtomZ = "{0:.2f}".format(round(float(pseudoatoms1y[i]),3))
-
-					if str(currentAtomX)==str(point1X) and str(currentAtomY)==str(point1Y) and str(currentAtomZ)==str(point1Z):
-						if str(otherAtomX)==str(point2X) and str(otherAtomY)==str(point2Y) and str(otherAtomZ)==str(point2Z):
-							d=1000000
-							w=0
-							self.distances[(count1, count2)] = d
-							self.weighted[(count1, count2)] = w
-
-					if str(otherAtomX)==str(point2X) and str(otherAtomY)==str(point2Y) and str(otherAtomZ)==str(point2Z):
-						if str(currentAtomX)==str(point1X) and str(currentAtomY)==str(point1Y) and str(currentAtomZ)==str(point1Z):
-							d=1000000
-							w=0
-							self.distances[(count1, count2)] = d
-							self.weighted[(count1, count2)] = w
-
-					if str(currentAtomX)==str(point2X) and str(currentAtomY)==str(point2Y) and str(currentAtomZ)==str(point2Z):
-						if str(otherAtomX)==str(point1X) and str(otherAtomY)==str(point1Y) and str(otherAtomZ)==str(point1Z):
-							d=1000000
-							w=0
-							self.distances[(count1, count2)] = d
-							self.weighted[(count1, count2)] = w
-
-					if str(otherAtomX)==str(point1X) and str(otherAtomY)==str(point1Y) and str(otherAtomZ)==str(point1Z):
-						if str(currentAtomX)==str(point2X) and str(currentAtomY)==str(point2Y) and str(currentAtomZ)==str(point2Z):
-							d=1000000
-							w=0
-							self.distances[(count1, count2)] = d
-							self.weighted[(count1, count2)] = w
-				
-				for i in range(len(pseudoatoms0xNew)):
-					currentAtomXNew = "{0:.2f}".format(round(float(pseudoatoms0xNew[i]),3))
-					currentAtomYNew = "{0:.2f}".format(round(float(pseudoatoms0yNew[i]),3))
-					currentAtomZNew = "{0:.2f}".format(round(float(pseudoatoms0zNew[i]),3))
-
-					otherAtomXNew = "{0:.2f}".format(round(float(pseudoatoms1xNew[i]),3))
-					otherAtomYNew = "{0:.2f}".format(round(float(pseudoatoms1yNew[i]),3))
-					otherAtomZNew = "{0:.2f}".format(round(float(pseudoatoms1zNew[i]),3))
-					#print str(currentAtomXNew)+","+str(currentAtomYNew)+","+str(currentAtomZNew)+","+str(otherAtomXNew)+","+str(otherAtomYNew)+","+str(otherAtomZNew)+","+str(point1X)+","+str(point1Y)+","+str(point1Z)
-
-					if str(currentAtomXNew)==str(point1X) and str(currentAtomYNew)==str(point1Y) and str(currentAtomZNew)==str(point1Z):
-						if str(otherAtomXNew)==str(point2X) and str(otherAtomYNew)==str(point2Y) and str(otherAtomZNew)==str(point2Z):
-							d=3.78
-							w=1000000
-							self.distances[(count1, count2)] = d
-							self.weighted[(count1, count2)] = w
-							#print "create bond?"
-
-					if str(otherAtomXNew)==str(point2X) and str(otherAtomYNew)==str(point2Y) and str(otherAtomZNew)==str(point2Z):
-						if str(currentAtomXNew)==str(point1X) and str(currentAtomYNew)==str(point1Y) and str(currentAtomZNew)==str(point1Z):
-							d=3.78
-							w=1000000
-							self.distances[(count1, count2)] = d
-							self.weighted[(count1, count2)] = w
-							#print "create bond?"
-
-					if str(currentAtomXNew)==str(point2X) and str(currentAtomYNew)==str(point2Y) and str(currentAtomZNew)==str(point2Z):
-						if str(otherAtomXNew)==str(point1X) and str(otherAtomYNew)==str(point1Y) and str(otherAtomZNew)==str(point1Z):
-							d=3.78
-							w=1000000
-							self.distances[(count1, count2)] = d
-							self.weighted[(count1, count2)] = w
-							#print "create bond?"
-
-					if str(otherAtomXNew)==str(point1X) and str(otherAtomYNew)==str(point1Y) and str(otherAtomZNew)==str(point1Z):
-						if str(currentAtomXNew)==str(point2X) and str(currentAtomYNew)==str(point2Y) and str(currentAtomZNew)==str(point2Z):
-							d=3.78
-							w=1000000
-							self.distances[(count1, count2)] = d
-							self.weighted[(count1, count2)] = w
-							#print "create bond?"
-							
-				
-				for i in range(len(newBondId1)):
-					id1 = newBondId1[i]
-					id2 = newBondId2[i]
-					print str(id1)+","+str(id2)+","+str(count1)+","+str(count2)
-					if str(count1) == str(id1):
-						if str(count2) == str(id2):
-							self.distances[(count1, count2)] == 3.78
-							self.weighted[(count1, count2)] = 1000000
-					if str(count1) == str(id2):
-						if str(count2) == str(id1):
-							self.distances[(count1, count2)] == 3.78
-							self.weighted[(count1, count2)] = 1000000
-
-					if str(count2) == str(id2):
-						if str(count1) == str(id1):
-							self.distances[(count1, count2)] == 3.78
-							self.weighted[(count1, count2)] = 1000000
-
-					if str(count2) == str(id1):
-						if str(count1) == str(id2):
-							self.distances[(count1, count2)] == 3.78
-							self.weighted[(count1, count2)] = 1000000
-				if self.distances[(count1, count2)] == 3.78:
-					print str(count1)+","+str(count2)
-				
-				if self.distances[(count1, count2)] == 3.78:
-					print str(count1)+","+str(count2)
-				'''
 				if self.cutoff(d):
 					self.itree[count1].add(count2)
 
 			
 
 		# Read an edge fragment file... 1 string of points per line, separated space
-		self.fixededges = self.read_fixed(edgefile)
+		#self.fixededges = self.read_fixed(edgefile)
+		self.fixededges = self.read_new_bonds()
 		
 		# ... add any additional edges, and/or start+end
 		if edges:
@@ -460,13 +304,23 @@ class PathWalker(object):
 			self.start=id1
 			self.end=id2
 		
-		self.deletededges = self.read_deleted_bonds('noBondConstraints')
+		deletedBonds = self.read_no_bonds()
+		self.deletededges = []
+		for num in deletedBonds:
+			self.deletededges.append(int(num))
+		for num in self.deletededges:
+			print num
 		bondAtoms1 = []
 		bondAtoms2 = []
 		size = len(self.deletededges)
+		#for i in range(size-1):
+		#	self.itree[self.deletededges[i]].discard(self.deletededges[i+1])
+		#	self.itree[self.deletededges[i+1]].discard(self.deletededges[i])
+		#	self.weighted[self.deletededges[i]] = 100000
+		#	self.weighted[self.deletededges[i+1]] = 100000
 		if size % 2 == 1:
 			size -= 1
-		for i in range(len(self.deletededges)):
+		for i in range(size):
 			if i % 2 == 0:
 				bondAtoms1.append(self.deletededges[i])
 			else:
@@ -479,28 +333,6 @@ class PathWalker(object):
 				self.itree[bondAtoms2[i]].discard(bondAtoms1[i])
 				self.weighted[(bondAtoms1[i],bondAtoms2[i])] = 100000
 				self.weighted[(bondAtoms2[i],bondAtoms1[i])] = 100000
-				#if bondAtoms2[i] > bondAtoms1[i]:
-
-				#	self.itree[bondAtoms1[i]].add(min(max(self.points),bondAtoms2[i]+1))
-				#	self.itree[min(max(self.points),bondAtoms2[i]+1)].add(bondAtoms1[i])
-				#	self.weighted[min(max(self.points),bondAtoms2[i]+1),bondAtoms1[i]] = 0
-				#	self.weighted[bondAtoms1[i], min(max(self.points),bondAtoms2[i]+1)] = 0
-
-				#	self.itree[bondAtoms2[i]].add(max(0,bondAtoms1[i]-1))
-				#	self.itree[max(0,bondAtoms1[i]-1)].add(bondAtoms2[i])
-				#	self.weighted[bondAtoms2[i], max(0,bondAtoms1[i]-1)] = 0
-				#	self.weighted[max(0,bondAtoms1[i]-1), bondAtoms2[i]] = 0
-
-				#else:
-				#	self.itree[bondAtoms2[i]].add(min(max(self.points),bondAtoms1[i]+1))
-				#	self.itree[min(max(self.points),bondAtoms1[i]+1)].add(bondAtoms2[i])
-				#	self.weighted[min(max(self.points),bondAtoms1[i]+1),bondAtoms2[i]] = 0
-				#	self.weighted[bondAtoms2[i], min(max(self.points),bondAtoms1[i]+1)] = 0
-
-				#	self.itree[bondAtoms1[i]].add(max(0,bondAtoms2[i]-1))
-				#	self.itree[max(0,bondAtoms2[i]-1)].add(bondAtoms1[i])
-				#	self.weighted[bondAtoms1[i], max(0,bondAtoms2[i]-1)] = 0
-				#	self.weighted[max(0,bondAtoms2[i]-1), bondAtoms1[i]] = 0
 
 
 		print "Note: linking start/end: ", self.start, self.end
@@ -597,7 +429,14 @@ class PathWalker(object):
 			if self.json:
 				self.write_json(ret)
 		
-		
+	
+	def read_new_bonds(self):
+		newBonds = self.newbonds.split()
+		fixededges = []
+		for i in range(len(newBonds)-1):
+			fixededges.append((int(newBonds[i]),int(newBonds[i+1])))
+		return fixededges
+
 
 	
 	def read_fixed(self, edgefile):
@@ -630,7 +469,10 @@ class PathWalker(object):
 				fixededges.append(fragment[i])
 		return fixededges
 	
-	
+	def read_no_bonds(self):
+		if not self.nobonds:
+			return []
+		return self.nobonds.split()
 	
 	def get_json(self):
 		keys = [
@@ -1197,7 +1039,8 @@ def main():
 	parser.add_argument("--verbose", "-v", dest="verbose", action="store", metavar="n",type=int, default=0, help='verbose level [0-9], higher number means higher level of verboseness')
 	parser.add_argument("--ppid", type=int, help="Set the PID of the parent process, used for cross platform PPID",default=-1)
 	parser.add_argument("--subunit", type=int, help="Number of subunits.",default=1)
-
+	parser.add_argument("--nobonds", type=str,help="Comma separated list of bonds to prevent", default=None)
+	parser.add_argument("--newbonds", type=str,help="Comma separated list of bonds to create", default=None)
 	(options, args) = parser.parse_args()
 
 	if len(args) == 1:
@@ -1226,6 +1069,8 @@ def main():
 			mrcweight=options.mapweight,
 			mapthresh=options.mapthresh,
 			subunit=options.subunit,
+			nobonds=options.nobonds,
+			newbonds=options.newbonds,
 		)
 		pw.run()
 

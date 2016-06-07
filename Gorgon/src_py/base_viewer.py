@@ -36,7 +36,8 @@ class BaseViewer(QtOpenGL.QGLWidget):
         self.rotation = self.identityMatrix()
         self.connect(self, QtCore.SIGNAL("modelChanged()"), self.modelChanged) 
         self.connect(self, QtCore.SIGNAL("modelLoaded()"), self.modelChanged) 
-        self.connect(self, QtCore.SIGNAL("modelUnloaded()"), self.modelChanged) 
+        self.connect(self, QtCore.SIGNAL("modelUnloaded()"), self.modelChanged)
+        self.connect(self, QtCore.SIGNAL("modelPathwalker()"), self.modelChangedPathwalker) 
         self.connect(self.app.themes, QtCore.SIGNAL("themeChanged()"), self.themeChanged)           
         self.glLists = []
         self.showBox = False
@@ -373,6 +374,37 @@ class BaseViewer(QtOpenGL.QGLWidget):
     def getDrawVisibility(self):
         return [self.modelVisible, self.model2Visible, self.model3Visible]
         
+    def modelChangedPathwalker(self):
+        self.updateActionsAndMenus()
+        for list in self.glLists:
+            glDeleteLists(list,1)
+        self.glLists = []
+            
+        visibility = self.getDrawVisibility()
+        colors = self.getDrawColors()
+        
+        glPushAttrib(GL_LIGHTING_BIT | GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
+                         
+        self.extraDrawingRoutines()
+        
+        if(self.loaded):
+            for i in range(3):
+                list = glGenLists(1)
+                glNewList(list, GL_COMPILE)
+                self.glLists.append(list)
+
+                if(colors[i].alpha() < 255):
+                    glDepthFunc(GL_LESS)        
+                    glColorMask(False, False, False, False)
+                    self.renderer.drawBackboneModelPathwalker(i, False)
+                    glDepthFunc(GL_LEQUAL)
+                    glColorMask(True, True, True, True) 
+                    self.renderer.drawBackboneModelPathwalker(i, self.selectEnabled or self.mouseMoveEnabled)
+                else:
+                    self.renderer.drawBackboneModelPathwalker(i, self.selectEnabled or self.mouseMoveEnabled)                    
+                glEndList()         
+                                    
+        glPopAttrib()
 
     def modelChanged(self):
         self.updateActionsAndMenus()
@@ -583,6 +615,9 @@ class BaseViewer(QtOpenGL.QGLWidget):
         
     def emitModelLoaded(self):
         self.emit(QtCore.SIGNAL("modelLoaded()"))
+
+    def emitModelPathwalker(self):
+        self.emit(QtCore.SIGNAL("modelPathwalker()"))
 
     def emitModelUnloaded(self):
         self.emit(QtCore.SIGNAL("modelUnloaded()"))

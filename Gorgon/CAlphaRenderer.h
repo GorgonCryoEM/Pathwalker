@@ -49,6 +49,7 @@ namespace wustl_mm {
 		const int CALPHA_DISPLAY_STYLE_BACKBONE = 3;
 		const int CALPHA_DISPLAY_STYLE_RIBBON = 4;
 		const int CALPHA_DISPLAY_STYLE_SIDE_CHAIN = 5;
+		const int CALPHA_DISPLAY_STYLE_BACKBONE_PATHWALKER = 6;
 
 		/**
 		Begin Hermite Curve code, to be moved into another file after testing
@@ -214,8 +215,10 @@ namespace wustl_mm {
 			vector<unsigned long long> getDeletedBonds1Ix();
 			void RemoveSelectedBonds(string nobonds);
 			void addSelectedBonds(string newBonds);
+			void DrawBackboneModelPathwalker(int subSceneIndex, bool selectEnabled);
 		private:
 			void DrawBackboneModel(int subSceneIndex, bool selectEnabled);
+			
 			void DrawRibbonModel(int subSceneIndex, bool selectEnabled);
 			void DrawSideChainModel(int subSceneIndex, bool selectEnabled);
 		private:
@@ -320,6 +323,84 @@ namespace wustl_mm {
 		}
 
 		void CAlphaRenderer::DrawBackboneModel(int subSceneIndex, bool selectEnabled) {
+			GLfloat emissionColor[4] = {1.0, 1.0, 1.0, 1.0};
+
+			if(subSceneIndex == 0) { // Drawing Atoms
+				if(selectEnabled) {
+					atomHashKeys.clear();
+					glPushName(0);
+					glPushName(0);
+				}
+				for (AtomMapType::iterator it = atoms.begin(); it != atoms.end(); it++) {
+					if(it->second.GetName() == "CA") {
+						glPushAttrib(GL_LIGHTING_BIT);
+						if(it->second.GetSelected()) {
+							glMaterialfv(GL_FRONT, GL_EMISSION, emissionColor);
+							glMaterialfv(GL_BACK, GL_EMISSION, emissionColor);
+						} else {
+							OpenGLUtils::SetColor(it->second.GetColorR(), it->second.GetColorG(), it->second.GetColorB(), it->second.GetColorA());
+						}
+
+						if(selectEnabled){
+							//TODO: possibly implement mouse picking using ray intersection
+							atomHashKeys.push_back(it->first); // adding the atom hash key as an element
+							glLoadName(static_cast<GLuint>( atomHashKeys.size() - 1)); // the index of the element just added
+						}
+						if(it->second.GetVisible()) {
+							DrawSphere(it->second.GetPosition(), it->second.GetAtomRadius() * 0.3);
+						}
+
+						glPopAttrib();
+					}
+
+				}
+				if(selectEnabled) {
+					glPopName();
+					glPopName();
+				}
+			} else if(subSceneIndex == 1) { // Drawing Bonds
+				if(selectEnabled) {
+					glPushName(1);
+					glPushName(0);
+				}
+				for(int i=0; i < (int)bonds.size(); i++) {
+					glPushAttrib(GL_LIGHTING_BIT);
+					if(bonds[i].GetSelected()) {
+						glMaterialfv(GL_FRONT, GL_EMISSION, emissionColor);
+						glMaterialfv(GL_BACK, GL_EMISSION, emissionColor);
+					}
+
+					if(selectEnabled){
+						glLoadName(i);
+					}
+					float length = (atoms[bonds[i].GetAtom0Ix()].GetPosition() - atoms[bonds[i].GetAtom1Ix()].GetPosition()).Length();
+					if(length > 4.2) {
+						OpenGLUtils::SetColor(1.0, 0, 0, 1.0);
+					}
+
+					if(length < 3.3) {
+						OpenGLUtils::SetColor(0, 0, 1.0, 1.0);
+					}
+
+					if(atoms[bonds[i].GetAtom0Ix()].GetVisible() && atoms[bonds[i].GetAtom1Ix()].GetVisible()) {
+						DrawCylinder(atoms[bonds[i].GetAtom0Ix()].GetPosition(), atoms[bonds[i].GetAtom1Ix()].GetPosition(), 0.1, 10, 2);
+					}
+					glPopAttrib();
+				}
+				if(selectEnabled) {
+					glPopName();
+					glPopName();
+				}
+			} else if(subSceneIndex == 2) { // Drawing spheres to cover up the cylinder edges				
+				for(AtomMapType::iterator i = atoms.begin(); i != atoms.end(); i++) {
+					if(i->second.GetName() == "CA") {
+						DrawSphere(i->second.GetPosition(), 0.1);
+					}
+				}
+			}
+		}
+
+		void CAlphaRenderer::DrawBackboneModelPathwalker(int subSceneIndex, bool selectEnabled) {
 			GLfloat emissionColor[4] = {1.0, 1.0, 1.0, 1.0};
 
 			if(subSceneIndex == 0) { // Drawing Atoms
@@ -1108,6 +1189,9 @@ namespace wustl_mm {
 					break;
 				case CALPHA_DISPLAY_STYLE_SIDE_CHAIN: // Side chains
 					DrawSideChainModel(subSceneIndex, selectEnabled);
+					break;
+				case CALPHA_DISPLAY_STYLE_BACKBONE_PATHWALKER: // Backbone only
+					DrawBackboneModelPathwalker(subSceneIndex, selectEnabled);
 					break;
 			}
 		}

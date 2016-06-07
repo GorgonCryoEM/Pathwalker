@@ -24,6 +24,7 @@ class CAlphaViewer(BaseViewer):
     DisplayStyleBackbone = 3
     DisplayStyleRibbon = 4
     DisplayStyleSideChain = 5
+    DisplayStyleBackbonePathwalker = 6
     
     def __init__(self, main, parent=None):
         BaseViewer.__init__(self, main, parent)
@@ -93,6 +94,13 @@ class CAlphaViewer(BaseViewer):
 
     # Overridden
     def setDisplayStyle(self, style):
+        if style != self.displayStyle:
+            self.displayStyle = style
+            self.renderer.setDisplayStyle(self.displayStyle)
+            self.setAtomColorsAndVisibility(self.displayStyle)
+            self.emitModelChanged()
+
+    def setDisplayStylePathwalker(self, style):
         if style != self.displayStyle:
             self.displayStyle = style
             self.renderer.setDisplayStyle(self.displayStyle)

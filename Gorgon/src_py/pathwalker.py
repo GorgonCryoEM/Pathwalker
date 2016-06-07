@@ -134,18 +134,25 @@ class Pathwalker(BaseDockWidget):
               self.atomFileName = fileNameTemp
                     
               if self.app.viewers['calpha'].whichChainID == 'ALL':
-                  mychainKeys = Chain.loadAllChains(str(self.atomFileName), qparent=self.app)
+                  mychainKeys = Chain.loadAllChainsPathwalker(str(self.atomFileName), qparent=self.app)
                   for chainKey in mychainKeys:
                     setupChain(Chain.getChain(chainKey))
               else:
-                  mychain = Chain.load(str(self.atomFileName), qparent=self.app, whichChainID = self.app.viewers['calpha'].whichChainID)
+                  mychain = Chain.__loadFromPDBPathwalker(str(self.atomFileName), qparent=self.app, whichChainID = self.app.viewers['calpha'].whichChainID)
+                  #mychain = Chain.load(str(self.atomFileName), qparent=self.app, whichChainID = self.app.viewers['calpha'].whichChainID)
                   setupChain(mychain)
         
               if not self.app.viewers['calpha'].loaded:
+                  #self.app.viewers['calpha'].setDisplayStyle(6)
+                  #self.app.viewers['calpha'].displayStyle = 6
+                  #self.app.viewers['calpha'].renderer.setDisplayStyle(6)
+                  #self.app.viewers['calpha'].setAtomColorsAndVisibility(6)
+                  #self.app.viewers['calpha'].modelChangedPathwalker()
                   self.app.viewers['calpha'].dirty = False
                   self.app.viewers['calpha'].loaded = True
                   self.app.viewers['calpha'].setAtomColorsAndVisibility(self.app.viewers['calpha'].displayStyle)                        
                   self.app.viewers['calpha'].emitModelLoadedPreDraw()
+                  #self.app.viewers['calpha'].emitModelPathwalker()
                   self.app.viewers['calpha'].emitModelLoaded()
                   self.app.viewers['calpha'].emitViewerSetCenter()
 
@@ -178,28 +185,30 @@ class Pathwalker(BaseDockWidget):
               #if not self.atomFileName.isEmpty():
               if(self.app.viewers['calpha'].loaded):
                   self.app.viewers['calpha'].unloadData()
-                  print "reached 4"
               
               self.atomFileName = fileNameTemp
                     
               if self.app.viewers['calpha'].whichChainID == 'ALL':
                   mychainKeys = Chain.loadAllChainsPathwalker(str(self.atomFileName), qparent=self.app)
-                  print "reached"
                   for chainKey in mychainKeys:
                     setupChain(Chain.getChain(chainKey))
               else:
                   mychain = Chain.__loadFromPDBPathwalker(str(self.atomFileName), qparent=self.app, whichChainID = self.app.viewers['calpha'].whichChainID)
                   setupChain(mychain)
-                  print "reached 3"
         
               if not self.app.viewers['calpha'].loaded:
+                  #self.app.viewers['calpha'].setDisplayStyle(6)
+                  #self.app.viewers['calpha'].displayStyle = 6
+                  #self.app.viewers['calpha'].renderer.setDisplayStyle(6)
+                  #self.app.viewers['calpha'].setAtomColorsAndVisibility(6)
+                  #self.app.viewers['calpha'].modelChangedPathwalker()
                   self.app.viewers['calpha'].dirty = False
                   self.app.viewers['calpha'].loaded = True
                   self.app.viewers['calpha'].setAtomColorsAndVisibility(self.app.viewers['calpha'].displayStyle)                        
                   self.app.viewers['calpha'].emitModelLoadedPreDraw()
+                  #self.app.viewers['calpha'].emitModelPathwalker()
                   self.app.viewers['calpha'].emitModelLoaded()
                   self.app.viewers['calpha'].emitViewerSetCenter()
-                  print "reached 2"
            
   def deleteBonds(self):
       #bondsDeleted = open('noBondConstraints', 'wb')

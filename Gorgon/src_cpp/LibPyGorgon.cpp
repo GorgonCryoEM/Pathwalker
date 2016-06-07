@@ -567,6 +567,11 @@ BOOST_PYTHON_MODULE(libpyGORGON)
 		.def("setHltBValue", &CAlphaRenderer::SetHltBValue)
 		.def("setHltAValue", &CAlphaRenderer::SetHltAValue)
 		.def("drawBackboneModelPathwalker", &CAlphaRenderer::DrawBackboneModelPathwalker)
+		.def("drawDeletedBond", &CAlphaRenderer::DrawDeletedBond)
+		.def("undrawDeletedBond", &CAlphaRenderer::UndrawDeletedBond)
+		.def("drawAddedBond", &CAlphaRenderer::DrawAddedBond)
+		.def("undrawAddedBond", &CAlphaRenderer::UndrawAddedBond)
+		.def("findDistance", &CAlphaRenderer::FindDistance)
 	;
 
 	class_<InteractiveSkeletonEngine>("InteractiveSkeletonEngine", init<Volume *, NonManifoldMesh_Annotated *, float, int, int, int, unsigned int>())		

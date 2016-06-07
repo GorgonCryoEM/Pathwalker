@@ -22,22 +22,33 @@ namespace wustl_mm {
 			void SetAtom0Ix(unsigned long long ix);
 			void SetAtom1Ix(unsigned long long ix);
 			void SetSelected(bool selected);
+
+			bool tempDeleted;
+			bool original;
+			bool tempNew;
 		private:
 			unsigned long long atom0Ix;
 			unsigned long long atom1Ix;
 			bool selected;
+			
 		};
 
 		PDBBond::PDBBond() {
 			this->atom0Ix = 0;
 			this->atom1Ix = 0;
 			this->selected = false;
+			this->tempDeleted = false;
+			this->tempNew = false;
+			this->original = true;
 		}
 
 		PDBBond::PDBBond(unsigned long long atom0Index, unsigned long long atom1Index, bool selected) {
 			this->atom0Ix = atom0Index;
 			this->atom1Ix = atom1Index;
 			this->selected = selected;
+			this->tempDeleted = false;
+			this->tempNew = false;
+			this->original = true;
 		}
 
 		unsigned long long PDBBond::GetAtom0Ix() {

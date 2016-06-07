@@ -162,6 +162,12 @@ namespace wustl_mm {
 
 			void SetNumSegments(int segments);
 			void SetNumSlices(int slices);
+			void DrawDeletedBond(int atom1, int atom2);
+			void UndrawDeletedBond(int atom1, int atom2);
+
+			void DrawAddedBond(int atom1, int atom2);
+			void UndrawAddedBond(int atom1, int atom2);
+			string FindDistance(int atom1, int atom2);
 
 			int StartHelix(); //StartHelix creates a new helix element in aHelices and returns its index
 			void AddHelixElement(int, unsigned long long); //adds a helix element to the helix indexed at param 1
@@ -381,6 +387,12 @@ namespace wustl_mm {
 					if(length < 3.3) {
 						OpenGLUtils::SetColor(0, 0, 1.0, 1.0);
 					}
+					if(bonds[i].tempDeleted == true) {
+						OpenGLUtils::SetColor(0.3, 0.86, 0.72, 1.0);
+					}
+					if(bonds[i].tempNew == true) {
+						OpenGLUtils::SetColor(0.7, 0.2, 0.4, 1.0);
+					}
 
 					if(atoms[bonds[i].GetAtom0Ix()].GetVisible() && atoms[bonds[i].GetAtom1Ix()].GetVisible()) {
 						DrawCylinder(atoms[bonds[i].GetAtom0Ix()].GetPosition(), atoms[bonds[i].GetAtom1Ix()].GetPosition(), 0.1, 10, 2);
@@ -398,6 +410,199 @@ namespace wustl_mm {
 					}
 				}
 			}
+		}
+
+		string CAlphaRenderer::FindDistance(int atom1, int atom2) {
+			unsigned long long atom1Hash = 1;
+			PDBAtom atm1;
+			PDBAtom atm2;
+			
+			for(AtomMapType::iterator it = atoms.begin(); it != atoms.end(); it++) {
+
+						if(it->second.GetResSeq() == atom1) {
+							atom1Hash = it->second.GetHashKey();
+							atm1 = it->second;
+							//atomHashes.push_back(it->second.GetHashKey());
+						}
+						
+					
+			}
+			unsigned long long atom2Hash = 1;
+			for(AtomMapType::iterator it = atoms.begin(); it != atoms.end(); it++) {
+			if(it->second.GetResSeq() == atom2) {
+							atom2Hash = it->second.GetHashKey();
+							atm2 = it->second;
+							//atomHashes.push_back(it->second.GetHashKey());
+						}
+			}
+			cout << atom1Hash << " " << atom2Hash << endl;
+			if (atom1Hash == 1 || atom2Hash == 1) {
+				return "unknown";
+			}
+			else {
+				return std::to_string((atm1.GetPosition() - atm2.GetPosition()).Length());
+
+		}
+	}
+
+		void CAlphaRenderer::DrawAddedBond(int atom1, int atom2) {
+			unsigned long long atom1Hash = 1;
+			
+			for(AtomMapType::iterator it = atoms.begin(); it != atoms.end(); it++) {
+
+						if(it->second.GetResSeq() == atom1) {
+							atom1Hash = it->second.GetHashKey();
+							//atomHashes.push_back(it->second.GetHashKey());
+						}
+						
+					
+			}
+			unsigned long long atom2Hash = 1;
+			for(AtomMapType::iterator it = atoms.begin(); it != atoms.end(); it++) {
+			if(it->second.GetResSeq() == atom2) {
+							atom2Hash = it->second.GetHashKey();
+							//atomHashes.push_back(it->second.GetHashKey());
+						}
+			}
+			cout << atom1Hash << " " << atom2Hash << endl;
+			if (atom1Hash == 1 || atom2Hash == 1) {
+				return;
+			}
+			else {
+				int bondIndex = max(GetBondIndex(atom1Hash, atom2Hash), GetBondIndex(atom2Hash, atom1Hash));
+				if(bondIndex == -1) {
+					cout << "no bond found " << endl;
+					PDBBond tempBond = PDBBond(atom1Hash, atom2Hash, false);
+					tempBond.tempNew = true;
+					tempBond.original = false;
+					AddBond(tempBond);
+				}
+				else {
+					bonds[bondIndex].tempNew = true;
+				}
+		}
+	}
+
+		void CAlphaRenderer::UndrawAddedBond(int atom1, int atom2) {
+			unsigned long long atom1Hash = 1;
+			
+			for(AtomMapType::iterator it = atoms.begin(); it != atoms.end(); it++) {
+
+						if(it->second.GetResSeq() == atom1) {
+							atom1Hash = it->second.GetHashKey();
+							//atomHashes.push_back(it->second.GetHashKey());
+						}
+						
+					
+			}
+			unsigned long long atom2Hash = 1;
+			for(AtomMapType::iterator it = atoms.begin(); it != atoms.end(); it++) {
+			if(it->second.GetResSeq() == atom2) {
+							atom2Hash = it->second.GetHashKey();
+							//atomHashes.push_back(it->second.GetHashKey());
+						}
+			}
+			cout << atom1Hash << " " << atom2Hash << endl;
+			if (atom1Hash == 1 || atom2Hash == 1) {
+				return;
+			}
+			else {
+				int bondIndex = max(GetBondIndex(atom1Hash, atom2Hash), GetBondIndex(atom2Hash, atom1Hash));
+				if(bondIndex == -1) {
+					return;
+				}
+				if(bonds[bondIndex].original == false) {
+					DeleteBond(bondIndex);
+				}
+				else {
+					bonds[bondIndex].tempNew = false;
+				}
+			}
+		}
+
+		void CAlphaRenderer::DrawDeletedBond(int atom1, int atom2) {
+			//std::vector<unsigned long long> atomHashes;
+			unsigned long long atom1Hash = 1;
+			
+			for(AtomMapType::iterator it = atoms.begin(); it != atoms.end(); it++) {
+
+						if(it->second.GetResSeq() == atom1) {
+							atom1Hash = it->second.GetHashKey();
+							//atomHashes.push_back(it->second.GetHashKey());
+						}
+						
+					
+			}
+			unsigned long long atom2Hash = 1;
+			for(AtomMapType::iterator it = atoms.begin(); it != atoms.end(); it++) {
+			if(it->second.GetResSeq() == atom2) {
+							atom2Hash = it->second.GetHashKey();
+							//atomHashes.push_back(it->second.GetHashKey());
+						}
+			}
+			cout << atom1Hash << " " << atom2Hash << endl;
+			if (atom1Hash == 1 || atom2Hash == 1) {
+				return;
+			}
+			else {
+				int bondIndex = max(GetBondIndex(atom1Hash, atom2Hash), GetBondIndex(atom2Hash, atom1Hash));
+				if(bondIndex == -1) {
+					cout << "no bond found " << endl;
+					PDBBond tempBond = PDBBond(atom1Hash, atom2Hash, false);
+					tempBond.tempDeleted = true;
+					tempBond.original = false;
+					AddBond(tempBond);
+				}
+				else {
+					bonds[bondIndex].tempDeleted = true;
+				}
+				//OpenGLUtils::SetColor(0.3, 1.0, 0.5, 1.0);
+				//atoms[atom1Hash].Print();
+				//atoms[atom2Hash].Print();
+				//DrawCylinder(atoms[atom1Hash].GetPosition(), atoms[atom2Hash].GetPosition(), 0.1, 10, 2);
+			}
+
+		}
+
+		void CAlphaRenderer::UndrawDeletedBond(int atom1, int atom2) {
+			//std::vector<unsigned long long> atomHashes;
+			unsigned long long atom1Hash = 1;
+			
+			for(AtomMapType::iterator it = atoms.begin(); it != atoms.end(); it++) {
+
+						if(it->second.GetResSeq() == atom1) {
+							atom1Hash = it->second.GetHashKey();
+							//atomHashes.push_back(it->second.GetHashKey());
+						}
+						
+					
+			}
+			unsigned long long atom2Hash = 1;
+			for(AtomMapType::iterator it = atoms.begin(); it != atoms.end(); it++) {
+			if(it->second.GetResSeq() == atom2) {
+							atom2Hash = it->second.GetHashKey();
+							//atomHashes.push_back(it->second.GetHashKey());
+						}
+			}
+			cout << atom1Hash << " " << atom2Hash << endl;
+			if (atom1Hash == 1 || atom2Hash == 1) {
+				return;
+			}
+			else {
+				int bondIndex = max(GetBondIndex(atom1Hash, atom2Hash), GetBondIndex(atom2Hash, atom1Hash));
+				if(bondIndex == -1) {
+					return;
+				}
+				if(bonds[bondIndex].original == false) {
+					cout << "delete" << endl;
+					DeleteBond(bondIndex);
+				}
+				else {
+					cout << "do not delete" << endl;
+					bonds[bondIndex].tempDeleted = false;
+				}
+			}
+
 		}
 
 		void CAlphaRenderer::DrawBackboneModelPathwalker(int subSceneIndex, bool selectEnabled) {

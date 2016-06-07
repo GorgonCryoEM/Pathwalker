@@ -129,7 +129,6 @@ This creates a Chain object from a FASTA file.
     #Chain.setSelectedChainKey(result.getIDs())
     return result
 
-
   @classmethod
   def __loadFromPDB (cls,filename,qparent=None, whichChainID=None):
     '''
@@ -152,14 +151,14 @@ object. If no chain ID is specified, it loads the first chain.
     
     residue = None
     firstChain = None
-    for line in open(filename, 'U'):	#calls the iterator for the file object each time the loop is run - don't have to load entire file into memory
+    for line in open(filename, 'U'):    #calls the iterator for the file object each time the loop is run - don't have to load entire file into memory
         if line[0:4]=='ATOM':
             chainID = line[21:22]
             if chainID == ' ':
                 chainID = 'A'
-            if whichChainID and chainID != whichChainID:	#Search for the specified chainID (if one is specified), otherwise we find the first chain.
+            if whichChainID and chainID != whichChainID:    #Search for the specified chainID (if one is specified), otherwise we find the first chain.
                 continue
-            if not firstChain:	#Sets the value of the first and only chain we will store
+            if not firstChain:  #Sets the value of the first and only chain we will store
                 firstChain = chainID
                 ####if the chain key already exists, point to that chain object
                 ####perhaps this should be modified
@@ -168,7 +167,7 @@ object. If no chain ID is specified, it loads the first chain.
                 else:
                     result = cls.getChain( (pdbID, firstChain) )
                     break
-            if firstChain and chainID != firstChain:		#If we've gone past the only chain we want to store, we will break out of the for loop
+            if firstChain and chainID != firstChain:        #If we've gone past the only chain we want to store, we will break out of the for loop
                 break
             
             residueIndex = int( line[22:26] )
@@ -197,6 +196,118 @@ object. If no chain ID is specified, it loads the first chain.
                 atom = residue.addAtom(atomName, x,y,z, element, serialNo, occupancy, tempFactor)
                 #residue.atoms[atomName]=atom            
                 result.atoms[serialNo]=atom
+                #Chain.chainsDict[result.key] = result
+            except ValueError:
+                print 'Chain.__loadFromPDB--no coordinates', 
+
+        elif line[0:6].strip()=='HELIX':
+            Helix.parsePDB(line,result)
+        elif line[0:6].strip()=='SHEET':
+            Sheet.parsePDB(line,result)
+            
+    #Setting up coils
+    startList = []
+    endList = []
+    for secelIx, secel in result.secelList.items():
+        startList.append(secel.startIndex)
+        endList.append(secel.stopIndex)
+    startList.sort()
+    endList.sort()
+    
+    if result.residueRange():
+        startPt = min(result.residueRange())
+        coilIx = 1
+        for i in range(len(startList)):
+            if startPt < startList[i] :
+                result.addCoil(coilIx, Coil(result, coilIx, 'L' + str(coilIx), startPt, startList[i]-1))
+                coilIx = coilIx + 1
+            startPt = endList[i] + 1
+        
+        if startPt < max(result.residueRange()):
+            result.addCoil(coilIx, Coil(result, coilIx, 'L' + str(coilIx), startPt, max(result.residueRange())))        
+            
+                
+        Chain.chainsDict[result.key] = result
+        #Chain.setSelectedChainKey(result.getIDs())
+        
+    return result
+
+
+  @classmethod
+  def __loadFromPDBPathwalker (cls,filename,qparent=None, whichChainID=None):
+    '''
+This loads the specified chain ID from a PDF file and returns a Chain 
+object. If no chain ID is specified, it loads the first chain.
+    '''
+    #print Chain.getChainKeys()
+    if qparent and qtEnabled:
+        result = Chain('', qparent=qparent)
+    else:
+        result = Chain('')
+    
+    header = open(filename, 'U')
+    headerLine = header.read()
+    if headerLine[:6] == 'HEADER':
+        pdbID = headerLine[62:66]
+    else:
+        pdbID = cls.__createUniquePDBID()
+    header.close()
+    
+    residue = None
+    firstChain = None
+    count = 0
+    for line in open(filename, 'U'):	#calls the iterator for the file object each time the loop is run - don't have to load entire file into memory
+        if line[0:4]=='ATOM':
+            chainID = line[21:22]
+            if chainID == ' ':
+                chainID = 'A'
+            if whichChainID and chainID != whichChainID:	#Search for the specified chainID (if one is specified), otherwise we find the first chain.
+                continue
+            if not firstChain:	#Sets the value of the first and only chain we will store
+                firstChain = chainID
+                ####if the chain key already exists, point to that chain object
+                ####perhaps this should be modified
+                if not (pdbID, firstChain) in cls.getChainKeys():
+                    result.setIDs(pdbID, firstChain)
+                else:
+                    result = cls.getChain( (pdbID, firstChain) )
+                    break
+            if firstChain and chainID != firstChain:		#If we've gone past the only chain we want to store, we will break out of the for loop
+                break
+            
+            residueIndex = int( line[22:26] )
+            #if residueIndex not in result.residueRange():
+            #    residue = Residue( line[17:20].strip(), result ) 
+            #    result[residueIndex] = residue
+            #else:
+            #    residue = result[residueIndex]
+            if count not in result.residueRange():
+                residue = Residue( line[17:20].strip(), result ) 
+                result[count] = residue
+            else:
+                residue = result[count]
+            
+            serialNo    = int( line[6:11].strip() )
+            atomName    = line[12:16].strip()
+            element     = line[76:78].strip()
+            try:
+                tempFactor  = float( line[60:66].strip() )
+            except ValueError:
+                tempFactor = None
+            try:
+                occupancy   = float( line[54:60].strip() )
+            except ValueError:
+                occupancy = None
+            try: 
+                x = float( line[30:38] )
+                y = float( line[38:46] )
+                z = float( line[46:54] )
+                
+                atom = residue.addAtom(atomName, x,y,z, element, serialNo, occupancy, tempFactor)
+                #residue.atoms[atomName]=atom   
+                result.atoms[count] = atom
+                count += 1        
+                #result.atoms[serialNo]=atom
                 #Chain.chainsDict[result.key] = result
             except ValueError:
                 print 'Chain.__loadFromPDB--no coordinates', 
@@ -406,6 +517,31 @@ This calls the correct load method based on the file extension.
     else:
       raise NotImplementedError, 'NYI'
 
+
+  @classmethod
+  def loadAllChainsPathwalker(cls, filename, qparent=None):
+    '''
+This loads all the chains specified in a PDB file.  
+    '''
+    chain = None
+    pdbID = None
+    chains = []
+    chainIDs = cls.getChainIDsFromPDB(filename,qparent)
+    while True:
+        try: chanIDs.remove('NULL')
+        except: break
+    if not chainIDs:
+        chainIDs = [None]
+    for whichChainID in chainIDs:
+        chain = Chain.__loadFromPDBPathwalker(filename, qparent, whichChainID)
+        if not pdbID: 
+            pdbID = chain.getPdbID()
+        elif pdbID != chain.getPdbID():
+            chain.setIDs(pdbID, chain.getChainID())  #Needed if PDB ID is auto-generated
+        chains.append(chain.getIDs())
+        cls.chainsDict[chain.key] = chain
+    return chains
+
   @classmethod
   def loadAllChains(cls, filename, qparent=None):
     '''
@@ -600,6 +736,46 @@ residue.
             viewer.renderer.addBond(bond)
             cnt = cnt + 1
 
+  def addCalphaBondsPathwalker(self):
+    '''
+This adds the Calpha bonds for all the residues in a chain. If there is
+a gap in the sequence of residues, this will not place a C-alpha 
+bond.setAtom0Ix--one doesn't want a bond between the 97th and 103rd 
+residue.
+    '''
+    try: 
+        viewer = Chain.getViewer()
+    except:
+        print 'Error: No viewer is set for Chain!'
+        return
+    residueRange = self.unsortedResidueRange()
+    indexes = []
+    for i in residueRange:
+        indexes.append(i)
+    for i in range(len(indexes)-1):
+        print str(indexes[i])+","+str(indexes[i+1])
+        atom0 = self[indexes[i]].getAtom('CA')
+        if not atom0:
+            continue
+        atom1 = self[indexes[i+1]].getAtom('CA')
+        if not atom1:
+            continue
+        bond = PDBBond()
+        bond.setAtom0Ix(atom0.getHashKey())
+        bond.setAtom1Ix(atom1.getHashKey())
+        viewer.renderer.addBond(bond)
+    #for i in range(len(residueRange)-1):
+     #   print str(residueRange[i])+","+str(residueRange[i+1])
+      #  atom0 = self[residueRange[i]].getAtom('CA')
+       # if not atom0:
+        #    continue
+        #atom1 = self[residueRange[i+1]].getAtom('CA')
+        #if not atom1:
+        #    continue
+        #bond = PDBBond()
+        #bond.setAtom0Ix(atom0.getHashKey())
+        #bond.setAtom1Ix(atom1.getHashKey())
+        #viewer.renderer.addBond(bond)
             
   def addSideChainBonds(self):
     cnt = 0
@@ -779,6 +955,12 @@ This returns a list of all the residue numbers.
     '''
     return sorted(self.residueList.keys())
 
+  def unsortedResidueRange(self):
+    '''
+This returns a list of all the residue numbers (unsorted).
+    '''
+    return self.residueList.keys()
+
   def saveToPDB(self, filename):
     s = self.toPDB()
     outfile=open(filename,'w')
@@ -806,14 +988,15 @@ This changes the pdbID and chainID attributes of a Chain instance.
         #if atom.getDeletedBondAtom() != -1:
          #   print "current deleted bonds" + str(atom.getResSeq())
 
-  def unsetBonds(self):
-    for i in self.residueRange():
-        atom = self[i].getAtom('CA')
-        if atom.getDeletedBondAtom() != -1:
-            if i + 1 in self.residueRange():
-                tempAtom = self[i]
-                self[i] = self[i+1]
-                self[i+1] = tempAtom
+  def getSelectionSerial(self):
+    selection = self.getSelection()
+    selectionSerials = []
+    for i in selection:
+        if(i in self.residueRange()):
+            atom = self[i].getAtom('CA')
+            if atom:
+                selectionSerials.append(atom.getSerial())
+    return selectionSerials
 
   def setSelection(self, newSelection=None, removeOne=None, addOne=None, addRange=None):
     '''

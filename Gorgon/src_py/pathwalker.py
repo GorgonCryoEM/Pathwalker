@@ -42,13 +42,13 @@ class Pathwalker(BaseDockWidget):
       print 'Finished Preprocessing'
 
   def setCTermini(self):
-    selectedC = self.app.viewers['calpha'].main_chain.getSelection()
+    selectedC = self.app.viewers['calpha'].main_chain.getSelectionSerial()
     selectedC = str(selectedC)
     selectedC = selectedC.translate(None, '![@#]$,')
     self.ui.lineEdit_15.setText(str(selectedC))
 
   def setNTermini(self):
-    selectedN = self.app.viewers['calpha'].main_chain.getSelection()
+    selectedN = self.app.viewers['calpha'].main_chain.getSelectionSerial()
     selectedN  = str(selectedN)
     selectedN  = selectedN.translate(None, '![@#]$,')
     self.ui.lineEdit_16.setText(str(selectedN))
@@ -99,7 +99,9 @@ class Pathwalker(BaseDockWidget):
           subprocess.call(['python','EMAN2/bin/e2pathwalker.py','pseudoatoms.pdb', '--mapfile=EMAN2/bin/map.mrc','--output=path0.pdb','--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,"--edgefile=newBonds",start,noBonds,newBonds])
         else:
           subprocess.call(['python','EMAN2/bin/e2pathwalker.py','pseudoatoms.pdb', '--mapfile=EMAN2/bin/map.mrc','--output=path0.pdb','--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,"--edgefile=newBonds",start,end,noBonds,newBonds])
-      self.generateAtoms("path0.pdb")
+      self.app.viewers['calpha'].unloadData()
+      self.generatePathwalkedAtoms("path0.pdb")
+      self.app.viewers['calpha'].emitModelChanged()
       
 
   def generateAtoms(self, fileName):
@@ -107,10 +109,10 @@ class Pathwalker(BaseDockWidget):
             self.app.viewers['calpha'].main_chain = mychain
             self.app.viewers['calpha'].loadedChains.append(mychain)
             mychain.setViewer(self.app.viewers['calpha'])
-            mychain.addCalphaBonds()
-            mychain.addSideChainBonds()
+            #mychain.addCalphaBondsPathwalker()
+            #mychain.addSideChainBonds()
             renderer = self.app.viewers['calpha'].renderer
-            for i in mychain.residueRange():
+            for i in mychain.unsortedResidueRange():
                 for atomName in mychain[i].getAtomNames():
                     atom = mychain[i].getAtom(atomName)
                     if atom:
@@ -149,10 +151,59 @@ class Pathwalker(BaseDockWidget):
 
   def printDeleted(self):
        self.app.viewers['calpha'].main_chain.printDeletedBonds()
+
+  def generatePathwalkedAtoms(self, fileName):
+      def setupChain(mychain):            
+            self.app.viewers['calpha'].main_chain = mychain
+            self.app.viewers['calpha'].loadedChains.append(mychain)
+            mychain.setViewer(self.app.viewers['calpha'])
+            mychain.addCalphaBondsPathwalker()
+            #mychain.addSideChainBonds()
+            renderer = self.app.viewers['calpha'].renderer
+            for i in mychain.unsortedResidueRange():
+                for atomName in mychain[i].getAtomNames():
+                    atom = mychain[i].getAtom(atomName)
+                    if atom:
+                        atom = renderer.addAtom(atom)
+                        mychain[i].addAtomObject(atom)
+      
+      self.atomFileName = fileName
+      fileNameTemp = self.atomFileName
+      self.app.viewers['calpha'].whichChainID = None
+      filename = unicode(self.atomFileName)
+      if filename.split('.')[-1].lower() == 'pdb':
+          dlg = CAlphaChooseChainToLoadForm(unicode(self.atomFileName))
+          if dlg.exec_():
+              self.app.viewers['calpha'].whichChainID = dlg.whichChainID
+              #if not self.atomFileName.isEmpty():
+              if(self.app.viewers['calpha'].loaded):
+                  self.app.viewers['calpha'].unloadData()
+                  print "reached 4"
+              
+              self.atomFileName = fileNameTemp
+                    
+              if self.app.viewers['calpha'].whichChainID == 'ALL':
+                  mychainKeys = Chain.loadAllChainsPathwalker(str(self.atomFileName), qparent=self.app)
+                  print "reached"
+                  for chainKey in mychainKeys:
+                    setupChain(Chain.getChain(chainKey))
+              else:
+                  mychain = Chain.__loadFromPDBPathwalker(str(self.atomFileName), qparent=self.app, whichChainID = self.app.viewers['calpha'].whichChainID)
+                  setupChain(mychain)
+                  print "reached 3"
+        
+              if not self.app.viewers['calpha'].loaded:
+                  self.app.viewers['calpha'].dirty = False
+                  self.app.viewers['calpha'].loaded = True
+                  self.app.viewers['calpha'].setAtomColorsAndVisibility(self.app.viewers['calpha'].displayStyle)                        
+                  self.app.viewers['calpha'].emitModelLoadedPreDraw()
+                  self.app.viewers['calpha'].emitModelLoaded()
+                  self.app.viewers['calpha'].emitViewerSetCenter()
+                  print "reached 2"
            
   def deleteBonds(self):
       #bondsDeleted = open('noBondConstraints', 'wb')
-      selectedDeleted = self.app.viewers['calpha'].main_chain.getSelection()
+      selectedDeleted = self.app.viewers['calpha'].main_chain.getSelectionSerial()
       selectedDeleted = str(selectedDeleted)
       selectedDeleted = selectedDeleted.translate(None, '![@#]$,')
       #bondsDeleted.write(selectedDeleted)
@@ -168,28 +219,14 @@ class Pathwalker(BaseDockWidget):
 
   def createBonds(self):
       #bondsCreated = open('newBonds', 'wb')
-      selectedCreated = self.app.viewers['calpha'].main_chain.getSelection()
+      selectedCreated = self.app.viewers['calpha'].main_chain.getSelectionSerial()
       selectedCreated = str(selectedCreated)
       selectedCreated = selectedCreated.translate(None, '![@#]$,')
-
-      
-      #bondsCreated.write(selectedCreated)
-      #bondsCreated.close()
       self.ui.lineEdit_14.setText(str(selectedCreated))
       self.newBonds = selectedCreated
       if self.newBonds:
         self.app.viewers['calpha'].renderer.addSelectedBonds(self.newBonds)
         self.app.viewers['calpha'].emitModelChanged() 
-      #self.app.viewers['calpha'].emitModelLoaded() 
-      
-      
-      
-      
-
-      #self.app.viewers['calpha'].createSelectedBonds()
-      #bondsDeleted = open('newBonds', 'r')
-      #for line in bondsDeleted:
-      #  self.ui.lineEdit_14.setText(str(line))
 
   def createUi(self):
       self.ui = Ui_DialogPathwalker()

@@ -344,7 +344,10 @@ namespace wustl_mm {
 							glLoadName(static_cast<GLuint>( atomHashKeys.size() - 1)); // the index of the element just added
 						}
 						if(it->second.GetVisible()) {
-							DrawSphere(it->second.GetPosition(), it->second.GetAtomRadius() * 0.3);
+							Vector3DFloat currentPosition = it->second.GetPosition();
+							Vector3DFloat newPosition = Vector3DFloat(currentPosition.X()-109.0, currentPosition.Y()-108.0, currentPosition.Z()-108.0);
+							DrawSphere(newPosition, it->second.GetAtomRadius() * 0.3);
+							//DrawSphere(it->second.GetPosition(), it->second.GetAtomRadius() * 0.3);
 						}
 
 						glPopAttrib();
@@ -380,7 +383,12 @@ namespace wustl_mm {
 					}
 
 					if(atoms[bonds[i].GetAtom0Ix()].GetVisible() && atoms[bonds[i].GetAtom1Ix()].GetVisible()) {
-						DrawCylinder(atoms[bonds[i].GetAtom0Ix()].GetPosition(), atoms[bonds[i].GetAtom1Ix()].GetPosition(), 0.1, 10, 2);
+						Vector3DFloat currentPosition1 = atoms[bonds[i].GetAtom0Ix()].GetPosition();
+						Vector3DFloat currentPosition2 = atoms[bonds[i].GetAtom1Ix()].GetPosition();
+						Vector3DFloat atom1Pos = Vector3DFloat(currentPosition1.X()-109.0, currentPosition1.Y()-108.0, currentPosition1.Z()-108.0);
+						Vector3DFloat atom2Pos = Vector3DFloat(currentPosition2.X()-109.0, currentPosition2.Y()-108.0, currentPosition2.Z()-108.0);
+						DrawCylinder(atom1Pos, atom2Pos, 0.1, 10, 2);
+						//DrawCylinder(atoms[bonds[i].GetAtom0Ix()].GetPosition(), atoms[bonds[i].GetAtom1Ix()].GetPosition(), 0.1, 10, 2);
 					}
 					glPopAttrib();
 				}
@@ -391,7 +399,10 @@ namespace wustl_mm {
 			} else if(subSceneIndex == 2) { // Drawing spheres to cover up the cylinder edges				
 				for(AtomMapType::iterator i = atoms.begin(); i != atoms.end(); i++) {
 					if(i->second.GetName() == "CA") {
-						DrawSphere(i->second.GetPosition(), 0.1);
+						Vector3DFloat currentPosition = i->second.GetPosition();
+						Vector3DFloat newPosition = Vector3DFloat(currentPosition.X()-109.0, currentPosition.Y()-108.0, currentPosition.Z()-108.0);
+						DrawSphere(newPosition, 0.1);
+						//DrawSphere(i->second.GetPosition(), 0.1);
 					}
 				}
 			}
@@ -1818,6 +1829,7 @@ namespace wustl_mm {
 
 				int nextSliceIx = (i+stacks+1)%runlength;
 
+
 				glNormal3f(normals[i].X(), normals[i].Y(), normals[i].Z());
 				glVertex3f(points[i].X(), points[i].Y(), points[i].Z());
 
@@ -2012,13 +2024,6 @@ namespace wustl_mm {
 						DeleteBond(currentBondIndex);
 					}
 				}
-				//for(int i = 0; i < atomNums.size()-1; i++) {
-
-					//AddBond(PDBBond(GetAtom(atomNums[i])->GetHashKey(), GetAtom(atomNums[i+1])->GetHashKey(), true));
-				//}
-
-			//}
-			//infile.close();
 		}
 
 
@@ -2026,10 +2031,6 @@ namespace wustl_mm {
 
 		void CAlphaRenderer::addSelectedBonds(string newBonds) {
 
-			//if(count == 2) {
-			//ifstream infile("newBonds");
-			//if (infile.good()) 
-			//{
 				string sLine = newBonds;
 				//getline(infile, sLine);
 				std::stringstream ss(sLine);
@@ -2057,44 +2058,7 @@ namespace wustl_mm {
 				for(int i = 0; i < atomHashes.size()-1; i++) {
 					AddBond(PDBBond(atomHashes[i], atomHashes[i+1], true));
 				}
-				//for(int i = 0; i < atomNums.size()-1; i++) {
-
-					//AddBond(PDBBond(GetAtom(atomNums[i])->GetHashKey(), GetAtom(atomNums[i+1])->GetHashKey(), true));
-				//}
-
-			//}
-			//infile.close();
-			/**
-				string atomsToBond;
-				int atomIndex = 0;
-				unsigned int atom1;
-				unsigned int atom2;
-				for(int i = 0; i<atoms.size(); i++) {
-
-				}
-				for(AtomMapType::iterator it = atoms.begin(); it != atoms.end(); it++) {
-					if(it->second.GetSelected()) {
-						atomsToBond += std::to_string(it->second.GetResSeq());
-						if(atomIndex%2 == 0) {
-							atom1 = it->second.GetResSeq();
-							atomsToBond += " ";
-						}
-						else {
-							atom2 = it->second.GetResSeq();
-							AddBond(PDBBond((unsigned long long)atom1, (unsigned long long)atom2, true));
-							atomsToBond += " ";
-							//atomsToBond += "\n";
-						}
-						atomIndex += 1;
-					}
-					**/
-				//}
-
-				//ofstream myfile;
-				//myfile.open("newBonds");
-				//myfile.open("newBonds", ios::app);
-				//myfile << atomsToBond;
-				//myfile.close();
+				
 			}
 		
 

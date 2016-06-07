@@ -388,6 +388,8 @@ namespace wustl_mm {
 								for(unsigned int j = 0; j < 2; j++) {
 									vertex = cuttingMesh->vertices[cuttingMesh->GetVertexIndex(cuttingMesh->edges[i].vertexIds[j])].position;
 									glVertex3f(vertex.X() * (float)dataVolume->getSizeX(), vertex.Y() * (float)dataVolume->getSizeY(), vertex.Z() * (float)dataVolume->getSizeZ());
+
+
 								}
 							}
 						}
@@ -412,6 +414,7 @@ namespace wustl_mm {
 								vertex = cuttingMesh->vertices[cuttingMesh->GetVertexIndex(cuttingMesh->faces[i].vertexIds[j])].position;
 								glTexCoord3d(vertex.X() * xRatio, vertex.Y()* yRatio, vertex.Z() * zRatio);
 								glVertex3f(vertex.X() * (float)dataVolume->getSizeX(), vertex.Y() * (float)dataVolume->getSizeY(), vertex.Z() * (float)dataVolume->getSizeZ());
+
 							}
 							glEnd();
 						}

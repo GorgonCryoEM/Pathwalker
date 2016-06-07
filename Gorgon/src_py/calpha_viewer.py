@@ -690,13 +690,13 @@ residues in the Chain object.
                 else:
                     self.main_chain.setSelection(addOne=atom.getResSeq())
                 print self.main_chain.getSelection()
-            elif event.modifiers() & QtCore.Qt.SHIFT:
-                atom = CAlphaRenderer.getAtomFromHitStack(self.renderer, hits[0], False, *hits[1:])
-                CAlphaRenderer.deleteAtom(self.renderer, atom.getHashKey())
+            #elif event.modifiers() & QtCore.Qt.SHIFT:
+             #   atom = CAlphaRenderer.getAtomFromHitStack(self.renderer, hits[0], False, *hits[1:])
+              #  CAlphaRenderer.deleteAtom(self.renderer, atom.getHashKey())
                 #CAlphaRenderer.removeSelectedBonds(self.renderer)
             else:
                 atom = CAlphaRenderer.getAtomFromHitStack(self.renderer, hits[0], True, *hits[1:])
-                print 'Residue #:', atom.getResSeq()
+                print 'Residue #:', str(atom.getSerial())+","+str(atom.getPosition().x())+","+str(atom.getPosition().y())+","+str(atom.getPosition().z())
                 self.main_chain.setSelection([atom.getResSeq()])
             self.emitAtomSelectionUpdated(self.main_chain.getSelection())
                 

@@ -419,7 +419,7 @@ namespace wustl_mm {
 			
 			for(AtomMapType::iterator it = atoms.begin(); it != atoms.end(); it++) {
 
-						if(it->second.GetResSeq() == atom1) {
+						if(it->second.GetSerial() == atom1) {
 							atom1Hash = it->second.GetHashKey();
 							atm1 = it->second;
 							//atomHashes.push_back(it->second.GetHashKey());
@@ -429,7 +429,7 @@ namespace wustl_mm {
 			}
 			unsigned long long atom2Hash = 1;
 			for(AtomMapType::iterator it = atoms.begin(); it != atoms.end(); it++) {
-			if(it->second.GetResSeq() == atom2) {
+			if(it->second.GetSerial() == atom2) {
 							atom2Hash = it->second.GetHashKey();
 							atm2 = it->second;
 							//atomHashes.push_back(it->second.GetHashKey());
@@ -450,7 +450,7 @@ namespace wustl_mm {
 			
 			for(AtomMapType::iterator it = atoms.begin(); it != atoms.end(); it++) {
 
-						if(it->second.GetResSeq() == atom1) {
+						if(it->second.GetSerial() == atom1) {
 							atom1Hash = it->second.GetHashKey();
 							//atomHashes.push_back(it->second.GetHashKey());
 						}
@@ -459,7 +459,7 @@ namespace wustl_mm {
 			}
 			unsigned long long atom2Hash = 1;
 			for(AtomMapType::iterator it = atoms.begin(); it != atoms.end(); it++) {
-			if(it->second.GetResSeq() == atom2) {
+			if(it->second.GetSerial() == atom2) {
 							atom2Hash = it->second.GetHashKey();
 							//atomHashes.push_back(it->second.GetHashKey());
 						}
@@ -488,7 +488,7 @@ namespace wustl_mm {
 			
 			for(AtomMapType::iterator it = atoms.begin(); it != atoms.end(); it++) {
 
-						if(it->second.GetResSeq() == atom1) {
+						if(it->second.GetSerial() == atom1) {
 							atom1Hash = it->second.GetHashKey();
 							//atomHashes.push_back(it->second.GetHashKey());
 						}
@@ -497,7 +497,7 @@ namespace wustl_mm {
 			}
 			unsigned long long atom2Hash = 1;
 			for(AtomMapType::iterator it = atoms.begin(); it != atoms.end(); it++) {
-			if(it->second.GetResSeq() == atom2) {
+			if(it->second.GetSerial() == atom2) {
 							atom2Hash = it->second.GetHashKey();
 							//atomHashes.push_back(it->second.GetHashKey());
 						}
@@ -526,7 +526,7 @@ namespace wustl_mm {
 			
 			for(AtomMapType::iterator it = atoms.begin(); it != atoms.end(); it++) {
 
-						if(it->second.GetResSeq() == atom1) {
+						if(it->second.GetSerial() == atom1) {
 							atom1Hash = it->second.GetHashKey();
 							//atomHashes.push_back(it->second.GetHashKey());
 						}
@@ -535,7 +535,7 @@ namespace wustl_mm {
 			}
 			unsigned long long atom2Hash = 1;
 			for(AtomMapType::iterator it = atoms.begin(); it != atoms.end(); it++) {
-			if(it->second.GetResSeq() == atom2) {
+			if(it->second.GetSerial() == atom2) {
 							atom2Hash = it->second.GetHashKey();
 							//atomHashes.push_back(it->second.GetHashKey());
 						}
@@ -570,7 +570,7 @@ namespace wustl_mm {
 			
 			for(AtomMapType::iterator it = atoms.begin(); it != atoms.end(); it++) {
 
-						if(it->second.GetResSeq() == atom1) {
+						if(it->second.GetSerial() == atom1) {
 							atom1Hash = it->second.GetHashKey();
 							//atomHashes.push_back(it->second.GetHashKey());
 						}
@@ -579,7 +579,7 @@ namespace wustl_mm {
 			}
 			unsigned long long atom2Hash = 1;
 			for(AtomMapType::iterator it = atoms.begin(); it != atoms.end(); it++) {
-			if(it->second.GetResSeq() == atom2) {
+			if(it->second.GetSerial() == atom2) {
 							atom2Hash = it->second.GetHashKey();
 							//atomHashes.push_back(it->second.GetHashKey());
 						}
@@ -1413,6 +1413,8 @@ namespace wustl_mm {
 			return NULL;
 		}
 
+
+
 		void CAlphaRenderer::LoadFile(string fileName) {
 			Renderer::LoadFile(fileName);
 			atoms.clear();
@@ -1443,7 +1445,7 @@ namespace wustl_mm {
 
 				sortedSerials.push_back(elem);				
 			}
-			sortedSerials.sort(SerialAndHashTypePredicate());
+			//sortedSerials.sort(SerialAndHashTypePredicate());
 
 
 			list<SerialAndHashType>::iterator oldAtom = sortedSerials.begin();

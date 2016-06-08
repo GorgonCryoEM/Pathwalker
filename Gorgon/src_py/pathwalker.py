@@ -40,7 +40,8 @@ class Pathwalker(BaseDockWidget):
     self.connect(self.ui.pushButton_10, QtCore.SIGNAL("clicked()"), self.clearAddListRows)
     self.connect(self.ui.pushButton_11, QtCore.SIGNAL("clicked()"), self.setCTermini)
     self.connect(self.ui.pushButton_12, QtCore.SIGNAL("clicked()"), self.setNTermini)
-
+    self.connect(self.ui.pushButton_14, QtCore.SIGNAL("clicked()"), self.clearCTermini)
+    self.connect(self.ui.pushButton_13, QtCore.SIGNAL("clicked()"), self.clearNTermini)
     self.connect(self.ui.checkBox, QtCore.SIGNAL("clicked()"), self.viewDeletedBonds)
     self.connect(self.ui.checkBox_2, QtCore.SIGNAL("clicked()"), self.viewAddedBonds)    
     #self.connect(self.ui.pushButton_5, QtCore.SIGNAL("clicked()"), self.deleteBonds)      
@@ -52,6 +53,12 @@ class Pathwalker(BaseDockWidget):
       print 'Preprocessing..'
       self.preprocess()
       print 'Finished Preprocessing'
+
+  def clearCTermini(self):
+      self.ui.lineEdit_13.setText("")
+
+  def clearNTermini(self):
+      self.ui.lineEdit_14.setText("")
 
   def generateAtomsButtonPress(self):
       print 'Generating Pseudo-Atoms...'

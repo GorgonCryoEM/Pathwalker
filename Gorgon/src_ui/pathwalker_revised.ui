@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>499</width>
-    <height>747</height>
+    <width>550</width>
+    <height>759</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -207,139 +207,15 @@
        <attribute name="title">
         <string>Properties</string>
        </attribute>
-       <layout class="QGridLayout" name="gridLayout_2">
-        <item row="0" column="0" colspan="2">
-         <widget class="QLabel" name="label">
-          <property name="text">
-           <string>Minimum Distance</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="2">
-         <widget class="QLabel" name="label_2">
-          <property name="text">
-           <string>Maximum Distance</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0" colspan="2">
-         <widget class="QLineEdit" name="lineEdit_9">
-          <property name="text">
-           <string>1</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="2">
-         <widget class="QLineEdit" name="lineEdit_10">
-          <property name="text">
-           <string>10</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="label_10">
-          <property name="text">
-           <string>Map Threshold</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="2">
-         <widget class="QLabel" name="label_11">
-          <property name="text">
-           <string>Map Weight</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0" colspan="2">
-         <widget class="QLineEdit" name="lineEdit_11">
-          <property name="text">
-           <string>12</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="2">
-         <widget class="QLineEdit" name="lineEdit_12">
-          <property name="text">
-           <string>200</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="0" colspan="3">
-         <widget class="Line" name="line">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="0" colspan="3">
-         <widget class="QLabel" name="label_12">
-          <property name="text">
-           <string>Prevent edges (Ctrl + left click two atoms):</string>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="0" colspan="3">
-         <widget class="QTableWidget" name="tableWidget">
-          <column>
-           <property name="text">
-            <string>Atom 1</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Atom 2</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Distance</string>
-           </property>
-          </column>
-         </widget>
-        </item>
-        <item row="7" column="0" colspan="2">
-         <widget class="QPushButton" name="pushButton_5">
-          <property name="text">
-           <string>Prevent selected edge</string>
-          </property>
-         </widget>
-        </item>
-        <item row="7" column="2">
-         <widget class="QPushButton" name="pushButton_6">
+       <layout class="QGridLayout" name="gridLayout">
+        <item row="12" column="3">
+         <widget class="QPushButton" name="pushButton_9">
           <property name="text">
            <string>Remove from list</string>
           </property>
          </widget>
         </item>
-        <item row="8" column="0" colspan="2">
-         <widget class="QPushButton" name="pushButton_7">
-          <property name="text">
-           <string>Clear list</string>
-          </property>
-         </widget>
-        </item>
-        <item row="8" column="2">
-         <widget class="QCheckBox" name="checkBox">
-          <property name="text">
-           <string>Display removed edges</string>
-          </property>
-         </widget>
-        </item>
-        <item row="9" column="0" colspan="3">
-         <widget class="Line" name="line_2">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="10" column="0" colspan="3">
-         <widget class="QLabel" name="label_13">
-          <property name="text">
-           <string>Force edges (Ctrl + left click two atoms):</string>
-          </property>
-         </widget>
-        </item>
-        <item row="11" column="0" colspan="3">
+        <item row="11" column="0" colspan="4">
          <widget class="QTableWidget" name="tableWidget_2">
           <column>
            <property name="text">
@@ -358,74 +234,212 @@
           </column>
          </widget>
         </item>
-        <item row="12" column="0" colspan="2">
+        <item row="15" column="1">
+         <widget class="QPushButton" name="pushButton_14">
+          <property name="text">
+           <string>Reset</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0" colspan="4">
+         <widget class="Line" name="line">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="0" colspan="4">
+         <widget class="QTableWidget" name="tableWidget">
+          <column>
+           <property name="text">
+            <string>Atom 1</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Atom 2</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Distance</string>
+           </property>
+          </column>
+         </widget>
+        </item>
+        <item row="0" column="3">
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Maximum Distance</string>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="0" colspan="3">
+         <widget class="QPushButton" name="pushButton_7">
+          <property name="text">
+           <string>Clear list</string>
+          </property>
+         </widget>
+        </item>
+        <item row="12" column="0" colspan="3">
          <widget class="QPushButton" name="pushButton_8">
           <property name="text">
            <string>Force selected edge</string>
           </property>
          </widget>
         </item>
-        <item row="12" column="2">
-         <widget class="QPushButton" name="pushButton_9">
-          <property name="text">
-           <string>Remove from list</string>
-          </property>
-         </widget>
-        </item>
-        <item row="13" column="0">
-         <widget class="QPushButton" name="pushButton_10">
-          <property name="text">
-           <string>Clear list</string>
-          </property>
-         </widget>
-        </item>
-        <item row="13" column="2">
-         <widget class="QCheckBox" name="checkBox_2">
-          <property name="text">
-           <string>Display forced edges</string>
-          </property>
-         </widget>
-        </item>
-        <item row="14" column="0" colspan="2">
-         <widget class="QLabel" name="label_14">
-          <property name="text">
-           <string>Current C-terminus:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="15" column="0">
-         <widget class="QLineEdit" name="lineEdit_13"/>
-        </item>
-        <item row="15" column="1" colspan="2">
-         <widget class="QPushButton" name="pushButton_11">
-          <property name="text">
-           <string>Set c-terminus as selected</string>
-          </property>
-         </widget>
-        </item>
-        <item row="16" column="0" colspan="2">
+        <item row="16" column="0" colspan="3">
          <widget class="QLabel" name="label_15">
           <property name="text">
            <string>Current N-terminus</string>
           </property>
          </widget>
         </item>
-        <item row="17" column="1" colspan="2">
+        <item row="3" column="0" colspan="3">
+         <widget class="QLineEdit" name="lineEdit_11">
+          <property name="text">
+           <string>12</string>
+          </property>
+         </widget>
+        </item>
+        <item row="13" column="0" colspan="3">
+         <widget class="QPushButton" name="pushButton_10">
+          <property name="text">
+           <string>Clear list</string>
+          </property>
+         </widget>
+        </item>
+        <item row="13" column="3">
+         <widget class="QCheckBox" name="checkBox_2">
+          <property name="text">
+           <string>Display forced edges</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="3">
+         <widget class="QLineEdit" name="lineEdit_10">
+          <property name="text">
+           <string>10</string>
+          </property>
+         </widget>
+        </item>
+        <item row="10" column="0" colspan="4">
+         <widget class="QLabel" name="label_13">
+          <property name="text">
+           <string>Force edges (Ctrl + left click two atoms):</string>
+          </property>
+         </widget>
+        </item>
+        <item row="17" column="2" colspan="2">
          <widget class="QPushButton" name="pushButton_12">
           <property name="text">
            <string>Set n-terminus as selected</string>
           </property>
          </widget>
         </item>
-        <item row="18" column="0">
+        <item row="15" column="0">
+         <widget class="QLineEdit" name="lineEdit_13"/>
+        </item>
+        <item row="2" column="3">
+         <widget class="QLabel" name="label_11">
+          <property name="text">
+           <string>Map Weight</string>
+          </property>
+         </widget>
+        </item>
+        <item row="17" column="0">
+         <widget class="QLineEdit" name="lineEdit_14"/>
+        </item>
+        <item row="1" column="0" colspan="3">
+         <widget class="QLineEdit" name="lineEdit_9">
+          <property name="text">
+           <string>1</string>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="0" colspan="3">
+         <widget class="QPushButton" name="pushButton_5">
+          <property name="text">
+           <string>Prevent selected edge</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0" colspan="3">
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>Minimum Distance</string>
+          </property>
+         </widget>
+        </item>
+        <item row="9" column="0" colspan="4">
+         <widget class="Line" name="line_2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="3">
+         <widget class="QPushButton" name="pushButton_6">
+          <property name="text">
+           <string>Remove from list</string>
+          </property>
+         </widget>
+        </item>
+        <item row="14" column="0" colspan="3">
+         <widget class="QLabel" name="label_14">
+          <property name="text">
+           <string>Current C-terminus:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0" colspan="3">
+         <widget class="QLabel" name="label_10">
+          <property name="text">
+           <string>Map Threshold</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="3">
+         <widget class="QLineEdit" name="lineEdit_12">
+          <property name="text">
+           <string>200</string>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="3">
+         <widget class="QCheckBox" name="checkBox">
+          <property name="text">
+           <string>Display removed edges</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0" colspan="4">
+         <widget class="QLabel" name="label_12">
+          <property name="text">
+           <string>Prevent edges (Ctrl + left click two atoms):</string>
+          </property>
+         </widget>
+        </item>
+        <item row="18" column="0" colspan="3">
          <widget class="QPushButton" name="pushButton_4">
           <property name="text">
            <string>Pathwalk</string>
           </property>
          </widget>
         </item>
-        <item row="17" column="0">
-         <widget class="QLineEdit" name="lineEdit_14"/>
+        <item row="17" column="1">
+         <widget class="QPushButton" name="pushButton_13">
+          <property name="text">
+           <string>Reset</string>
+          </property>
+         </widget>
+        </item>
+        <item row="15" column="2" colspan="2">
+         <widget class="QPushButton" name="pushButton_11">
+          <property name="text">
+           <string>Set c-terminus as selected</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>

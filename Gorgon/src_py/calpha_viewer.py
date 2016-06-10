@@ -100,12 +100,6 @@ class CAlphaViewer(BaseViewer):
             self.setAtomColorsAndVisibility(self.displayStyle)
             self.emitModelChanged()
 
-    def setDisplayStylePathwalker(self, style):
-        if style != self.displayStyle:
-            self.displayStyle = style
-            self.renderer.setDisplayStyle(self.displayStyle)
-            self.setAtomColorsAndVisibility(self.displayStyle)
-            self.emitModelChanged()
 
     #Overridden
     def getDrawColors(self):
@@ -690,22 +684,27 @@ residues in the Chain object.
             return
         hits = argv[:-1]
         event = argv[-1]
+        
+
+
+        
         if event.button() == QtCore.Qt.LeftButton:
             if event.modifiers() & QtCore.Qt.CTRL: #Multiple selection mode
                 atom = CAlphaRenderer.getAtomFromHitStack(self.renderer, hits[0], False, *hits[1:])
                 if atom.getResSeq() in self.main_chain.getSelection():
-                    self.main_chain.setSelection(removeOne=atom.getResSeq())
+                    self.main_chain.setSelection(removeOne=atom.getResSeq())                    
                 else:
                     self.main_chain.setSelection(addOne=atom.getResSeq())
                 print self.main_chain.getSelection()
-            #elif event.modifiers() & QtCore.Qt.SHIFT:
-             #   atom = CAlphaRenderer.getAtomFromHitStack(self.renderer, hits[0], False, *hits[1:])
-              #  CAlphaRenderer.deleteAtom(self.renderer, atom.getHashKey())
-                #CAlphaRenderer.removeSelectedBonds(self.renderer)
+            elif event.modifiers() & QtCore.Qt.SHIFT:#Manual deletion
+                atom = CAlphaRenderer.getAtomFromHitStack(self.renderer, hits[0], False, *hits[1:])
+                CAlphaRenderer.deleteAtom(self.renderer, atom.getHashKey())
+                #
             else:
                 atom = CAlphaRenderer.getAtomFromHitStack(self.renderer, hits[0], True, *hits[1:])
                 print 'Residue #:', str(atom.getSerial())+","+str(atom.getPosition().x())+","+str(atom.getPosition().y())+","+str(atom.getPosition().z())
                 self.main_chain.setSelection([atom.getResSeq()])
+
             self.emitAtomSelectionUpdated(self.main_chain.getSelection())
                 
         if event.button() == QtCore.Qt.RightButton and self.centerOnRMB:
@@ -776,3 +775,7 @@ If a C-alpha model is loaded, this enables relevent actions.
             if currentAtomPosition.x() == point[0] and currentAtomPosition.y() == point[1]:
                 return currentAtom
         return CAlphaRenderer.getAtom(self.renderer, 0)
+
+    def keyPressEvent(self, e):
+        if e.key() == QtCore.Qt.Key_Escape:
+            self.close()

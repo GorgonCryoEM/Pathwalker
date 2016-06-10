@@ -64,7 +64,9 @@ class BaseDockWidget(QtGui.QWidget):
         QtGui.QWidget.show(self)
         self.displayAct.setChecked(True)
         
-    
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_Escape:
+            print "bazinga"
     
     
     

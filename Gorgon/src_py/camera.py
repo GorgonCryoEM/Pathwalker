@@ -87,6 +87,7 @@ class Camera(QtOpenGL.QGLWidget):
                 self.up = [0,0,1]
             self.setRendererCuttingPlanes()
             self.emitCameraChanged()
+
     
     def setCenter(self, x, y, z):
         if(self.center != [x,y,z]):
@@ -111,6 +112,7 @@ class Camera(QtOpenGL.QGLWidget):
                 self.right = [1,0,0]
             self.setRendererCuttingPlanes()
             self.emitCameraChanged()
+
         
     def setEyeRotation(self, yaw, pitch, roll):
         newLook = vectorNormalize(vectorSubtract(vectorAdd(self.eye, vectorScalarMultiply(yaw, self.right)), self.center));
@@ -488,7 +490,8 @@ class Camera(QtOpenGL.QGLWidget):
         if (event.buttons() & QtCore.Qt.LeftButton):
             if (event.buttons() & QtCore.Qt.RightButton):           # Rolling the scene
                 self.setEyeRotation(0, 0, dx)
-            else:                   
+            else:
+
                 if self.getSelectionMovementEnabled() and (event.modifiers() & QtCore.Qt.CTRL) :           # Rotating the selection
                     self.rotateSelectedScene(dx, dy)
                 else:                                               # Rotating the scene
@@ -505,6 +508,9 @@ class Camera(QtOpenGL.QGLWidget):
                 newCenter = vectorAdd(self.center, translation);                
                 self.setEye(newEye[0], newEye[1], newEye[2])                            
                 self.setCenter(newCenter[0], newCenter[1], newCenter[2])
+
+        
+            
                 
         self.mouseMovePoint = QtCore.QPoint(event.pos())        
 

@@ -23,15 +23,17 @@ class Pathwalker(BaseDockWidget):
     BaseDockWidget.__init__(self, main,"&Pathwalker","Find path with pathwalker","perform_pathwalker","actions-calpha-pathwalker","actions-calpha", QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea | QtCore.Qt.BottomDockWidgetArea, QtCore.Qt.RightDockWidgetArea,parent)
     self.app = main
     self.renderer = VolumeRenderer()
+    
     self.volumeName = "volume name"
     self.nobonds = ""
     self.createUi()
     self.pathWalkerMode = True
+
     self.connect(self.ui.preprocessPushButton, QtCore.SIGNAL("clicked()"), self.preprocessButtonPress)
     self.connect(self.ui.pushButtonBrowseAtomScore, QtCore.SIGNAL("clicked (bool)"), self.loadVolume)
     self.connect(self.ui.pushButton_2, QtCore.SIGNAL("clicked()"), self.generateAtomsButtonPress)
     self.connect(self.ui.pushButton_4, QtCore.SIGNAL("clicked()"), self.pathwalkButtonPress)
-    self.connect(self.ui.pushButton_5, QtCore.SIGNAL("clicked()"), self.addDeletedBond)
+    self.connect(self.ui.pushButton_15, QtCore.SIGNAL("clicked()"), self.addDeletedBond)
     self.connect(self.ui.pushButton_6, QtCore.SIGNAL("clicked()"), self.removeBondFromList)
     self.connect(self.ui.pushButton_7, QtCore.SIGNAL("clicked()"), self.clearDeleteListRows)
 
@@ -43,7 +45,10 @@ class Pathwalker(BaseDockWidget):
     self.connect(self.ui.pushButton_14, QtCore.SIGNAL("clicked()"), self.clearCTermini)
     self.connect(self.ui.pushButton_13, QtCore.SIGNAL("clicked()"), self.clearNTermini)
     self.connect(self.ui.checkBox, QtCore.SIGNAL("clicked()"), self.viewDeletedBonds)
-    self.connect(self.ui.checkBox_2, QtCore.SIGNAL("clicked()"), self.viewAddedBonds)    
+    self.connect(self.ui.checkBox_2, QtCore.SIGNAL("clicked()"), self.viewAddedBonds)
+    self.connect(self.ui.pushButton_5, QtCore.SIGNAL("clicked()"), self.findHelices)
+    self.connect(self.ui.pushButton_16, QtCore.SIGNAL("clicked()"), self.findSheets)
+
     #self.connect(self.ui.pushButton_5, QtCore.SIGNAL("clicked()"), self.deleteBonds)      
     #self.connect(self.ui.pushButton_6, QtCore.SIGNAL("clicked()"), self.createBonds)
     #self.connect(self.ui.pushButton_7, QtCore.SIGNAL("clicked()"), self.setCTermini)
@@ -53,6 +58,31 @@ class Pathwalker(BaseDockWidget):
       print 'Preprocessing..'
       self.preprocess()
       print 'Finished Preprocessing'
+
+  def mouseDrag(self):
+    print "hi"
+
+
+  def findHelices(self):
+      print 'Finding Helices'
+      densityThreshold = "--denthr="+str(self.ui.spinBox.value())
+      minLength = "--minlen="+str(self.ui.spinBox_2.value())
+      lengthThreshold = "--lenthr="+str(self.ui.spinBox_3.value())
+      angleThreshold = "--angthr="+str(self.ui.doubleSpinBox.value())
+      subprocess.call(['python','EMAN2/bin/e2pwhelixfit.py','--mapin=EMAN2/bin/map.mrc','--pdbin=path0.pdb','--output=path0.pdb',densityThreshold,'--mapwohelix map_nohlx.mrc',minLength,lengthThreshold,angleThreshold])
+      self.app.viewers['calpha'].unloadData()
+      self.generatePathwalkedAtoms("path0.pdb")
+      print 'Finished finding helices'
+
+  def findSheets(self):
+      print 'Finding Sheets'
+      nsheets = "--nsht="+str(self.ui.spinBox_4.value())
+      minLength = "--minlen="+str(self.ui.spinBox_5.value())
+      scoreThreshold = "--cutoff="+str(self.ui.doubleSpinBox_2.value())
+      subprocess.call(['python','EMAN2/bin/e2pwsheetfit.py','--pdbin=path0.pdb','--output=path0.pdb',nsheets,minLength,scoreThreshold])
+      self.app.viewers['calpha'].unloadData()
+      self.generatePathwalkedAtoms("path0.pdb")
+      print 'Finished finding sheets'
 
   def clearCTermini(self):
       self.ui.lineEdit_13.setText("")
@@ -82,6 +112,9 @@ class Pathwalker(BaseDockWidget):
       print 'Finished Pathwalking'
 
   def pathWalk(self):
+      selectedChain = self.app.viewers['calpha'].main_chain
+      selectedChain.saveToPDB("pseudoatoms.pdb")
+
       dmin = "--dmin="+str(self.ui.lineEdit_9.text())
       dmax = "--dmax="+str(self.ui.lineEdit_10.text())
       threshold = "--mapthresh="+str(self.ui.lineEdit_11.text())

@@ -28,7 +28,6 @@ class Pathwalker(BaseDockWidget):
     self.nobonds = ""
     self.createUi()
     self.pathWalkerMode = True
-
     self.connect(self.ui.preprocessPushButton, QtCore.SIGNAL("clicked()"), self.preprocessButtonPress)
     self.connect(self.ui.pushButtonBrowseAtomScore, QtCore.SIGNAL("clicked (bool)"), self.loadVolume)
     self.connect(self.ui.pushButton_2, QtCore.SIGNAL("clicked()"), self.generateAtomsButtonPress)
@@ -48,11 +47,54 @@ class Pathwalker(BaseDockWidget):
     self.connect(self.ui.checkBox_2, QtCore.SIGNAL("clicked()"), self.viewAddedBonds)
     self.connect(self.ui.pushButton_5, QtCore.SIGNAL("clicked()"), self.findHelices)
     self.connect(self.ui.pushButton_16, QtCore.SIGNAL("clicked()"), self.findSheets)
+    self.connect(self.ui.pushButton_17, QtCore.SIGNAL("clicked()"), self.addPreprocessor)
+    self.connect(self.ui.pushButton_18, QtCore.SIGNAL("clicked()"), self.removePreprocessor)
+    self.connect(self.ui.pushButton_19, QtCore.SIGNAL("clicked()"), self.clearPreprocessors)
+
+    self.connect(self.ui.pushButton_21, QtCore.SIGNAL("clicked()"), self.addProcessorGenerate)
+    self.connect(self.ui.pushButton_20, QtCore.SIGNAL("clicked()"), self.removePreprocessorGenerate)
+    self.connect(self.ui.pushButton_22, QtCore.SIGNAL("clicked()"), self.clearPreprocessorsGenerate)
 
     #self.connect(self.ui.pushButton_5, QtCore.SIGNAL("clicked()"), self.deleteBonds)      
     #self.connect(self.ui.pushButton_6, QtCore.SIGNAL("clicked()"), self.createBonds)
     #self.connect(self.ui.pushButton_7, QtCore.SIGNAL("clicked()"), self.setCTermini)
     #self.connect(self.ui.pushButton_8, QtCore.SIGNAL("clicked()"), self.setNTermini)   
+  def addProcessorGenerate(self):
+    currentRow = self.ui.listWidget_4.currentRow()
+    item = self.ui.listWidget_4.takeItem(currentRow)
+    self.ui.listWidget_3.addItem(item)
+    
+    item = None
+
+  def removePreprocessorGenerate(self):
+    currentRow = self.ui.listWidget_3.currentRow()
+    item = self.ui.listWidget_3.takeItem(currentRow)
+    self.ui.listWidget_4.addItem(item)
+    item = None
+
+  def clearPreprocessorsGenerate(self):
+    for row in reversed(range(self.ui.listWidget_3.count())):
+        self.ui.listWidget_4.addItem(self.ui.listWidget_3.takeItem(row))
+    self.ui.listWidget_3.clear()
+
+  def addPreprocessor(self):
+    currentRow = self.ui.listWidget.currentRow()
+    item = self.ui.listWidget.takeItem(currentRow)
+    self.ui.listWidget_2.addItem(item)
+    item = None
+
+  def removePreprocessor(self):
+    currentRow = self.ui.listWidget_2.currentRow()
+    item = self.ui.listWidget_2.takeItem(currentRow)
+    self.ui.listWidget.addItem(item)
+    item = None
+
+
+  def clearPreprocessors(self):
+    for row in reversed(range(self.ui.listWidget_2.count())):
+        self.ui.listWidget.addItem(self.ui.listWidget_2.takeItem(row))
+    self.ui.listWidget_2.clear()
+    
 
   def preprocessButtonPress(self):
       print 'Preprocessing..'
@@ -102,8 +144,16 @@ class Pathwalker(BaseDockWidget):
       self.ui.tableWidget_2.setRowCount(0)
 
   def findPseudoAtoms(self):
-    paramStrings = "--process="+str(self.ui.lineEdit_3.text())+":ampweight="+str(self.ui.lineEdit_6.text())+":nseg="+str(self.ui.lineEdit_5.text())+":verbose=1:minsegsep="+str(self.ui.lineEdit_8.text())+":pseudoatom=1:thr="+str(self.ui.lineEdit_7.text())
-    subprocess.call(['python','EMAN2/bin/e2segment3d.py','EMAN2/bin/map.mrc','--pdbout=pseudoatoms.pdb',paramStrings])
+    processors = ""
+    for i in range(self.ui.listWidget_3.count()):
+      currentProcessor = "--process="+str(self.ui.listWidget_3.item(i).text())
+      if i != self.ui.listWidget_3.count()-1:
+        currentProcessor += " "
+      processors += currentProcessor
+    paramStrings = processors+":ampweight="+str(self.ui.lineEdit_6.text())+":nseg="+str(self.ui.lineEdit_5.text())+":verbose=1:minsegsep="+str(self.ui.lineEdit_8.text())+":pseudoatom=1:thr="+str(self.ui.lineEdit_7.text())
+    command = "python EMAN2/bin/e2segment3d.py EMAN2/bin/map.mrc --pdbout=pseudoatoms.pdb " + paramStrings
+    os.system(command)
+    #subprocess.call(['python','EMAN2/bin/e2segment3d.py','EMAN2/bin/map.mrc','--pdbout=pseudoatoms.pdb',paramStrings])
     self.generateAtoms("pseudoatoms.pdb")
 
   def pathwalkButtonPress(self):
@@ -113,8 +163,8 @@ class Pathwalker(BaseDockWidget):
 
   def pathWalk(self):
       selectedChain = self.app.viewers['calpha'].main_chain
-      selectedChain.saveToPDB("pseudoatoms.pdb")
-
+      selectedChain.saveToPDBPathwalker("pseudoatoms.pdb")
+      deletedAtoms = "--deletedatoms=" + str(self.app.viewers['calpha'].deletedAtoms).translate(None, '[],\'')
       dmin = "--dmin="+str(self.ui.lineEdit_9.text())
       dmax = "--dmax="+str(self.ui.lineEdit_10.text())
       threshold = "--mapthresh="+str(self.ui.lineEdit_11.text())
@@ -136,17 +186,18 @@ class Pathwalker(BaseDockWidget):
       nTerminus = "--end="+str(self.ui.lineEdit_14.text())
       if cTerminus == "--start=":
         if nTerminus == "--end=":
-          subprocess.call(['python','EMAN2/bin/e2pathwalker.py','pseudoatoms.pdb', '--mapfile=EMAN2/bin/map.mrc','--output=path0.pdb','--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,bondsToPrevent,newBonds])
+          subprocess.call(['python','EMAN2/bin/e2pathwalker.py','pseudoatoms.pdb', '--mapfile=EMAN2/bin/map.mrc','--output=path0.pdb',deletedAtoms,'--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,bondsToPrevent,newBonds])
         else:
-          subprocess.call(['python','EMAN2/bin/e2pathwalker.py','pseudoatoms.pdb', '--mapfile=EMAN2/bin/map.mrc','--output=path0.pdb','--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,nTerminus,bondsToPrevent,newBonds])
+          subprocess.call(['python','EMAN2/bin/e2pathwalker.py','pseudoatoms.pdb', '--mapfile=EMAN2/bin/map.mrc','--output=path0.pdb',deletedAtoms,'--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,nTerminus,bondsToPrevent,newBonds])
       else:
         if nTerminus == "--end=":
-          subprocess.call(['python','EMAN2/bin/e2pathwalker.py','pseudoatoms.pdb', '--mapfile=EMAN2/bin/map.mrc','--output=path0.pdb','--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,cTerminus,bondsToPrevent,newBonds])
+          subprocess.call(['python','EMAN2/bin/e2pathwalker.py','pseudoatoms.pdb', '--mapfile=EMAN2/bin/map.mrc','--output=path0.pdb',deletedAtoms,'--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,cTerminus,bondsToPrevent,newBonds])
         else:
-          subprocess.call(['python','EMAN2/bin/e2pathwalker.py','pseudoatoms.pdb', '--mapfile=EMAN2/bin/map.mrc','--output=path0.pdb','--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,nTerminus,cTerminus,bondsToPrevent,newBonds])
+          subprocess.call(['python','EMAN2/bin/e2pathwalker.py','pseudoatoms.pdb', '--mapfile=EMAN2/bin/map.mrc','--output=path0.pdb',deletedAtoms,'--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,nTerminus,cTerminus,bondsToPrevent,newBonds])
       self.app.viewers['calpha'].unloadData()
       self.generatePathwalkedAtoms("path0.pdb")
       self.app.viewers['calpha'].emitModelChanged()
+      self.app.viewers['calpha'].deletedatoms = []
 
   def generateAtoms(self, fileName):
       def setupChain(mychain):            
@@ -348,7 +399,15 @@ class Pathwalker(BaseDockWidget):
  
 
   def preprocess(self):
-      subprocess.call(['python','EMAN2/bin/e2proc3d.py',self.volumeName, 'EMAN2/bin/map.mrc','--process',str(self.ui.normalizeLine.text()),'--process',str(self.ui.zeroThresholdLine.text())])
+      preprocessors = ""
+      for i in range(self.ui.listWidget_2.count()):
+        currentProcessor = "--process "+str(self.ui.listWidget_2.item(i).text())
+        if i != self.ui.listWidget_2.count()-1:
+          currentProcessor += " "
+        preprocessors += currentProcessor
+      command = "python EMAN2/bin/e2proc3d.py " + self.volumeName + " EMAN2/bin/map.mrc " + preprocessors
+      os.system(command)
+      #subprocess.call(['python','EMAN2/bin/e2proc3d.py',self.volumeName, 'EMAN2/bin/map.mrc',preprocessors])
       self.app.viewers["volume"].loadDataFromFile("EMAN2/bin/map.mrc")
 
 

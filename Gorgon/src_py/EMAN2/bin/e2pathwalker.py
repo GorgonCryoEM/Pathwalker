@@ -120,10 +120,15 @@ def read_pdb(filename, atomtype=None, chain=None, noisemodel=None):
 
 	
 	count = 1
+	#numDeletedAtoms = 0
 	for line in (i for i in lines if i.startswith("ATOM  ")):
-
 		
 		atomnumber = int(line[22:27])
+		#if str(atomnumber) in self.deletedAtoms:
+		#	numDeletedAtoms += 1
+		#	print atomnumber
+		#	continue
+		#atomnumber -= numDeletedAtoms
 		pos = [float(line[30:38].strip()), float(line[38:46].strip()), float(line[46:54].strip())]
 		points[atomnumber] = noisemodel(pos) # tuple([noisemodel(i) for i in x])
 		path.append(atomnumber)
@@ -136,10 +141,48 @@ def read_pdb(filename, atomtype=None, chain=None, noisemodel=None):
 	
 	return path, points
 
+def read_pdb_with_deleted_atoms(filename, atomtype=None, chain=None, noisemodel=None, deletedatoms=None):
+	print "\n=== Reading %s (atom type %s, chain %s) ==="%(filename, atomtype, chain)
+	points = {}
+	path = []
+	
+	if not noisemodel:
+		noisemodel = lambda x:x
+	
 
+	pdbfile = open(filename, "r")
+	lines = pdbfile.readlines()
+	pdbfile.close()
 
+	
+	count = 1
+	numDeletedAtoms = 0
+	for line in (i for i in lines if i.startswith("ATOM  ")):
+		
+		atomnumber = int(line[22:27])
+		if str(atomnumber) in deletedatoms:
+			numDeletedAtoms += 1
+			print atomnumber
+			continue
+		atomnumber -= numDeletedAtoms
+		pos = [float(line[30:38].strip()), float(line[38:46].strip()), float(line[46:54].strip())]
+		points[atomnumber] = noisemodel(pos) # tuple([noisemodel(i) for i in x])
+		path.append(atomnumber)
+		count += 1
 
+	if len(points) == 0:
+		raise Exception, "No atoms found in PDB file! Are chain and atomtype correct?"
+	
+	print "Loaded %s points"%len(points)
+	
+	return path, points
 
+#def is_float(s):
+#	try:
+#		float(s)
+#		return True
+#	except ValueError:
+#		return False
 
 
 def write_pdbs(filename, paths, points=None, bfactors=None, tree=None):
@@ -202,7 +245,7 @@ def write_pdbs(filename, paths, points=None, bfactors=None, tree=None):
 
 
 class PathWalker(object):
-	def __init__(self, filename=None, outfile=None, start=None, end=None, edgefile=None, edges=None, dmin=2.0, dmax=5.0, average=3.78, atomtype='CA', chain=None, noise=0, solver=False, json=True, overwrite=False, mrcfile=None,  mrcweight=1000, mapthresh=0, subunit=1, nobonds=None, newbonds=None):
+	def __init__(self, filename=None, outfile=None, start=None, end=None, edgefile=None, edges=None, dmin=2.0, dmax=5.0, average=3.78, atomtype='CA', chain=None, noise=0, solver=False, json=True, overwrite=False, mrcfile=None,  mrcweight=1000, mapthresh=0, subunit=1, nobonds=None, newbonds=None, deletedatoms=None):
 
 		# Run parameters
 		self.renderer = CAlphaRenderer()
@@ -221,6 +264,7 @@ class PathWalker(object):
 		self.mrcweight=mrcweight
 		self.nobonds = nobonds
 		self.newbonds = newbonds
+		self.deletedatoms = deletedatoms
 		print self.nobonds
 		if self.mrcfile:
 			self.mrc=EMData(mrcfile)
@@ -238,8 +282,9 @@ class PathWalker(object):
 			self.atomtype = None
 			
 		# Read PDB file
-		_, self.points = read_pdb(filename=filename, atomtype=self.atomtype, chain=self.chain, noisemodel=self.noisemodel)
-		
+		#_, self.points = read_pdb(filename=filename, atomtype=self.atomtype, chain=self.chain, noisemodel=self.noisemodel)
+		_, self.points = read_pdb_with_deleted_atoms(filename=filename, atomtype=self.atomtype, chain=self.chain, noisemodel=self.noisemodel, deletedatoms=self.deletedatoms)
+		self.deletedatoms = []
 		# Point graph
 		self.itree = {}
 		# Calculated distances
@@ -258,7 +303,8 @@ class PathWalker(object):
 		
 		for count1, point1 in self.points.items():
 			for count2, point2 in self.points.items():
-
+				#if not is_float(count1) or is_float(count2) or is_float(point1) or is_float(point2):
+				#	continue
 				d, w = self.calcweight(point1, point2)
 				self.distances[(count1, count2)] = d
 				self.weighted[(count1, count2)] = w
@@ -313,11 +359,6 @@ class PathWalker(object):
 		bondAtoms1 = []
 		bondAtoms2 = []
 		size = len(self.deletededges)
-		#for i in range(size-1):
-		#	self.itree[self.deletededges[i]].discard(self.deletededges[i+1])
-		#	self.itree[self.deletededges[i+1]].discard(self.deletededges[i])
-		#	self.weighted[self.deletededges[i]] = 100000
-		#	self.weighted[self.deletededges[i+1]] = 100000
 		if size % 2 == 1:
 			size -= 1
 		for i in range(size):
@@ -326,7 +367,6 @@ class PathWalker(object):
 			else:
 				bondAtoms2.append(self.deletededges[i])
 		for i in range(len(bondAtoms1)):
-			print str(bondAtoms1[i])+","+str(bondAtoms2[i])
 			if bondAtoms2[i] in self.itree[bondAtoms1[i]] or bondAtoms1[i] in self.itree[bondAtoms1[i]]:
 				print "bond to delete"
 				self.itree[bondAtoms1[i]].discard(bondAtoms2[i])
@@ -437,7 +477,6 @@ class PathWalker(object):
 			fixededges.append((int(newBonds[i]),int(newBonds[i+1])))
 		return fixededges
 
-
 	
 	def read_fixed(self, edgefile):
 		# Edge file format:
@@ -468,6 +507,11 @@ class PathWalker(object):
 			for i in range(len(fragment)):
 				fixededges.append(fragment[i])
 		return fixededges
+
+	def read_deleted_atoms(self):
+		if not self.deletedatoms:
+			return []
+		return self.deletedatoms.split()
 	
 	def read_no_bonds(self):
 		if not self.nobonds:
@@ -616,7 +660,7 @@ class PathWalker(object):
 
 		self.write_tsplib(filename=tspfile)
 		
-		args =' '.join(['LKH',lkhfile])
+		args =' '.join(['./LKH',lkhfile])
 		print args
 		try:
 			a = subprocess.Popen(args, shell=True)
@@ -793,6 +837,7 @@ class PathWalker(object):
 				#np=[(x[0]+x[1]) for x in zip(p,a)]
 				
 				if self.mrcfile:
+					#print str(np[0]/self.apix_x+SX/2) + " " + str(np[1]/self.apix_y+SY/2) + " " + str(np[2]/self.apix_z+SZ/2)
 					mmm=self.mrc.get_value_at(int(round(np[0]/self.apix_x+SX/2)),int(round(np[1]/self.apix_y+SY/2)),int(round(np[2]/self.apix_z+SZ/2)))
 				mpt+=mmm
 				count+=1
@@ -809,7 +854,6 @@ class PathWalker(object):
 			#w=w+dst*self.mrcweight
 			#dst=-mpt
 			w=w+dst*self.mrcweight
-		
 		w=int(w+0)
 		#print self.mrc.get_value_at(int(a[0]),int(a[1]),int(a[2]))
 		wmax=100000
@@ -1039,8 +1083,9 @@ def main():
 	parser.add_argument("--verbose", "-v", dest="verbose", action="store", metavar="n",type=int, default=0, help='verbose level [0-9], higher number means higher level of verboseness')
 	parser.add_argument("--ppid", type=int, help="Set the PID of the parent process, used for cross platform PPID",default=-1)
 	parser.add_argument("--subunit", type=int, help="Number of subunits.",default=1)
-	parser.add_argument("--nobonds", type=str,help="Comma separated list of bonds to prevent", default=None)
-	parser.add_argument("--newbonds", type=str,help="Comma separated list of bonds to create", default=None)
+	parser.add_argument("--nobonds", type=str,help="Space separated list of bonds to prevent", default=None)
+	parser.add_argument("--newbonds", type=str,help="Space separated list of bonds to create", default=None)
+	parser.add_argument("--deletedatoms", type=str,help="Space separated list of deleted atoms", default=None)
 	(options, args) = parser.parse_args()
 
 	if len(args) == 1:
@@ -1071,6 +1116,7 @@ def main():
 			subunit=options.subunit,
 			nobonds=options.nobonds,
 			newbonds=options.newbonds,
+			deletedatoms=options.deletedatoms,
 		)
 		pw.run()
 

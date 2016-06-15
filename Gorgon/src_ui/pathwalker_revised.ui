@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>632</width>
-    <height>703</height>
+    <width>779</width>
+    <height>702</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,10 +17,10 @@
    <widget class="QTabWidget" name="tabWidget">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>0</x>
       <y>0</y>
-      <width>522</width>
-      <height>672</height>
+      <width>511</width>
+      <height>551</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -29,153 +29,329 @@
       <verstretch>0</verstretch>
      </sizepolicy>
     </property>
+    <property name="minimumSize">
+     <size>
+      <width>511</width>
+      <height>0</height>
+     </size>
+    </property>
     <property name="currentIndex">
-     <number>3</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="tab">
      <attribute name="title">
       <string>Preprocess</string>
      </attribute>
-     <widget class="QLabel" name="label_4">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>100</y>
-        <width>70</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Processor 2</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="pushButton_3">
-      <property name="geometry">
-       <rect>
-        <x>14</x>
-        <y>155</y>
-        <width>361</width>
-        <height>32</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Preprocess</string>
-      </property>
-     </widget>
-     <widget class="QLineEdit" name="lineEdit">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>12</y>
-        <width>261</width>
-        <height>21</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="pushButton">
-      <property name="geometry">
-       <rect>
-        <x>280</x>
-        <y>10</y>
-        <width>97</width>
-        <height>32</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Volume...</string>
-      </property>
-     </widget>
-     <widget class="QLineEdit" name="lineEdit_2">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>124</y>
-        <width>351</width>
-        <height>21</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>threshold.belowtozero</string>
-      </property>
-     </widget>
-     <widget class="QLineEdit" name="lineEdit_4">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>70</y>
-        <width>351</width>
-        <height>21</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>normalize.edgemean</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_3">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>50</y>
-        <width>70</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Processor 1</string>
-      </property>
-     </widget>
+     <layout class="QGridLayout" name="gridLayout_3">
+      <item row="3" column="2">
+       <widget class="QPushButton" name="pushButton_17">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Add</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="2">
+       <widget class="QPushButton" name="pushButton_19">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Clear</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="3" rowspan="3">
+       <widget class="QListWidget" name="listWidget">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>192</height>
+         </size>
+        </property>
+        <item>
+         <property name="text">
+          <string>threshold.belowtominval</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>threshold.belowtozero_cut</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>threshold.binary</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>threshold.binary.fourier</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>threshold.binaryrange</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>threshold.clampminmax</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>threshold.clampminmax.nsigma</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>threshold.compress</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>threshold.notzero</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>normalize.bymass</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>normalize.circlemean</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>normalize.local</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>normalize.ramp.normvar</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>normalize.lredge</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>normalize.rows</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>normalize.maxmin</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>normalize.mask</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>normalize.toimage</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>normalize.unitlen</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>normalize.unitsum</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="2" column="2">
+       <widget class="QPushButton" name="pushButton_18">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Remove</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>16</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Current Processors</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="QLabel" name="label_25">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>16</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Available Processors</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLineEdit" name="lineEdit">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>21</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" rowspan="3" colspan="2">
+       <widget class="QListWidget" name="listWidget_2">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>192</height>
+         </size>
+        </property>
+        <item>
+         <property name="text">
+          <string>normalize.edgemean</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>threshold.belowtozero</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="5" column="0" colspan="4">
+       <widget class="QPushButton" name="pushButton_3">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Preprocess</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" colspan="2">
+       <widget class="QPushButton" name="pushButton">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Volume...</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
     <widget class="QWidget" name="tab_2">
      <attribute name="title">
       <string>Generate Pseudoatoms</string>
      </attribute>
-     <layout class="QGridLayout" name="_2">
-      <item row="5" column="1">
-       <widget class="QLineEdit" name="lineEdit_6">
-        <property name="text">
-         <string>1022</string>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="0" colspan="2">
-       <widget class="QPushButton" name="pushButton_2">
-        <property name="text">
-         <string>Generate PseudoAtoms</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1">
+     <layout class="QGridLayout" name="gridLayout_6">
+      <item row="4" column="2">
        <widget class="QLineEdit" name="lineEdit_5">
         <property name="text">
          <string>1</string>
         </property>
        </widget>
       </item>
-      <item row="5" column="0">
-       <widget class="QLabel" name="label_7">
+      <item row="7" column="2">
+       <widget class="QLineEdit" name="lineEdit_8">
         <property name="text">
-         <string>Segments</string>
+         <string>1</string>
         </property>
        </widget>
       </item>
-      <item row="8" column="0">
+      <item row="1" column="1">
+       <widget class="QPushButton" name="pushButton_20">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Remove</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QPushButton" name="pushButton_21">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Add</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="2">
+       <widget class="QLineEdit" name="lineEdit_7">
+        <property name="text">
+         <string>10</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QLabel" name="label_26">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>16</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Available Processors</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0">
        <widget class="QLabel" name="label_9">
         <property name="text">
          <string>Segment Separation</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="0">
-       <widget class="QLabel" name="label_8">
+      <item row="5" column="2">
+       <widget class="QLineEdit" name="lineEdit_6">
         <property name="text">
-         <string>Threshold</string>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="1">
-       <widget class="QLineEdit" name="lineEdit_7">
-        <property name="text">
-         <string>10</string>
+         <string>1022</string>
         </property>
        </widget>
       </item>
@@ -186,24 +362,180 @@
         </property>
        </widget>
       </item>
-      <item row="8" column="1">
-       <widget class="QLineEdit" name="lineEdit_8">
+      <item row="1" column="2" rowspan="3">
+       <widget class="QListWidget" name="listWidget_4">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>192</height>
+         </size>
+        </property>
+        <item>
+         <property name="text">
+          <string>segment.distance</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>threshold.belowtominval</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>threshold.belowtozero_cut</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>threshold.binary</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>threshold.binary.fourier</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>threshold.binaryrange</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>threshold.clampminmax</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>threshold.clampminmax.nsigma</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>threshold.compress</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>threshold.notzero</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>normalize.bymass</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>normalize.circlemean</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>normalize.local</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>normalize.ramp.normvar</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>normalize.lredge</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>normalize.rows</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>normalize.maxmin</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>normalize.mask</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>normalize.toimage</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>normalize.unitlen</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>normalize.unitsum</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="label_7">
         <property name="text">
-         <string>1</string>
+         <string>Segments</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0">
+       <widget class="QLabel" name="label_8">
+        <property name="text">
+         <string>Threshold</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" rowspan="3">
+       <widget class="QListWidget" name="listWidget_3">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>192</height>
+         </size>
+        </property>
+        <item>
+         <property name="text">
+          <string>segment.kmeans</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="8" column="1">
+       <widget class="QPushButton" name="pushButton_2">
+        <property name="text">
+         <string>Generate PseudoAtoms</string>
         </property>
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="QLineEdit" name="lineEdit_3">
+       <widget class="QPushButton" name="pushButton_22">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>32</height>
+         </size>
+        </property>
         <property name="text">
-         <string>segment.kmeans</string>
+         <string>Clear</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="label_5">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_4">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>16</height>
+         </size>
+        </property>
         <property name="text">
-         <string>Process</string>
+         <string>Current Processors</string>
         </property>
        </widget>
       </item>
@@ -293,81 +625,121 @@
       </item>
       <item row="5" column="0" colspan="2">
        <widget class="QTabWidget" name="tabWidget_2">
-        <property name="minimumSize">
+        <property name="maximumSize">
          <size>
-          <width>0</width>
-          <height>422</height>
+          <width>16777215</width>
+          <height>443</height>
          </size>
         </property>
         <property name="currentIndex">
-         <number>2</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="tab_4">
          <attribute name="title">
           <string>Prevent Edges</string>
          </attribute>
-         <layout class="QGridLayout" name="gridLayout_3">
-          <item row="2" column="1">
-           <widget class="QPushButton" name="pushButton_6">
-            <property name="text">
-             <string>Remove from list</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1">
-           <widget class="QCheckBox" name="checkBox">
-            <property name="text">
-             <string>Display removed edges</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0" rowspan="5">
-           <widget class="QTableWidget" name="tableWidget">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>351</height>
-             </size>
-            </property>
-            <column>
-             <property name="text">
-              <string>Atom 1</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Atom 2</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Distance</string>
-             </property>
-            </column>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QPushButton" name="pushButton_7">
-            <property name="text">
-             <string>Clear list</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_12">
-            <property name="text">
-             <string>Prevent edges (Ctrl + left click two atoms):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QPushButton" name="pushButton_15">
-            <property name="text">
-             <string>Prevent selected edge</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
+         <widget class="QTableWidget" name="tableWidget">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>43</y>
+            <width>235</width>
+            <height>250</height>
+           </rect>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>235</width>
+            <height>250</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>311</height>
+           </size>
+          </property>
+          <column>
+           <property name="text">
+            <string>Atom 1</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Atom 2</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Distance</string>
+           </property>
+          </column>
+         </widget>
+         <widget class="QLabel" name="label_12">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>12</y>
+            <width>235</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Prevent edges (Ctrl + left click two atoms):</string>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="pushButton_15">
+          <property name="geometry">
+           <rect>
+            <x>263</x>
+            <y>39</y>
+            <width>172</width>
+            <height>32</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Prevent selected edge</string>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="pushButton_6">
+          <property name="geometry">
+           <rect>
+            <x>263</x>
+            <y>73</y>
+            <width>140</width>
+            <height>32</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Remove from list</string>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="pushButton_7">
+          <property name="geometry">
+           <rect>
+            <x>263</x>
+            <y>107</y>
+            <width>93</width>
+            <height>32</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Clear list</string>
+          </property>
+         </widget>
+         <widget class="QCheckBox" name="checkBox">
+          <property name="geometry">
+           <rect>
+            <x>267</x>
+            <y>142</y>
+            <width>161</width>
+            <height>18</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Display removed edges</string>
+          </property>
+         </widget>
          <zorder>label</zorder>
          <zorder>lineEdit_9</zorder>
          <zorder>tableWidget</zorder>
@@ -381,74 +753,108 @@
          <attribute name="title">
           <string>Force Edges</string>
          </attribute>
-         <layout class="QGridLayout" name="gridLayout_2">
-          <item row="1" column="1">
-           <widget class="QPushButton" name="pushButton_8">
-            <property name="text">
-             <string>Force selected edge</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_13">
-            <property name="text">
-             <string>Force edges (Ctrl + left click two atoms):</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0" rowspan="5">
-           <widget class="QTableWidget" name="tableWidget_2">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>351</height>
-             </size>
-            </property>
-            <column>
-             <property name="text">
-              <string>Atom 1</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Atom 2</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Distance</string>
-             </property>
-            </column>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QPushButton" name="pushButton_9">
-            <property name="text">
-             <string>Remove from list</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QPushButton" name="pushButton_10">
-            <property name="text">
-             <string>Clear list</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1">
-           <widget class="QCheckBox" name="checkBox_2">
-            <property name="text">
-             <string>Display forced edges</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
+         <widget class="QTableWidget" name="tableWidget_2">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>40</y>
+            <width>235</width>
+            <height>250</height>
+           </rect>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>235</width>
+            <height>250</height>
+           </size>
+          </property>
+          <column>
+           <property name="text">
+            <string>Atom 1</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Atom 2</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Distance</string>
+           </property>
+          </column>
+         </widget>
+         <widget class="QPushButton" name="pushButton_8">
+          <property name="geometry">
+           <rect>
+            <x>260</x>
+            <y>40</y>
+            <width>160</width>
+            <height>32</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Force selected edge</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_13">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>12</y>
+            <width>233</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Force edges (Ctrl + left click two atoms):</string>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="pushButton_9">
+          <property name="geometry">
+           <rect>
+            <x>260</x>
+            <y>80</y>
+            <width>140</width>
+            <height>32</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Remove from list</string>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="pushButton_10">
+          <property name="geometry">
+           <rect>
+            <x>260</x>
+            <y>120</y>
+            <width>93</width>
+            <height>32</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Clear list</string>
+          </property>
+         </widget>
+         <widget class="QCheckBox" name="checkBox_2">
+          <property name="geometry">
+           <rect>
+            <x>260</x>
+            <y>160</y>
+            <width>147</width>
+            <height>18</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Display forced edges</string>
+          </property>
+         </widget>
         </widget>
         <widget class="QWidget" name="tab_6">
          <attribute name="title">
           <string>Set Termini</string>
          </attribute>
-         <layout class="QGridLayout" name="gridLayout_4">
+         <layout class="QGridLayout" name="gridLayout_2">
           <item row="0" column="0">
            <widget class="QLabel" name="label_16">
             <property name="text">
@@ -456,44 +862,44 @@
             </property>
            </widget>
           </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="label_15">
-            <property name="text">
-             <string>Set C-terminus:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="0">
-           <widget class="QLineEdit" name="lineEdit_14"/>
-          </item>
-          <item row="5" column="3">
-           <widget class="QPushButton" name="pushButton_12">
-            <property name="text">
-             <string>Set c-terminus as selected</string>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="0">
            <widget class="QLineEdit" name="lineEdit_13"/>
           </item>
-          <item row="1" column="3">
-           <widget class="QPushButton" name="pushButton_11">
-            <property name="text">
-             <string>Set n-terminus as selected</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="2">
+          <item row="1" column="1">
            <widget class="QPushButton" name="pushButton_14">
             <property name="text">
              <string>Reset</string>
             </property>
            </widget>
           </item>
-          <item row="5" column="2">
+          <item row="1" column="2">
+           <widget class="QPushButton" name="pushButton_11">
+            <property name="text">
+             <string>Set n-terminus as selected</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_15">
+            <property name="text">
+             <string>Set C-terminus:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLineEdit" name="lineEdit_14"/>
+          </item>
+          <item row="3" column="1">
            <widget class="QPushButton" name="pushButton_13">
             <property name="text">
              <string>Reset</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2">
+           <widget class="QPushButton" name="pushButton_12">
+            <property name="text">
+             <string>Set c-terminus as selected</string>
             </property>
            </widget>
           </item>
@@ -758,6 +1164,8 @@
      </layout>
     </widget>
    </widget>
+   <zorder>tabWidget</zorder>
+   <zorder>pushButton_2</zorder>
   </widget>
  </widget>
  <resources/>

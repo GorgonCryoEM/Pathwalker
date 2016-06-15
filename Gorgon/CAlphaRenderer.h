@@ -222,6 +222,7 @@ namespace wustl_mm {
 			void RemoveSelectedBonds(string nobonds);
 			void addSelectedBonds(string newBonds);
 			void DrawBackboneModelPathwalker(int subSceneIndex, bool selectEnabled);
+			void DeleteAtomFromVisualization(unsigned long long deletedAtom);
 		private:
 			void DrawBackboneModel(int subSceneIndex, bool selectEnabled);
 			
@@ -410,6 +411,10 @@ namespace wustl_mm {
 					}
 				}
 			}
+		}
+
+		void CAlphaRenderer::DeleteAtomFromVisualization(unsigned long long deletedAtom) {
+			atoms[deletedAtom].SetVisible(false);
 		}
 
 		string CAlphaRenderer::FindDistance(int atom1, int atom2) {
@@ -1395,9 +1400,6 @@ namespace wustl_mm {
 				case CALPHA_DISPLAY_STYLE_SIDE_CHAIN: // Side chains
 					DrawSideChainModel(subSceneIndex, selectEnabled);
 					break;
-				case CALPHA_DISPLAY_STYLE_BACKBONE_PATHWALKER: // Backbone only
-					DrawBackboneModelPathwalker(subSceneIndex, selectEnabled);
-					break;
 			}
 		}
 
@@ -1861,6 +1863,19 @@ namespace wustl_mm {
 		}
 
 		void CAlphaRenderer::DeleteAtom(unsigned long long index) {
+			/**
+			for(auto it = begin(atoms); it != end(atoms);)
+			{
+				if (it->first == index)
+				{
+					it = atoms.erase(it);
+				}
+				else 
+				{
+					++it;
+				}
+			}
+			**/
 			atoms.erase(atoms.find(index));
 		}
 
@@ -2209,34 +2224,9 @@ namespace wustl_mm {
 		}
 
 		string CAlphaRenderer::getDeletedBondAtoms() {
-			/**
-			string deletedBondAtoms = "";
-			for(int i = 0; i < ix0s.size(); i++) {
-				//cout << atoms[ix0s[i]].GetPosition().X() << endl;
-				deletedBondAtoms += std::to_string(ix0s[i]);
-				PDBAtom atom0Ix = atoms[ix0s[i]];
-				deletedBondAtoms += ",";
-				deletedBondAtoms += std::to_string(atom0Ix.GetPosition().X());
-				deletedBondAtoms += ",";
-				deletedBondAtoms += std::to_string(atom0Ix.GetPosition().Y());
-				deletedBondAtoms += ",";
-				deletedBondAtoms += std::to_string(atom0Ix.GetPosition().Z());
-				deletedBondAtoms += ",";
-				deletedBondAtoms += std::to_string(ix1s[i]);
-				PDBAtom atom1Ix = atoms[ix1s[i]];
-				deletedBondAtoms += ",";
-				deletedBondAtoms += std::to_string(atom1Ix.GetPosition().X());
-				deletedBondAtoms += ",";
-				deletedBondAtoms += std::to_string(atom1Ix.GetPosition().Y());
-				deletedBondAtoms += ",";
-				deletedBondAtoms += std::to_string(atom1Ix.GetPosition().Z());
-				deletedBondAtoms += "\n";
-			}
-			**/
 
 			ofstream myfile;
 			myfile.open("noBondConstraints");
-			//myfile.open("noBondConstraints.csv");
 			
 			string atomsToNotBond;
 				int atomIndex = 0;
@@ -2248,13 +2238,11 @@ namespace wustl_mm {
 						if(atomIndex%2 == 0) {
 							atom1 = it->second.GetResSeq();
 							atomsToNotBond += " ";
-							//atomsToBond += ",";
 						}
 						else {
 							atom2 = it->second.GetResSeq();
-							//AddBond(PDBBond((unsigned long long)atom1, (unsigned long long)atom2, true));
 							atomsToNotBond += " ";
-							//atomsToBond += "\n";
+
 						}
 						atomIndex += 1;
 					}
@@ -2270,30 +2258,11 @@ namespace wustl_mm {
 		}
 
 		void CAlphaRenderer::RemoveSelectedBonds(string nobonds) {
-			/**
-			for(int i = 0; i < bonds.size(); i++ ) {
-				if(bonds[i].GetSelected()) {
-					bondsToDelete.push_back(bonds[i]);
-					ix0s.push_back(bonds[i].GetAtom0Ix());
-					ix1s.push_back(bonds[i].GetAtom1Ix());
-					atoms[bonds[i].GetAtom0Ix()].SetDeletedBond(bonds[i].GetAtom1Ix());
-					atoms[bonds[i].GetAtom1Ix()].SetDeletedBond(bonds[i].GetAtom0Ix());
-					DeleteBond(i);
-				}				
-			}
-			**/
-			//ifstream infile("noBondConstraints");
-			//if (infile.good()) 
-			//{
 				string sLine = nobonds;
-				//getline(infile, sLine);
 				std::stringstream ss(sLine);
 				std::istream_iterator<std::string> begin(ss);
 				std::istream_iterator<std::string> end;
 				std::vector<std::string> strs(begin, end);
-				//std::vector<std::string> strs;
-				//split(sLine, strs,' ');
-				//boost::split(strs, sLine, boost::is_any_of("\t "));
 				std::vector<unsigned int> atomNums;
 				for(int i = 0; i < strs.size(); i++) {
 					unsigned int currentAtomNum = (unsigned int)std::stoi(strs[i]);
@@ -2323,14 +2292,10 @@ namespace wustl_mm {
 		void CAlphaRenderer::addSelectedBonds(string newBonds) {
 
 				string sLine = newBonds;
-				//getline(infile, sLine);
 				std::stringstream ss(sLine);
 				std::istream_iterator<std::string> begin(ss);
 				std::istream_iterator<std::string> end;
 				std::vector<std::string> strs(begin, end);
-				//std::vector<std::string> strs;
-				//split(sLine, strs,' ');
-				//boost::split(strs, sLine, boost::is_any_of("\t "));
 				std::vector<unsigned int> atomNums;
 				for(int i = 0; i < strs.size(); i++) {
 					unsigned int currentAtomNum = (unsigned int)std::stoi(strs[i]);

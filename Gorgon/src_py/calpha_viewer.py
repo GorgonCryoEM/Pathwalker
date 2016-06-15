@@ -63,6 +63,7 @@ class CAlphaViewer(BaseViewer):
         self.ribbonMouseMapping[0] = {}   
         self.ribbonMouseMapping[1] = {}
         self.ribbonMouseMapping[2] = {}
+        self.deletedAtoms = []
         
         #self.connect(self, QtCore.SIGNAL("elementSelected (int, int, int, int, int, int, QMouseEvent)"), self.centerOnSelectedAtoms)
         self.connect(self, QtCore.SIGNAL("elementClicked (int, int, int, int, int, int, QMouseEvent)"), self.processElementClick)
@@ -696,9 +697,12 @@ residues in the Chain object.
                 else:
                     self.main_chain.setSelection(addOne=atom.getResSeq())
                 print self.main_chain.getSelection()
-            elif event.modifiers() & QtCore.Qt.SHIFT:#Manual deletion
+            elif event.modifiers() & QtCore.Qt.SHIFT:#Manual deletion for pathwalker
                 atom = CAlphaRenderer.getAtomFromHitStack(self.renderer, hits[0], False, *hits[1:])
-                CAlphaRenderer.deleteAtom(self.renderer, atom.getHashKey())
+                CAlphaRenderer.deleteAtomFromVisualization(self.renderer, atom.getHashKey())
+                self.deletedAtoms.append(atom.getResSeq())
+                print self.deletedAtoms
+                self.emitModelChanged()
                 #
             else:
                 atom = CAlphaRenderer.getAtomFromHitStack(self.renderer, hits[0], True, *hits[1:])

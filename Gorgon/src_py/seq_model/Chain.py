@@ -968,6 +968,13 @@ This returns a list of all the residue numbers (unsorted).
     outfile.flush()
     outfile.close()
 
+  def saveToPDBPathwalker(self, filename):
+    s = self.toPDBPathwalker()
+    outfile=open(filename,'w')
+    outfile.write(s)
+    outfile.flush()
+    outfile.close()
+
   def setIDs(self, new_pdbID, new_chainID):
     """
 This changes the pdbID and chainID attributes of a Chain instance.
@@ -1170,6 +1177,128 @@ If CAlphaPlaceholders=False, residues with no atoms will be ignored.
 
     return s
     
+  def toPDBPathwalker(self, backboneOnly=False, CAlphaPlaceholders=True,  verbose=True): 
+
+    #Change: uses a C-alpha placeholder atom entry with no x,y,z coordinates if the residue has no atoms
+    #Not Thread-Safe
+    if self.getPdbID()[0] == '_':
+        header = ''
+    else:
+        header = ('HEADER' + ' '*56 + self.getPdbID()).ljust(80) + '\n'
+    atom_index=1
+    Helix.serialNo=0  #This is what makes it not thread-safe
+    dateTime = str(QtCore.QDateTime.currentDateTime().toString())
+    gorgonLine1 = 'REMARK   5'.ljust(80) + '\n'
+    gorgonLine2 = ('REMARK   5 Gorgon (C) 2005-2008 output on %s' % dateTime).ljust(80) + '\n'
+    s = header + gorgonLine1 + gorgonLine2
+    
+    i = 1
+    residueIndices = self.residueRange()
+    for index in residueIndices[::13]:
+        resList = ['   ']*13
+        for n in range(13):
+            try:
+                resList[n] = self[index+n].symbol3
+            except (KeyError,  IndexError):
+                continue                
+        line = 'SEQRES %s %s %s  %s %s %s %s %s %s %s %s %s %s %s %s %s' % ( str(i).rjust(3), self.getChainID(), str(len(residueIndices)).rjust(4), 
+                                                                            resList[0], resList[1], resList[2], resList[3], resList[4], resList[5], resList[6], 
+                                                                            resList[7], resList[8], resList[9], resList[10], resList[11], resList[12] )
+        line += ' '*10 + '\n'
+        s += line
+        i += 1
+    
+    for serialNo in sorted(self.helices.keys()):
+      helix=self.helices[serialNo]
+      s=s+helix.toPDB()
+
+    for sheetID in sorted(self.sheets.keys()):
+      sheet=self.sheets[sheetID]
+      s=s+sheet.toPDB(sheetID)
+
+    #TODO: figure out how to handle orphan strands
+    for strandID in sorted(self.orphanStrands.keys()):
+      strand = self.orphanStrands[strandID]
+      s=s+strand.toPDB()
+
+    for residue_index in self.residueRange():
+      residue=self[residue_index]
+
+      if backboneOnly:
+        atoms = ['CA']
+      else:
+        atoms=residue.getAtomNames()
+
+      try:
+        serial = str(atom_index).rjust(5)
+        altLoc = ' '
+        resName = residue.symbol3
+        chainID = self.chainID
+        resSeq = str(residue_index).rjust(4)
+        iCode = ' '
+        occupancy = ' '*6 #"%6.2f " %atom.getOccupancy()
+        tempFactor = ' '*6 #"%6.2f " %atom.getTempFactor()
+        
+        if not atoms:
+            if CAlphaPlaceholders:
+                name = 'CA'.center(4)
+                x = ' '*8
+                y = ' '*8
+                z = ' '*8
+                element = ' C'
+                charge = '  '
+                
+                line = 'ATOM  %s %s%s%s %s%s%s   %s%s%s%s%s          %s%s\n' % (serial,  name,  altLoc,  resName,  chainID,  
+                                                                                resSeq,  iCode,  x,  y,  z,  occupancy,  tempFactor,  element,  charge)
+                s = s + line
+                atom_index += 1
+        for atom_name in atoms:
+            atom=residue.getAtom(atom_name)
+            
+            serial = str(atom_index).rjust(5)
+            
+            name = str(atom_name).center(4)
+            x = "%8.3f" %float(atom.getPosition().x()+109.0)
+            if len(x) > 8:
+                raise ValueError
+            y = "%8.3f" %float(atom.getPosition().y()+108.0)
+            if len(y) > 8:
+                raise ValueError
+            z = "%8.3f" %float(atom.getPosition().z()+108.0)
+            if len(z) > 8:
+                raise ValueError
+            element = atom.getElement().rjust(2)
+            charge = '  '
+            line = 'ATOM  %s %s%s%s %s%s%s   %s%s%s%s%s          %s%s\n' % (serial,  name,  altLoc,  resName,  chainID,  
+                                                                            resSeq,  iCode,  x,  y,  z,  occupancy,  tempFactor,  element,  charge)
+            s = s + line
+            atom_index += 1
+            
+            #Mike's method below:
+            '''
+            atom=residue.getAtom(atom_name)
+            s=s+ "ATOM" + ' '
+            s=s+ str(atom_index).rjust(6) + ' '
+            atom_index=atom_index+1 
+            s=s+ atom_name.rjust(3) + ' '
+            s=s+ residue.symbol3.rjust(4) + ' '
+            s=s+ self.chainID.rjust(1) + ' ' #chainID
+            s=s+ str(residue_index).rjust(3) + ' '
+            s=s+ "%11.3f " %atom.getPosition().x()
+            s=s+ "%7.3f " %atom.getPosition().y()
+            s=s+ "%7.3f " %atom.getPosition().z()
+            s=s+ "%5.2f " %atom.getOccupancy()
+            s=s+ "%5.2f " %atom.getTempFactor()
+            s=s+ atom.getElement().rjust(11) + '  ' +"\n"
+            '''
+      except KeyError:
+        if verbose:
+          print "Chain.toPDB() warning:  No atom record for %s in %s%s." %(atom_name,residue_index,residue.symbol3)
+    if self.residueRange():
+      s=s+ "TER\n"
+
+    return s
+
   def toSEQ(self):
     '''
 This returns a string in the format of an SEQ file for the Chain.

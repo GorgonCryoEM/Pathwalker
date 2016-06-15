@@ -572,6 +572,7 @@ BOOST_PYTHON_MODULE(libpyGORGON)
 		.def("drawAddedBond", &CAlphaRenderer::DrawAddedBond)
 		.def("undrawAddedBond", &CAlphaRenderer::UndrawAddedBond)
 		.def("findDistance", &CAlphaRenderer::FindDistance)
+		.def("deleteAtomFromVisualization", &CAlphaRenderer::DeleteAtomFromVisualization)
 	;
 
 	class_<InteractiveSkeletonEngine>("InteractiveSkeletonEngine", init<Volume *, NonManifoldMesh_Annotated *, float, int, int, int, unsigned int>())		

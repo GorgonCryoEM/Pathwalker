@@ -1,5 +1,7 @@
 Gorgon Pathwalker UI Readme
 
+Uses: Preprocessing, generating pseudoatoms, pathwalking, fixing edge constraints, setting termini, deleting + moving pseudoatoms, and finding alpha helices + beta strands.
+
 To build and run Gorgon (Mac only):
 1. Create a build folder, preferrably outside the Gorgon source folder (i.e. gorgon_build)
 2. Use terminal to navigate (cd) to gorgon_build, and input into the terminal ccmake ../Gorgon. Here ../Gorgon is the path to the Gorgon source folder. 
@@ -63,6 +65,6 @@ After the process is complete, the path will load and the C-Alpha Visualization 
 
 7. Next is Helix and Beta Strand generation. Using the bottom right tabs, navigate back to the Pathwalker UI. Switch to "Helices and Sheets" within the pathwalker ui tabs. 
 
-Under Helices, the density threshold, minimum length, length threshold, and bond angle threshold correspond to the denthr, minlen, lenthr, and angthr parameters for e2pwhelixfit.py. Click "Find and Regularize Helices". This will take a few seconds, after which the path will reload onto the screen. The C-Alpha Visualization panel will appear. Toggle the alpha helices check box to view all generated helices.
+Under Helices, the density threshold, minimum length, length threshold, and bond angle threshold correspond to the denthr, minlen, lenthr, and angthr parameters for e2pwhelixfit.py. Click "Find and regularize Helices". This will take a few seconds, after which the path will reload onto the screen. The C-Alpha Visualization panel will appear. Toggle the alpha helices check box to view all generated helices. To view only alpha helices, un-check loops with helices still checked.
 
-Under Strands, max sheet strains, minimum length, and sheet score threshold correspond to the nsht, minlen, and cutoff parameters for e2pwsheetfit.py.
+Under Strands, max sheet strains, minimum length, and sheet score threshold correspond to the nsht, minlen, and cutoff parameters for e2pwsheetfit.py. Click "Find and regularize sheets". This will take a few minutes, after which the path will reload onto the screen. The C-Alpha Visualization panel will appear. Toggle the beta strands check box to view all generated helices.To view only beta strands, un-check loops with beta strands still checked.

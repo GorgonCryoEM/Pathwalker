@@ -1258,13 +1258,13 @@ If CAlphaPlaceholders=False, residues with no atoms will be ignored.
             serial = str(atom_index).rjust(5)
             
             name = str(atom_name).center(4)
-            x = "%8.3f" %float(atom.getPosition().x()+109.0)
+            x = "%8.3f" %float(atom.getPosition().x())
             if len(x) > 8:
                 raise ValueError
-            y = "%8.3f" %float(atom.getPosition().y()+108.0)
+            y = "%8.3f" %float(atom.getPosition().y())
             if len(y) > 8:
                 raise ValueError
-            z = "%8.3f" %float(atom.getPosition().z()+108.0)
+            z = "%8.3f" %float(atom.getPosition().z())
             if len(z) > 8:
                 raise ValueError
             element = atom.getElement().rjust(2)

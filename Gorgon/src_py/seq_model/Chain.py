@@ -299,9 +299,9 @@ object. If no chain ID is specified, it loads the first chain.
             except ValueError:
                 occupancy = None
             try: 
-                x = float( line[30:38] )-109.0
-                y = float( line[38:46] )-108.0
-                z = float( line[46:54] )-108.0
+                x = float( line[30:38] )
+                y = float( line[38:46] )
+                z = float( line[46:54] )
                 
                 atom = residue.addAtom(atomName, x,y,z, element, serialNo, occupancy, tempFactor)
                 #residue.atoms[atomName]=atom   

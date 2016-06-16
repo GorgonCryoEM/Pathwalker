@@ -294,8 +294,8 @@ class BaseViewer(QtOpenGL.QGLWidget):
 
     def draw(self):
         glPushMatrix()
-        location = [self.renderer.getOriginX(), self.renderer.getOriginY(), self.renderer.getOriginZ()]
-        glTranslated(location[0], location[1], location[2])
+        #location = [self.renderer.getOriginX(), self.renderer.getOriginY(), self.renderer.getOriginZ()]
+        #glTranslated(location[0], location[1], location[2])
         glMultMatrixf(self.rotation)
         scale = [self.renderer.getSpacingX(), self.renderer.getSpacingY(), self.renderer.getSpacingZ()]
         glScaled(scale[0], scale[1], scale[2])   

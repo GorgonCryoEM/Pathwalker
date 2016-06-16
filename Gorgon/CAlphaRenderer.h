@@ -636,8 +636,8 @@ namespace wustl_mm {
 						}
 						if(it->second.GetVisible()) {
 							Vector3DFloat currentPosition = it->second.GetPosition();
-							Vector3DFloat newPosition = Vector3DFloat(currentPosition.X()-109.0, currentPosition.Y()-108.0, currentPosition.Z()-108.0);
-							DrawSphere(newPosition, it->second.GetAtomRadius() * 0.3);
+							//Vector3DFloat newPosition = Vector3DFloat(currentPosition.X()-109.0, currentPosition.Y()-108.0, currentPosition.Z()-108.0);
+							DrawSphere(currentPosition, it->second.GetAtomRadius() * 0.3);
 							//DrawSphere(it->second.GetPosition(), it->second.GetAtomRadius() * 0.3);
 						}
 
@@ -676,9 +676,9 @@ namespace wustl_mm {
 					if(atoms[bonds[i].GetAtom0Ix()].GetVisible() && atoms[bonds[i].GetAtom1Ix()].GetVisible()) {
 						Vector3DFloat currentPosition1 = atoms[bonds[i].GetAtom0Ix()].GetPosition();
 						Vector3DFloat currentPosition2 = atoms[bonds[i].GetAtom1Ix()].GetPosition();
-						Vector3DFloat atom1Pos = Vector3DFloat(currentPosition1.X()-109.0, currentPosition1.Y()-108.0, currentPosition1.Z()-108.0);
-						Vector3DFloat atom2Pos = Vector3DFloat(currentPosition2.X()-109.0, currentPosition2.Y()-108.0, currentPosition2.Z()-108.0);
-						DrawCylinder(atom1Pos, atom2Pos, 0.1, 10, 2);
+						//Vector3DFloat atom1Pos = Vector3DFloat(currentPosition1.X()-109.0, currentPosition1.Y()-108.0, currentPosition1.Z()-108.0);
+						//Vector3DFloat atom2Pos = Vector3DFloat(currentPosition2.X()-109.0, currentPosition2.Y()-108.0, currentPosition2.Z()-108.0);
+						DrawCylinder(currentPosition1, currentPosition2, 0.1, 10, 2);
 						//DrawCylinder(atoms[bonds[i].GetAtom0Ix()].GetPosition(), atoms[bonds[i].GetAtom1Ix()].GetPosition(), 0.1, 10, 2);
 					}
 					glPopAttrib();
@@ -691,8 +691,8 @@ namespace wustl_mm {
 				for(AtomMapType::iterator i = atoms.begin(); i != atoms.end(); i++) {
 					if(i->second.GetName() == "CA") {
 						Vector3DFloat currentPosition = i->second.GetPosition();
-						Vector3DFloat newPosition = Vector3DFloat(currentPosition.X()-109.0, currentPosition.Y()-108.0, currentPosition.Z()-108.0);
-						DrawSphere(newPosition, 0.1);
+						//Vector3DFloat newPosition = Vector3DFloat(currentPosition.X()-109.0, currentPosition.Y()-108.0, currentPosition.Z()-108.0);
+						DrawSphere(currentPosition, 0.1);
 						//DrawSphere(i->second.GetPosition(), 0.1);
 					}
 				}

@@ -50,7 +50,8 @@ namespace wustl_mm {
 			Volume * PerformSkeletonPruning(Volume * sourceVolume, Volume * sourceSkeleton, double curveThreshold, double surfaceThreshold, int minGray, int maxGray, string outputPath);
 			Volume * GetJuSurfaceSkeleton(Volume * sourceVolume, Volume * preserve, double threshold);
 			Volume * GetJuCurveSkeleton(Volume * sourceVolume, Volume * preserve, double threshold, bool is3D);
-			Volume * GetJuTopologySkeleton(Volume * sourceVolume, Volume * preserve, double threshold);			
+			Volume * GetJuTopologySkeleton(Volume * sourceVolume, Volume * preserve, double threshold);
+			Volume * GetExtremalCurveSkeleton(Volume * sourceVolume, Volume * preserve, double threshold);		
 			void CleanupVolume(Volume * sourceVolume, double low, double high);
 			void NormalizeVolume(Volume * sourceVolume);			
 			void PruneCurves(Volume * sourceVolume, int pruneLength);
@@ -108,9 +109,11 @@ namespace wustl_mm {
 			static const char THINNING_CLASS_CURVE_PRESERVATION;
 			static const char THINNING_CLASS_POINT_PRESERVATION;
 			static const char THINNING_CLASS_TOPOLOGY_PRESERVATION;
+			static const char EXTREMAL_CURVE;
 			static const char PRUNING_CLASS_PRUNE_SURFACES;
 			static const char PRUNING_CLASS_PRUNE_CURVES;
 			static const char PRUNING_CLASS_PRUNE_POINTS;
+
 			
 		public:
 			MathLib * math;
@@ -135,6 +138,7 @@ namespace wustl_mm {
 		const char VolumeSkeletonizer::PRUNING_CLASS_PRUNE_SURFACES = 5;
 		const char VolumeSkeletonizer::PRUNING_CLASS_PRUNE_CURVES = 6;
 		const char VolumeSkeletonizer::PRUNING_CLASS_PRUNE_POINTS = 7;	
+		const char VolumeSkeletonizer::EXTREMAL_CURVE = 8;
 		
 
 		VolumeSkeletonizer::VolumeSkeletonizer(int pointRadius, int curveRadius, int surfaceRadius, int skeletonDirectionRadius) {
@@ -1560,7 +1564,9 @@ namespace wustl_mm {
 
 
 
-
+		Volume * VolumeSkeletonizer::GetExtremalCurveSkeleton(Volume * sourceVolume, Volume * preserve, double threshold){
+			return GetJuThinning(sourceVolume, preserve, threshold, EXTREMAL_CURVE);
+		}
 
 		Volume * VolumeSkeletonizer::GetJuCurveSkeleton(Volume * sourceVolume, Volume * preserve, double threshold, bool is3D){
 			char thinningClass = is3D ? THINNING_CLASS_CURVE_PRESERVATION : THINNING_CLASS_CURVE_PRESERVATION_2D;		
@@ -1590,6 +1596,10 @@ namespace wustl_mm {
 					break;
 				case THINNING_CLASS_TOPOLOGY_PRESERVATION :
 					thinnedVolume->skeleton(threshold, preserve, preserve);
+					break;
+				case EXTREMAL_CURVE :
+					thinnedVolume->extremalCurveSkeleton(threshold, preserve);
+					break;
 			}
 
 			return thinnedVolume;
@@ -1844,6 +1854,7 @@ namespace wustl_mm {
 			Volume * preservedVol = new Volume(imageVol->getSizeX(), imageVol->getSizeY(), imageVol->getSizeZ());
 			Volume * compositeVol = new Volume(imageVol->getSizeX(), imageVol->getSizeY(), imageVol->getSizeZ());
 			Volume * deletedVol = new Volume(imageVol->getSizeX(), imageVol->getSizeY(), imageVol->getSizeZ());
+			Volume * extremalVol;
 			Volume * surfaceVol;
 			Volume * curveVol;
 			Volume * topologyVol;		
@@ -1852,6 +1863,7 @@ namespace wustl_mm {
 				printf("\t\t\tUSING THRESHOLD : %i\n", threshold);
 				// Skeletonizing while preserving surface features curve features and topology
 				surfaceVol = GetJuSurfaceSkeleton(imageVol, preservedVol, threshold);
+				extremalVol = GetExtremalCurveSkeleton(imageVol, preservedVol, threshold);
 				PruneSurfaces(surfaceVol, PRUNE_AMOUNT);
 				VoxelOr(preservedVol, surfaceVol);
 
@@ -1921,9 +1933,11 @@ namespace wustl_mm {
 			Volume * surfaceVol;
 			Volume * curveVol;
 			Volume * topologyVol;		
+			Volume * extremalVol;
 
 			//printf("\t\t\tUSING THRESHOLD : %f\n", threshold);
 			// Skeletonizing while preserving surface features curve features and topology
+			extremalVol = GetExtremalCurveSkeleton(imageVol, preservedVol, threshold);
 			surfaceVol = GetJuSurfaceSkeleton(imageVol, preservedVol, threshold);
 			PruneSurfaces(surfaceVol, minSurfaceWidth);
 			VoxelOr(preservedVol, surfaceVol);

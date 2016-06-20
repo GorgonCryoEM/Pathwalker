@@ -40,6 +40,7 @@
 #include <boost/tuple/tuple.hpp>
 
 
+using namespace std;
 using namespace boost::python;
 using namespace wustl_mm::Visualization;
 using namespace wustl_mm::GraphMatch;
@@ -59,7 +60,7 @@ namespace python = boost::python;
 template <class T>
 struct vector_from_python {
 	vector_from_python() {
-		python::converter::registry::push_back(&convertible, &construct, python::type_id<vector<T> >());
+		python::converter::registry::push_back(&convertible, &construct, python::type_id<std::vector<T> >());
 	}
 
 	static void* convertible(PyObject* obj_ptr) {
@@ -71,10 +72,10 @@ struct vector_from_python {
 
 
 	static void construct(PyObject* obj_ptr, python::converter::rvalue_from_python_stage1_data* data) {
-		void* storage = ((python::converter::rvalue_from_python_storage<vector<T> >*)data)->storage.bytes;
-		new (storage) vector<T>();
+		void* storage = ((python::converter::rvalue_from_python_storage<std::vector<T> >*)data)->storage.bytes;
+		new (storage) std::vector<T>();
 		data->convertible = storage;
-		vector<T>& result = *((vector<T>*) storage);
+		std::vector<T>& result = *((std::vector<T>*) storage);
 		python::handle<> obj_iter(PyObject_GetIter(obj_ptr));
 		while(1) {
 			python::handle<> py_elem_hdl(python::allow_null(PyIter_Next(obj_iter.get())));

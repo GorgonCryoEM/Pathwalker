@@ -172,7 +172,7 @@ namespace wustl_mm {
 			correlationScore = 0;
 			skeletonScore = 0;
 			geometryScore = 0;
-			deletedBondAtom = -1;
+
 		}
 
 		PDBAtom::PDBAtom(string pdbId, char chainId, unsigned int resSeq, string name) {

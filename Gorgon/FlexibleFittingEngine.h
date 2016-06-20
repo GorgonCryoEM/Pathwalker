@@ -13,12 +13,14 @@
 #include <ProteinMorph/CurveDeformer.h>
 #include <vector>
 #include <boost/tuple/tuple.hpp>
+//#include <boost/numeric/ublas/matrix.hpp>
 #include <limits>
 
 #include <MathTools/LinearSolver.h>
 
 using namespace wustl_mm::Protein_Morph;
 using namespace boost::tuples;
+//using namespace boost::numeric::ublas;
 
 namespace wustl_mm {
 	namespace Visualization {	
@@ -29,8 +31,8 @@ namespace wustl_mm {
 			void AddPDBAtomLocation(Vector3DFloat pos);
 			void EndPDBHelix();
 			void AddSSEHelix(Vector3DFloat pt1, Vector3DFloat pt2);
-			vector<Vector3DFloat> Deform(int, MatrixFloat, bool);
-			vector<float> returnFlattenedLocations(vector<Vector3DFloat>);
+			std::vector<Vector3DFloat> Deform(int, MatrixFloat, bool);
+			std::vector<float> returnFlattenedLocations(std::vector<Vector3DFloat>);
 			void addAtomLocation(Vector3DFloat);
 			void addHardHandleLocation(Vector3DFloat);
 			void addSoftHandleLocation(Vector3DFloat);
@@ -52,9 +54,9 @@ namespace wustl_mm {
 			MatrixFloat GetRigidTransform(int corrIx);
 			MatrixFloat GetRigidTransform2(int corrIx, int clusterIx);
 			MatrixFloat GetHelixFlexibleTransform(int corrIx, int helixIx);
-			vector<bool> GetCorrespondenceFlips(int corrIx);
-			vector<int> GetAllCorrespondencesFlat(int corrIx);
-			vector<Vector3DFloat> GetAllCAlphaFeatureVecsFlat();
+			std::vector<bool> GetCorrespondenceFlips(int corrIx);
+			std::vector<int> GetAllCorrespondencesFlat(int corrIx);
+			std::vector<Vector3DFloat> GetAllCAlphaFeatureVecsFlat();
 			void FlipCorrespondencePair(int corrIx, int SSEIndex);
 			void SaveCorrs();
 			void LoadSavedCorrs();
@@ -63,26 +65,26 @@ namespace wustl_mm {
 			MatrixFloat GetPairRigidTransform(int corrIx, int helixIx1, int helixIx2);
 			void GetHelixEnds(int corrIx, int helixIx, Vector3DFloat&, Vector3DFloat&);
 			bool GetIsForward(int corrIx, int helixIx);
-			MatrixFloat GetSideChainTransform(vector<Vector3DFloat> origLocations, vector<Vector3DFloat> newLocations);
+			MatrixFloat GetSideChainTransform(std::vector<Vector3DFloat> origLocations, std::vector<Vector3DFloat> newLocations);
 		private:			
 			void BuildSortedHelixDistances(int );
 
 			static const int SAMPLE_COUNT = 10;
 			SSECorrespondenceFinder finder;
-			vector<SSECorrespondenceFeature> featureList1;
-			vector<SSECorrespondenceFeature> featureList2;
-			vector<Vector3DFloat> pdbHelixAtomLocs;
+			std::vector<SSECorrespondenceFeature> featureList1;
+			std::vector<SSECorrespondenceFeature> featureList2;
+			std::vector<Vector3DFloat> pdbHelixAtomLocs;
 			float jointAngleThreshold, dihedralAngleThreshold, lengthThreshold, centroidDistanceThreshold;
-			vector<Vector3DFloat> origLocations;
-			vector<Vector3DFloat> hardHandles;
-			vector<Vector3DFloat> softHandles;
+			std::vector<Vector3DFloat> origLocations;
+			std::vector<Vector3DFloat> hardHandles;
+			std::vector<Vector3DFloat> softHandles;
 			CurveDeformer cd;
-			vector < vector < vector<SSECorrespondenceNode> > > corrs;
-			vector<boost::tuple<int, int, int> > helixDistancesSorted;
+			std::vector < std::vector < std::vector<SSECorrespondenceNode> > > corrs;
+			std::vector<boost::tuple<int, int, int> > helixDistancesSorted;
 
-			vector < vector < vector<SSECorrespondenceNode> > > savedCorrs;
-			vector<SSECorrespondenceFeature> savedFeatureList1;
-			vector<SSECorrespondenceFeature> savedFeatureList2;
+			std::vector < std::vector < std::vector<SSECorrespondenceNode> > > savedCorrs;
+			std::vector<SSECorrespondenceFeature> savedFeatureList1;
+			std::vector<SSECorrespondenceFeature> savedFeatureList2;
 
 			
 			
@@ -139,11 +141,11 @@ namespace wustl_mm {
 		void FlexibleFittingEngine::AddCorrespondence(int alignmentIx, int SSEIx, int PDBIx){
 			//Creates a correspondence between SSE elements SSEIx and PDBIx, removing them from their 
 			//current cluster and placing them in their own.
-			vector < vector<SSECorrespondenceNode> >  newCorrs;		
+			std::vector < std::vector<SSECorrespondenceNode> >  newCorrs;		
 			//loop through every cluster
 			for(unsigned int i = 0; i < corrs[alignmentIx].size(); ++i){
 				if(corrs[alignmentIx][i].size() > 1){
-					newCorrs.push_back(vector<SSECorrespondenceNode>());
+					newCorrs.push_back(std::vector<SSECorrespondenceNode>());
 					for(unsigned int j = 0; j < corrs[alignmentIx][i].size(); ++j){
 						if(corrs[alignmentIx][i][j].GetPIndex() != PDBIx && corrs[alignmentIx][i][j].GetQIndex() != SSEIx){
 							newCorrs[newCorrs.size()-1].push_back(corrs[alignmentIx][i][j]);
@@ -153,13 +155,13 @@ namespace wustl_mm {
 				//size of one is a boundary case if we have to not copy that element
 				else if(corrs[alignmentIx][i].size() == 1){
 					if(corrs[alignmentIx][i][0].GetPIndex() != PDBIx && corrs[alignmentIx][i][0].GetQIndex() != SSEIx){
-						newCorrs.push_back(vector<SSECorrespondenceNode>());
+						newCorrs.push_back(std::vector<SSECorrespondenceNode>());
 						newCorrs[newCorrs.size()-1].push_back(corrs[alignmentIx][i][0]);
 					}
 				}
 			}
 
-			newCorrs.push_back(vector<SSECorrespondenceNode>());
+			newCorrs.push_back(std::vector<SSECorrespondenceNode>());
 			newCorrs[newCorrs.size()-1].push_back(SSECorrespondenceNode(PDBIx, SSEIx, true));//TODO <--------- FIX THIS (last paramater)
 			corrs[alignmentIx].clear();
 			corrs[alignmentIx] = newCorrs;
@@ -169,10 +171,10 @@ namespace wustl_mm {
 		void FlexibleFittingEngine::MergeClusters(int alignmentIx, int cluster1, int cluster2){
 			//Merges clusters given their index in corrs
 
-			vector < vector<SSECorrespondenceNode> >  newCorrs;
+			std::vector < std::vector<SSECorrespondenceNode> >  newCorrs;
 
 			//creating new cluster
-			vector<SSECorrespondenceNode> newCluster;
+			std::vector<SSECorrespondenceNode> newCluster;
 			for(unsigned int i = 0; i < corrs[alignmentIx][cluster1].size(); ++i){
 				newCluster.push_back(corrs[alignmentIx][cluster1][i]);
 			}
@@ -227,7 +229,7 @@ namespace wustl_mm {
 				return finder.GetTransform(corrs[corrIx][clusterIx], SAMPLE_COUNT);	
 			}
 			else{
-				vector<boost::tuple<int, int> > PQMatchings;
+				std::vector<boost::tuple<int, int> > PQMatchings;
 				if(helixDistancesSorted.size() == 0){
 					BuildSortedHelixDistances(corrIx);
 				}			
@@ -235,7 +237,7 @@ namespace wustl_mm {
 				int helixIx = corrs[corrIx][clusterIx][0].GetPIndex();//index of 0 because only one element
 				
 				//creating a temporary cluster so we can use SSECorrespondenceFinder to get transform
-				vector<SSECorrespondenceNode> tempCluster;
+				std::vector<SSECorrespondenceNode> tempCluster;
 				int ind1 = helixDistancesSorted[helixIx].get<0>();
 				int ind2 = helixDistancesSorted[helixIx].get<1>();
 				int ind3 = helixDistancesSorted[helixIx].get<2>();
@@ -252,7 +254,7 @@ namespace wustl_mm {
 			}
 		}
 
-		MatrixFloat FlexibleFittingEngine::GetSideChainTransform(vector<Vector3DFloat> origLocations, vector<Vector3DFloat> newLocations){
+		MatrixFloat FlexibleFittingEngine::GetSideChainTransform(std::vector<Vector3DFloat> origLocations, std::vector<Vector3DFloat> newLocations){
 			/*cout << "Going from " ; origLocations[0].Print();			
 			cout << " and "; origLocations[origLocations.size()-1].Print();
 			cout << "Going to " ; newLocations[0].Print();			
@@ -301,7 +303,7 @@ namespace wustl_mm {
 			
 			//cluster of size one, have to build a temp cluster and find its transform
 			if(clusterTrans.GetValue(3,3) == 0.0){
-				vector<SSECorrespondenceNode> tempCluster;
+				std::vector<SSECorrespondenceNode> tempCluster;
 				int ind1 = helixDistancesSorted[helixIx].get<0>();
 				int ind2 = helixDistancesSorted[helixIx].get<1>();
 				int ind3 = helixDistancesSorted[helixIx].get<2>();
@@ -372,7 +374,7 @@ namespace wustl_mm {
 		//for each pdb helix finds and stores the 3 closest pdb helices by centroid
 		//stored in helixDistancesSorted
 		void FlexibleFittingEngine::BuildSortedHelixDistances(int corrIx){
-			vector<boost::tuple<int, int> > PQMatchings;
+			std::vector<boost::tuple<int, int> > PQMatchings;
 			
 			//saving which SSE elements correspond
 			for(unsigned int i = 0; i < corrs[corrIx].size(); i++) {
@@ -442,7 +444,7 @@ namespace wustl_mm {
 				}
 				
 			}
-			vector<SSECorrespondenceNode> tempCluster;
+			std::vector<SSECorrespondenceNode> tempCluster;
 			for(unsigned int i = 0; i < corrs[corrIx].size(); i++) {
 				for(unsigned int j = 0; j < corrs[corrIx][i].size(); j++) {
 					int p = corrs[corrIx][i][j].GetPIndex();
@@ -457,7 +459,7 @@ namespace wustl_mm {
 		}
 
 		//runs the actual flexible deformation
-		vector<Vector3DFloat> FlexibleFittingEngine::Deform(int numNeighbors, MatrixFloat transform, bool rigidInitialization){
+		std::vector<Vector3DFloat> FlexibleFittingEngine::Deform(int numNeighbors, MatrixFloat transform, bool rigidInitialization){
 			if(transform.GetValue(3,3) > 0/5 && rigidInitialization){
 				for(int i =0; i < origLocations.size(); ++i){
 					origLocations[i] = origLocations[i].Transform(transform);
@@ -470,8 +472,8 @@ namespace wustl_mm {
 		}
 
 		//flattens a vector of Vector3DFloat into a vector of floats where every 3 represent a point
-		vector<float> FlexibleFittingEngine::returnFlattenedLocations(vector<Vector3DFloat> in){
-			vector<float> result;
+		std::vector<float> FlexibleFittingEngine::returnFlattenedLocations(std::vector<Vector3DFloat> in){
+			std::vector<float> result;
 			for(int i = 0; i < in.size(); ++i){
 				result.push_back(in[i].X());
 				result.push_back(in[i].Y());
@@ -516,8 +518,8 @@ namespace wustl_mm {
 
 		//returns a vector arranged by QIndex as to whether or not that SSE element and its corresponding PDB are 'isforward' or not
 		//according to the corrs data structure
-		vector<bool> FlexibleFittingEngine::GetCorrespondenceFlips(int corrIx){
-			vector<bool> result(featureList2.size());
+		std::vector<bool> FlexibleFittingEngine::GetCorrespondenceFlips(int corrIx){
+			std::vector<bool> result(featureList2.size());
 			cout << "Size of result: " << result.size() << endl;
 			cout << "Size of corrs: " << corrs[corrIx].size() << endl;
 			for(unsigned int i = 0; i < corrs[corrIx].size(); ++i){
@@ -532,8 +534,8 @@ namespace wustl_mm {
 		//returns a vector containing only its
 		//every pair of two numbers represents the first number (PDB index) and the second (SSE index)
 		//are paired in corrs
-		vector<int> FlexibleFittingEngine::GetAllCorrespondencesFlat(int corrIx){
-			vector<int> result;
+		std::vector<int> FlexibleFittingEngine::GetAllCorrespondencesFlat(int corrIx){
+			std::vector<int> result;
 			for(unsigned int i = 0; i < corrs[corrIx].size(); ++i){
 				for(unsigned int j = 0; j < corrs[corrIx][i].size(); ++j){
 					result.push_back(corrs[corrIx][i][j].GetPIndex());
@@ -544,8 +546,8 @@ namespace wustl_mm {
 		}
 		
 		//returns the endpoints of the features in featueList1 as pairs of Vector3DFloats
-		vector<Vector3DFloat> FlexibleFittingEngine::GetAllCAlphaFeatureVecsFlat(){
-			vector<Vector3DFloat> result;
+		std::vector<Vector3DFloat> FlexibleFittingEngine::GetAllCAlphaFeatureVecsFlat(){
+			std::vector<Vector3DFloat> result;
 			for(unsigned int i = 0; i < featureList1.size(); ++i){
 				result.push_back(featureList1[i].GetEndPoint(0));
 				result.push_back(featureList1[i].GetEndPoint(1));

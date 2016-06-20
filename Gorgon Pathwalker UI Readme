@@ -2,36 +2,6 @@ Gorgon Pathwalker UI Readme
 
 Uses: Preprocessing, generating pseudoatoms, pathwalking, fixing edge constraints, setting termini, deleting + moving pseudoatoms, and finding alpha helices + beta strands.
 
-To build and run Gorgon (Mac only):
-1. Create a build folder, preferrably outside the Gorgon source folder (i.e. gorgon_build)
-2. Use terminal to navigate (cd) to gorgon_build, and input into the terminal ccmake ../Gorgon. Here ../Gorgon is the path to the Gorgon source folder. 
-  Press c to configure and then t to navigate the entries. Press enter to change these entries to the following as necessary:
-  //Path to a file.
-Boost_INCLUDE_DIR:PATH=/usr/local/include
-
-//Boost library directory DEBUG
-Boost_LIBRARY_DIR_DEBUG:PATH=/usr/local/lib
-
-//Boost library directory RELEASE
-Boost_LIBRARY_DIR_RELEASE:PATH=/usr/local/lib
-
-//Boost python library (debug)
-Boost_PYTHON_LIBRARY_DEBUG:FILEPATH=/usr/local/lib/libboost_python-mt.dylib
-
-//Boost python library (release)
-Boost_PYTHON_LIBRARY_RELEASE:FILEPATH=/usr/local/lib/libboost_python-mt.dylib
-3. Still in the gorgon_build folder, type "make".
-4. make Gorgon
-5. cd run
-6. python Gorgon.pyw. Gorgon should now be running.
-For more on building on mac: 
-https://github.com/GorgonCryoEM/Gorgon/wiki/Build
-https://docs.google.com/document/d/11pp4mFVPjAHc7slHshXDqHThL9_Vnm4YpG9g5bX3aGk/edit?usp=sharing
-
-In this branch of Gorgon, I have included CMakeCache.txt. These were my configurations for step 2.
-
-_______________________________________________________________________________
-
 To use Pathwalker:
 1. Navigate to Gorgon/src_py/EMAN2/bin. Copy the LKH executable. This was not automatically copied over to the gorgon_build folder during building, but is needed as the travelling salesman algorithm. Navigate to gorgon_build/run/EMAN2/bin, and paste the executable.
 2. python Gorgon.pyw to run Gorgon.

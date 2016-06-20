@@ -26,16 +26,17 @@ using namespace wustl_mm::MathTools;
 using namespace TNT;
 using namespace TNT::Linear_Algebra;
 using namespace wustl_mm::Protein_Morph;
-using boost::numeric::ublas::matrix;
-using boost::numeric::ublas::zero_matrix;
-using boost::numeric::ublas::mapped_matrix;
+using namespace boost::numeric::ublas;
+//using boost::numeric::ublas::matrix;
+//using boost::numeric::ublas::zero_matrix;
+//using boost::numeric::ublas::mapped_matrix;
 
 
 
 class CurveDeformer
 {
 public:
-	vector<Vector3DFloat> Deform(vector<Vector3DFloat>&, vector<Vector3DFloat>&, vector<Vector3DFloat>&, int);
+	std::vector<Vector3DFloat> Deform(std::vector<Vector3DFloat>&, std::vector<Vector3DFloat>&, std::vector<Vector3DFloat>&, int);
 	CurveDeformer(void);
 	~CurveDeformer(void);
 	void setLaplacainW(float);
@@ -43,27 +44,27 @@ public:
 	void setSoftHandleW(float);
 
 private:
-	matrix<float> constructA(std::vector<Vector3DFloat>&, int, int);
-	matrix<float> constructB(std::vector<Vector3DFloat>&, int);
-	vector<Vector3DFloat> solveSystemQR(matrix<float>&, matrix<float>&, Matrix<float>&);
-	vector<Vector3DFloat> solveSystemLU(matrix<float>&, matrix<float>&, Matrix<float>&);
-	vector<Vector3DFloat> solveSystemCholesky(matrix<float>&, matrix<float>&, Matrix<float>&);
-	matrix<float> constructAi(vector<Vector3DFloat> &, int, int);
-	matrix<float> constructSi(vector<Vector3DFloat> &, int);
-	vector<Vector3DFloat> calculateLaplacians(vector<Vector3DFloat>&);
-	matrix<float> generateLaplacianCoefs(vector<Vector3DFloat>&, int);
-	void addHandleConstraints(matrix<float> &, matrix<float> &, vector<Vector3DFloat>&, vector<Vector3DFloat>&);
-	matrix<float> InvertMatrix (const matrix<float>& input);
-	matrix<float> gjinverse(const boost::numeric::ublas::matrix<float> &m, bool &singular);
+	boost::numeric::ublas::matrix<float> constructA(std::vector<Vector3DFloat>&, int, int);
+	boost::numeric::ublas::matrix<float> constructB(std::vector<Vector3DFloat>&, int);
+	std::vector<Vector3DFloat> solveSystemQR(boost::numeric::ublas::matrix<float>&, boost::numeric::ublas::matrix<float>&, TNT::Matrix<float>&);
+	std::vector<Vector3DFloat> solveSystemLU(boost::numeric::ublas::matrix<float>&, boost::numeric::ublas::matrix<float>&, TNT::Matrix<float>&);
+	std::vector<Vector3DFloat> solveSystemCholesky(boost::numeric::ublas::matrix<float>&, boost::numeric::ublas::matrix<float>&, TNT::Matrix<float>&);
+	boost::numeric::ublas::matrix<float> constructAi(std::vector<Vector3DFloat> &, int, int);
+	boost::numeric::ublas::matrix<float> constructSi(std::vector<Vector3DFloat> &, int);
+	std::vector<Vector3DFloat> calculateLaplacians(std::vector<Vector3DFloat>&);
+	boost::numeric::ublas::matrix<float> generateLaplacianCoefs(std::vector<Vector3DFloat>&, int);
+	void addHandleConstraints(boost::numeric::ublas::matrix<float> &, boost::numeric::ublas::matrix<float> &, std::vector<Vector3DFloat>&, std::vector<Vector3DFloat>&);
+	boost::numeric::ublas::matrix<float> InvertMatrix (const boost::numeric::ublas::matrix<float>& input);
+	boost::numeric::ublas::matrix<float> gjinverse(const boost::numeric::ublas::matrix<float> &m, bool &singular);
 
 
 	float laplacianWeight;
 	float hardHandleWeight;
 	float softHandleWeight;
-	vector<Vector3DFloat> startLocations;
-	vector<int> helixStarts;
-	vector<int> helixStops;
-	vector<GeometricShape*> helices;
+	std::vector<Vector3DFloat> startLocations;
+	std::vector<int> helixStarts;
+	std::vector<int> helixStops;
+	std::vector<GeometricShape*> helices;
 	CAlphaRenderer cAlphaRender;
 	NonManifoldMesh_Annotated skeleton;
 };
@@ -82,7 +83,7 @@ CurveDeformer::CurveDeformer(void)
 }
 
 
-vector<Vector3DFloat> CurveDeformer::Deform(vector<Vector3DFloat>& originalLocations, vector<Vector3DFloat>& hardHandles, vector<Vector3DFloat>& softHandles, int numNeighbors)
+std::vector<Vector3DFloat> CurveDeformer::Deform(std::vector<Vector3DFloat>& originalLocations, std::vector<Vector3DFloat>& hardHandles, std::vector<Vector3DFloat>& softHandles, int numNeighbors)
 {
 	startLocations = originalLocations;
 
@@ -106,9 +107,9 @@ vector<Vector3DFloat> CurveDeformer::Deform(vector<Vector3DFloat>& originalLocat
 
 	//Solving Ax=B for x
 	//after deformation
-	Matrix<float> flat;
+	TNT::Matrix<float> flat;
 	//vector<Vector3DFloat> resultCH = solveSystemCholesky(A,B, flat);
-	vector<Vector3DFloat> resultLU = solveSystemLU(A,B, flat);
+	std::vector<Vector3DFloat> resultLU = solveSystemLU(A,B, flat);
 	//vector<Vector3DFloat> resultQR = solveSystemQR(A,B, flat);
 
 	/*resid = transpose_mult(((A*flatOrig) - B),((A*flatOrig) - B));
@@ -119,14 +120,15 @@ vector<Vector3DFloat> CurveDeformer::Deform(vector<Vector3DFloat>& originalLocat
 
 
 
-matrix<float> CurveDeformer::constructA(vector<Vector3DFloat>& origPoints, int extraConstraints, int numNeighbors)
+matrix<float> CurveDeformer::constructA(std::vector<Vector3DFloat>& origPoints, int extraConstraints, int numNeighbors)
 {
+	using namespace std;
 	int numPoints = origPoints.size();
 	
 
 	//3*(numPoints-2) rows because the endpoints dont have defineable laplacians
 	mapped_matrix<float> result(3*(numPoints-2)+3*extraConstraints, 3*numPoints);
-	vector<Vector3DFloat> laplacians = calculateLaplacians(origPoints);
+	std::vector<Vector3DFloat> laplacians = calculateLaplacians(origPoints);
 
 	for(int i = 1; i < numPoints-1; ++i)
 	{
@@ -163,7 +165,7 @@ matrix<float> CurveDeformer::constructA(vector<Vector3DFloat>& origPoints, int e
 	return A;
 }
 
-matrix<float> CurveDeformer::constructB(vector<Vector3DFloat>& points, int extraConstraints)
+matrix<float> CurveDeformer::constructB(std::vector<Vector3DFloat>& points, int extraConstraints)
 {
 	//B is all 0s except for handles
 	mapped_matrix<float> result(3*(points.size()-2)+3*extraConstraints,1);
@@ -172,7 +174,7 @@ matrix<float> CurveDeformer::constructB(vector<Vector3DFloat>& points, int extra
 
 
 
-matrix<float> CurveDeformer::generateLaplacianCoefs(vector<Vector3DFloat> & points, int numHandles)
+matrix<float> CurveDeformer::generateLaplacianCoefs(std::vector<Vector3DFloat> & points, int numHandles)
 {
 	int numPoints = points.size();
 	
@@ -194,10 +196,10 @@ matrix<float> CurveDeformer::generateLaplacianCoefs(vector<Vector3DFloat> & poin
 }
 
 
-vector<Vector3DFloat> CurveDeformer::calculateLaplacians(vector<Vector3DFloat> & points)
+std::vector<Vector3DFloat> CurveDeformer::calculateLaplacians(std::vector<Vector3DFloat> & points)
 {
 	//storing them as Vector3D
-	vector<Vector3DFloat> result(points.size());
+	std::vector<Vector3DFloat> result(points.size());
 
 	//laplacian is centroid of neighbors subtracted from original point
 	for(int i = 1; i < points.size()-1; ++i)
@@ -269,7 +271,7 @@ matrix<float> CurveDeformer::constructSi(std::vector<Vector3DFloat> & laplacians
 
 }
 
-void CurveDeformer::addHandleConstraints(matrix<float> & A, matrix<float> & B, vector<Vector3DFloat>& hardHandles, vector<Vector3DFloat>& softHandles)
+void CurveDeformer::addHandleConstraints(matrix<float> & A, matrix<float> & B, std::vector<Vector3DFloat>& hardHandles, std::vector<Vector3DFloat>& softHandles)
 {
 	int totalNumPoints = hardHandles.size();
 	int minRow = 3 * (totalNumPoints-2);
@@ -323,13 +325,14 @@ void CurveDeformer::setSoftHandleW(float in){
 
 
 //------------------------------Linear System Solvers------------------------------------//
-vector<Vector3DFloat> CurveDeformer::solveSystemQR(matrix<float>& A, matrix<float>& B, Matrix<float>& flat)
+std::vector<Vector3DFloat> CurveDeformer::solveSystemQR(matrix<float>& A, matrix<float>& B, TNT::Matrix<float>& flat)
 {
+	using namespace TNT;
 	bool singular = false;
 	matrix<float> AABoost = prod(trans(A),A);
 	matrix<float> ABBoost = prod(trans(A),B);
-	Matrix<float> AATNT(AABoost.size1(), AABoost.size2());
-	Matrix<float> ABTNT(ABBoost.size1(), ABBoost.size2());
+	TNT::Matrix<float> AATNT(AABoost.size1(), AABoost.size2());
+	TNT::Matrix<float> ABTNT(ABBoost.size1(), ABBoost.size2());
 	
 	for(int i = 0; i < AABoost.size1(); ++i){
 		for(int j = 0; j < AABoost.size2(); ++j){
@@ -341,9 +344,9 @@ vector<Vector3DFloat> CurveDeformer::solveSystemQR(matrix<float>& A, matrix<floa
 
 
 	QR<float> qr(AATNT);
-	Matrix<float> solved = qr.solve(ABTNT);
+	TNT::Matrix<float> solved = qr.solve(ABTNT);
 	flat = solved;
-	vector<Vector3DFloat> result(solved.num_rows()/3);
+	std::vector<Vector3DFloat> result(solved.num_rows()/3);
 
 	//fill the transformed vertices back into a vector
 	for(int i = 0; i < solved.num_rows(); i = i+3)
@@ -355,15 +358,17 @@ vector<Vector3DFloat> CurveDeformer::solveSystemQR(matrix<float>& A, matrix<floa
 
 }
 
-vector<Vector3DFloat> CurveDeformer::solveSystemLU(matrix<float>& A, matrix<float>& B, Matrix<float>& flat)
+std::vector<Vector3DFloat> CurveDeformer::solveSystemLU(matrix<float>& A, matrix<float>& B, TNT::Matrix<float>& flat)
 {
+	using namespace boost::numeric::ublas;
+	using namespace TNT;
 	bool singular = false;
 
 	//cout << "started two mults" << endl;
 	matrix<float> AABoost = prod(trans(A),A);
 	matrix<float> ABBoost = prod(trans(A),B);
-	Matrix<float> AATNT(AABoost.size1(), AABoost.size2());
-	Matrix<float> ABTNT(ABBoost.size1(), ABBoost.size2());
+	TNT::Matrix<float> AATNT(AABoost.size1(), AABoost.size2());
+	TNT::Matrix<float> ABTNT(ABBoost.size1(), ABBoost.size2());
 
 	//cout << "ended mults, started copy" << endl;
 	for(int i = 0; i < AABoost.size1(); ++i){
@@ -377,9 +382,9 @@ vector<Vector3DFloat> CurveDeformer::solveSystemLU(matrix<float>& A, matrix<floa
 	//cout << "ended copy, started solve" << endl;
 
 	LU<float> lu(AATNT);
-	Matrix<float> solved = lu.solve(ABTNT);
+	TNT::Matrix<float> solved = lu.solve(ABTNT);
 	flat = solved;
-	vector<Vector3DFloat> result(solved.num_rows()/3);
+	std::vector<Vector3DFloat> result(solved.num_rows()/3);
 
 	//fill the transformed vertices back into a vector
 	for(int i = 0; i < solved.num_rows(); i = i+3)
@@ -391,14 +396,16 @@ vector<Vector3DFloat> CurveDeformer::solveSystemLU(matrix<float>& A, matrix<floa
 
 }
 
-vector<Vector3DFloat> CurveDeformer::solveSystemCholesky(matrix<float>& A, matrix<float>& B, Matrix<float>& flat)
+std::vector<Vector3DFloat> CurveDeformer::solveSystemCholesky(matrix<float>& A, matrix<float>& B, TNT::Matrix<float>& flat)
 {
+	using namespace boost::numeric::ublas;
+	using namespace TNT;
 	bool singular = false;
 	//cout << "started two mults" << endl;
 	matrix<float> AABoost = prod(trans(A),A);
 	matrix<float> ABBoost = prod(trans(A),B);
-	Matrix<float> AATNT(AABoost.size1(), AABoost.size2());
-	Matrix<float> ABTNT(ABBoost.size1(), ABBoost.size2());
+	TNT::Matrix<float> AATNT(AABoost.size1(), AABoost.size2());
+	TNT::Matrix<float> ABTNT(ABBoost.size1(), ABBoost.size2());
 	
 	for(int i = 0; i < AABoost.size1(); ++i){
 		for(int j = 0; j < AABoost.size2(); ++j){
@@ -410,9 +417,9 @@ vector<Vector3DFloat> CurveDeformer::solveSystemCholesky(matrix<float>& A, matri
 	//cout << "ended mults, started solve" << endl;
 
 	Cholesky<float> ch(AATNT);
-	Matrix<float> solved = ch.solve(ABTNT);
+	TNT::Matrix<float> solved = ch.solve(ABTNT);
 	flat = solved;
-	vector<Vector3DFloat> result(solved.num_rows()/3);
+	std::vector<Vector3DFloat> result(solved.num_rows()/3);
 
 	//fill the transformed vertices back into a vector
 	for(int i = 0; i < solved.num_rows(); i = i+3)
@@ -463,7 +470,6 @@ matrix<float> CurveDeformer::InvertMatrix (const matrix<float>& input) {
 
 boost::numeric::ublas::matrix<float> CurveDeformer::gjinverse(const boost::numeric::ublas::matrix<float> &m, bool &singular)
  {
-     using namespace boost::numeric::ublas;
      const int size = m.size1();
      // Cannot invert if non-square matrix or 0x0 matrix.
      // Report it as singular in these cases, and return 

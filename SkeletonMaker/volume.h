@@ -20,6 +20,7 @@
 #include "PriorityQueue.h"
 #include <vector>
 #include <MathTools/Vector3D.h>
+#include "Edge.h"
 
 using namespace std;
 using namespace wustl_mm::MathTools;
@@ -69,6 +70,19 @@ namespace wustl_mm {
 		{
 			int x, y, z;
 		};
+		/**
+		struct Edge
+		{
+			float edgePoint[3];
+			float a;
+			float b;
+			float w;
+			int edgeTag = 0;	// 0 for non-extremal, 1 for max, 2 for min
+			int f;
+			bool extremal = false;
+			bool valid = false;
+		};
+		**/
 
 		class Volume {
 		public:
@@ -191,6 +205,7 @@ namespace wustl_mm {
 			void surfaceSkeleton( Volume* grayvol, float lowthr, float highthr );
 			void surfaceSkeleton( float thr );
 			void surfaceSkeleton( float thr, Volume* svol );
+			void extremalCurveSkeleton( float thr, Volume* svol );
 			void surfaceSkeletonOld( float thr );
 			void surfaceSkeletonPres( float thr, Volume * preserve );
 			void bertrandSurfaceSkeleton2( float thr );
@@ -225,13 +240,35 @@ namespace wustl_mm {
 			void toMRCFile( char* fname );
 			void buildHistogram(int binCount);
 			int getHistogramBinValue(int binIx);
+			int getMaxSize();
+
+
 			
 		private:
 			VolumeData * getVolumeData();
 			vector<int> histogram;
+			/**
+			float change;
+			int maxEdgeIndex;
+			int *totalEdgePoints;
+			float *grid_2DGradMag;
+			bool *storeGrid_2DGradMag;
+			//Edge *edges;
+			float globalVec[3];
+			float thresh;
+			bool storeGridShowPos;
+			bool storeGridScalar;
+			bool storeGridVector;
+			bool storeGridGradient;
+			bool storeEdgePoint;
+			bool storeFacePoint;
+			bool storeCellPoint;
+			bool storeDispCell;
+			**/
 
 		private:
 			VolumeData * volData;
+			//View *view3D;
 		};
 
 		Volume::Volume(const Volume& obj) {
@@ -271,6 +308,20 @@ namespace wustl_mm {
 
 		int Volume::getIndex(int x, int y, int z) {
 			return volData->GetIndex(x, y, z);
+		}
+
+		int Volume::getMaxSize() {
+			int sizex = getSizeX();
+			int sizey = getSizeY();
+			int sizez = getSizeZ();
+			int maxSize = sizex;
+			if(sizey > maxSize) {
+				maxSize = sizey;
+			}
+			if(sizez > maxSize) {
+				maxSize = sizex;
+			}
+			return maxSize;
 		}
 
 		void Volume::setDataAt( int x, int y, int z, double d ) {
@@ -4030,6 +4081,12 @@ namespace wustl_mm {
 
 		}
 
+		void Volume::extremalCurveSkeleton(float thr, Volume* svol)
+		{
+			Edge currentEdge = Edge();
+
+		}
+
 		/* Thin the current volume while preserving voxels with values > highthr or <= lowthr in grayvol
 		*  Assuming the current volume has already been thresholded to 0/1
 		*/
@@ -6131,6 +6188,9 @@ namespace wustl_mm {
 			erodeHelix( 3 ) ;
 		}
 		
+		//float Volume::getNorm(float v[3]) {
+		//	return sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+		//}
 		
 		void Volume::erodeHelix( int disthr )
 		{
@@ -11307,5 +11367,7 @@ namespace wustl_mm {
 
 	}
 }
+
+
 
 #endif

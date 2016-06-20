@@ -62,8 +62,7 @@ list(APPEND GORGON_INCLUDE_DIRS
 
 link_directories(${Boost_LIBRARY_DIR})
 include_directories(${GORGON_INCLUDE_DIRS})
-file(GLOB_RECURSE srcs "${CMAKE_SOURCE_DIR}/*.c*")
-ADD_LIBRARY(pyGORGON MODULE Gorgon/src_cpp/LibPyGorgon.cpp ${srcs})
+ADD_LIBRARY(pyGORGON MODULE Gorgon/src_cpp/LibPyGorgon.cpp)
 target_link_libraries(pyGORGON ${GORGON_LIBRARIES})
 
 # --------------------------------------------------------------------

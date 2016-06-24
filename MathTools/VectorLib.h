@@ -2,6 +2,7 @@
 #define VECTOR_LIB_H
 
 #include "DataStructures.h"
+#include <MathTools/Vector3D.h>
 
 namespace wustl_mm {
 	namespace MathTools {

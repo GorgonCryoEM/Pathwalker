@@ -38,21 +38,33 @@ namespace wustl_mm {
 			int GetIndex(int x, int y, int z);
 			int GetMaxIndex();
 			float* GetArrayCopy(int padX=0, int padY=0, int padZ=0, float padValue=0); //uses malloc as required by FFT libraries
-			
+			int getOrigSize();
+
 			void SetSpacing(float spacingX, float spacingY, float spacingZ);
 			void SetOrigin(float originX, float originY, float originZ);
 			void SetDataAt(int x, int y, int z, float value);
 			void SetDataAt(int index, float value);
+			void setOrigSize(int newSize);
 			void Pad(int padBy, double padValue);
 		private:
 			void InitializeVolumeData(int sizeX, int sizeY, int sizeZ, float spacingX, float spacingY, float spacingZ, float originX, float originY, float originZ, bool initializeData, float val);
 			void SetSize(int sizeX, int sizeY, int sizeZ);
 		private:
+			int origSize;
 			int size[3];
 			float spacing[3];
 			float origin[3];
 			float * data;
 		};
+
+
+		int VolumeData::getOrigSize() {
+			return origSize;
+		}
+
+		void VolumeData::setOrigSize(int newSize) {
+			origSize = newSize;
+		}
 
 		VolumeData::VolumeData(VolumeData& obj) {
 			for (int i = 0; i < 3; i++) {
@@ -78,6 +90,9 @@ namespace wustl_mm {
 		VolumeData::VolumeData(int sizeX, int sizeY, int sizeZ, int offsetX, int offsetY, int offsetZ, VolumeData * data) {
 			InitializeVolumeData(sizeX, sizeY, sizeZ, data->GetSpacingX(), data->GetSpacingY(), data->GetSpacingZ(), data->GetOriginX(), data->GetOriginY(), data->GetOriginZ(), false, 0);
 			int ct = 0 ;
+			int sxox = sizeX;
+			cout << "sxox " << sxox << endl;
+			setOrigSize(sxox);
 			for (int i = offsetX; i < sizeX + offsetX; i++) {
 				for (int j = offsetY; j < sizeY + offsetY; j++ ) {
 					for ( int k = offsetZ; k < sizeZ + offsetZ; k++) {

@@ -525,6 +525,8 @@ namespace wustl_mm {
 		#ifdef VERBOSE
 				printf("\n\tDimension: %d %d %d\n", totx, toty, totz ) ;
 				printf("\tMode: %d\n", mode) ;
+				printf("\tMode: %d\n", mode) ;
+				printf("\tMode: %d\n", mode) ;
 				printf("\tDensity: from %f to %f, mean at %f, rms at %f\n", dmin, dmax, dmean, drms ) ;
 				printf("\tCell size: %f %f %f\n", angsx / dimx, angsy / dimy, angsz / dimz ) ;
 				printf("\tCell angles: %f %f %f\n", anglex, angley, anglez ) ;
@@ -562,8 +564,9 @@ namespace wustl_mm {
 				float floatd ;
 				double d = 0.0;
 
-				
+				cout << "totx " <<  static_cast<int>(totx) << endl;
 				Volume* vol = new Volume( totx, toty, totz) ;
+				vol->setOrigSize(static_cast<int>(totx));
 				for ( int i = 0 ; i < totz ; i ++ )
 					for ( int j = 0 ; j < toty ; j ++ )
 						for ( int k = 0 ; k < totx ; k ++ )
@@ -851,7 +854,7 @@ namespace wustl_mm {
 			{
 				FILE* fin = fopen( mrcfile, "rb" ) ;
 				fseek( fin, 1024, SEEK_SET ) ;
-				
+				cout << "dimen" << dimen << endl;
 				Volume* vol = new Volume( dimen, dimen, dimen ) ;
 				float d ;
 				for ( int i = 0 ; i < dimen ; i ++ )

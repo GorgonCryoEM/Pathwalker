@@ -47,11 +47,12 @@ namespace wustl_mm {
 			Volume * PerformImmersionSkeletonization(Volume * imageVol, string outputPath);
 			Volume * PerformJuSkeletonization(Volume * imageVol, string outputPath, int minGray, int maxGray, int stepSize);
 			Volume * PerformPureJuSkeletonization(Volume * imageVol, string outputPath, double threshold, int minCurveWidth, int minSurfaceWidth);
+			Volume * ExtremalCurveSkeleton(Volume * imageVol);
 			Volume * PerformSkeletonPruning(Volume * sourceVolume, Volume * sourceSkeleton, double curveThreshold, double surfaceThreshold, int minGray, int maxGray, string outputPath);
 			Volume * GetJuSurfaceSkeleton(Volume * sourceVolume, Volume * preserve, double threshold);
 			Volume * GetJuCurveSkeleton(Volume * sourceVolume, Volume * preserve, double threshold, bool is3D);
 			Volume * GetJuTopologySkeleton(Volume * sourceVolume, Volume * preserve, double threshold);
-			Volume * GetExtremalCurveSkeleton(Volume * sourceVolume, Volume * preserve, double threshold);		
+			Volume * GetExtremalCurveSkeleton(Volume * sourceVolume);		
 			void CleanupVolume(Volume * sourceVolume, double low, double high);
 			void NormalizeVolume(Volume * sourceVolume);			
 			void PruneCurves(Volume * sourceVolume, int pruneLength);
@@ -1564,8 +1565,8 @@ namespace wustl_mm {
 
 
 
-		Volume * VolumeSkeletonizer::GetExtremalCurveSkeleton(Volume * sourceVolume, Volume * preserve, double threshold){
-			return GetJuThinning(sourceVolume, preserve, threshold, EXTREMAL_CURVE);
+		Volume * VolumeSkeletonizer::GetExtremalCurveSkeleton(Volume * sourceVolume){
+			return ExtremalCurveSkeleton(sourceVolume);
 		}
 
 		Volume * VolumeSkeletonizer::GetJuCurveSkeleton(Volume * sourceVolume, Volume * preserve, double threshold, bool is3D){
@@ -1849,12 +1850,12 @@ namespace wustl_mm {
 		}
 
 		Volume * VolumeSkeletonizer::PerformJuSkeletonization(Volume * imageVol, string outputPath, int minGray, int maxGray, int stepSize) {
+			Volume * extremalVol = GetExtremalCurveSkeleton(imageVol);
 			imageVol->pad(MAX_GAUSSIAN_FILTER_RADIUS, 0);
 			
 			Volume * preservedVol = new Volume(imageVol->getSizeX(), imageVol->getSizeY(), imageVol->getSizeZ());
 			Volume * compositeVol = new Volume(imageVol->getSizeX(), imageVol->getSizeY(), imageVol->getSizeZ());
 			Volume * deletedVol = new Volume(imageVol->getSizeX(), imageVol->getSizeY(), imageVol->getSizeZ());
-			Volume * extremalVol;
 			Volume * surfaceVol;
 			Volume * curveVol;
 			Volume * topologyVol;		
@@ -1863,7 +1864,7 @@ namespace wustl_mm {
 				printf("\t\t\tUSING THRESHOLD : %i\n", threshold);
 				// Skeletonizing while preserving surface features curve features and topology
 				surfaceVol = GetJuSurfaceSkeleton(imageVol, preservedVol, threshold);
-				extremalVol = GetExtremalCurveSkeleton(imageVol, preservedVol, threshold);
+				
 				PruneSurfaces(surfaceVol, PRUNE_AMOUNT);
 				VoxelOr(preservedVol, surfaceVol);
 
@@ -1924,20 +1925,29 @@ namespace wustl_mm {
 
 		}
 
+		Volume * VolumeSkeletonizer::ExtremalCurveSkeleton(Volume * imageVol) {
+			cout << "imageVol " << imageVol->getSizeX() << endl;
+			//Volume * newVol = new Volume(imageVol->getSizeX(), imageVol->getSizeY(), imageVol->getSizeZ());
+			imageVol -> extremalCurveSkeleton(0.5, imageVol);
+			return imageVol;
+		}
+
 
 
 		Volume * VolumeSkeletonizer::PerformPureJuSkeletonization(Volume * imageVol, string outputPath, double threshold, int minCurveWidth, int minSurfaceWidth) {
+			Volume * extremalVol;
+			extremalVol = GetExtremalCurveSkeleton(imageVol);
 			imageVol->pad(MAX_GAUSSIAN_FILTER_RADIUS, 0);
 			
 			Volume * preservedVol = new Volume(imageVol->getSizeX(), imageVol->getSizeY(), imageVol->getSizeZ());
 			Volume * surfaceVol;
 			Volume * curveVol;
 			Volume * topologyVol;		
-			Volume * extremalVol;
+			
 
 			//printf("\t\t\tUSING THRESHOLD : %f\n", threshold);
 			// Skeletonizing while preserving surface features curve features and topology
-			extremalVol = GetExtremalCurveSkeleton(imageVol, preservedVol, threshold);
+			
 			surfaceVol = GetJuSurfaceSkeleton(imageVol, preservedVol, threshold);
 			PruneSurfaces(surfaceVol, minSurfaceWidth);
 			VoxelOr(preservedVol, surfaceVol);

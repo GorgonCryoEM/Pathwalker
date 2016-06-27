@@ -48,6 +48,7 @@ namespace wustl_mm {
 			Volume * PerformJuSkeletonization(Volume * imageVol, string outputPath, int minGray, int maxGray, int stepSize);
 			Volume * PerformPureJuSkeletonization(Volume * imageVol, string outputPath, double threshold, int minCurveWidth, int minSurfaceWidth);
 			Volume * ExtremalCurveSkeleton(Volume * imageVol);
+			Volume * PerformExtremalCurveSkeletonization(Volume * imageVol);
 			Volume * PerformSkeletonPruning(Volume * sourceVolume, Volume * sourceSkeleton, double curveThreshold, double surfaceThreshold, int minGray, int maxGray, string outputPath);
 			Volume * GetJuSurfaceSkeleton(Volume * sourceVolume, Volume * preserve, double threshold);
 			Volume * GetJuCurveSkeleton(Volume * sourceVolume, Volume * preserve, double threshold, bool is3D);
@@ -1926,25 +1927,31 @@ namespace wustl_mm {
 		}
 
 		Volume * VolumeSkeletonizer::ExtremalCurveSkeleton(Volume * imageVol) {
-			cout << "imageVol " << imageVol->getSizeX() << endl;
+			//cout << "imageVol " << imageVol->getSizeX() << endl;
 			//Volume * newVol = new Volume(imageVol->getSizeX(), imageVol->getSizeY(), imageVol->getSizeZ());
 			imageVol -> extremalCurveSkeleton(0.5, imageVol);
 			return imageVol;
 		}
 
-
-
-		Volume * VolumeSkeletonizer::PerformPureJuSkeletonization(Volume * imageVol, string outputPath, double threshold, int minCurveWidth, int minSurfaceWidth) {
+		Volume * VolumeSkeletonizer::PerformExtremalCurveSkeletonization(Volume * imageVol) {
 			Volume * extremalVol;
 			extremalVol = GetExtremalCurveSkeleton(imageVol);
+			return extremalVol;
+		}
+
+		Volume * VolumeSkeletonizer::PerformPureJuSkeletonization(Volume * imageVol, string outputPath, double threshold, int minCurveWidth, int minSurfaceWidth) {
+			
+			//Volume * extremalVol;
+			//extremalVol = GetExtremalCurveSkeleton(imageVol);
+
+			
 			imageVol->pad(MAX_GAUSSIAN_FILTER_RADIUS, 0);
 			
 			Volume * preservedVol = new Volume(imageVol->getSizeX(), imageVol->getSizeY(), imageVol->getSizeZ());
 			Volume * surfaceVol;
 			Volume * curveVol;
-			Volume * topologyVol;		
+			Volume * topologyVol;
 			
-
 			//printf("\t\t\tUSING THRESHOLD : %f\n", threshold);
 			// Skeletonizing while preserving surface features curve features and topology
 			
@@ -1964,8 +1971,11 @@ namespace wustl_mm {
 			delete preservedVol;
 			delete surfaceVol;
 			delete curveVol;
-
+			//topologyVol->extremalBonds1 = extremalVol->extremalBonds1;
+			//topologyVol->extremalBonds2 = extremalVol->extremalBonds2;
 			return topologyVol;
+			
+
 		}
 
 

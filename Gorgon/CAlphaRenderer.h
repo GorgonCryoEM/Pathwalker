@@ -469,14 +469,12 @@ namespace wustl_mm {
 							//atomHashes.push_back(it->second.GetHashKey());
 						}
 			}
-			cout << atom1Hash << " " << atom2Hash << endl;
 			if (atom1Hash == 1 || atom2Hash == 1) {
 				return;
 			}
 			else {
 				int bondIndex = max(GetBondIndex(atom1Hash, atom2Hash), GetBondIndex(atom2Hash, atom1Hash));
 				if(bondIndex == -1) {
-					cout << "no bond found " << endl;
 					PDBBond tempBond = PDBBond(atom1Hash, atom2Hash, false);
 					tempBond.tempNew = true;
 					tempBond.original = false;

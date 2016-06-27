@@ -96,6 +96,9 @@ class SkeletonViewer(BaseViewer):
         else:            
             self.updateActionsAndMenus()        
                    
+    def loadExtremalCurve(self, volume):
+        self.renderer.loadExtremal(volume)
+
     def loadVolume(self, volume):
         if(self.loaded):
             self.unloadData

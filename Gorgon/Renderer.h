@@ -192,6 +192,7 @@ namespace wustl_mm {
 			glPopMatrix();
 		}
 
+
 		void Renderer::DrawCylinder(Vector3DFloat pt1, Vector3DFloat pt2, float radius, int slices, int stacks) {
 			Vector3DFloat qmp = pt1-pt2;
 			float length = qmp.Length();

@@ -27,6 +27,7 @@
 #include <MathTools/DataStructures.h>
 #include <MathTools/MathLib.h>
 #include <MathTools/MatlabWrapper.h>
+#include <boost/python.hpp>
 //#include <MathTools/VectorLib.h>
 
 //#include <tbb/task_scheduler_init.h>
@@ -45,6 +46,7 @@
 
 using namespace std;
 using namespace wustl_mm::MathTools;
+namespace py = boost::python;
 //using namespace tbb;
 
 namespace wustl_mm {
@@ -249,6 +251,11 @@ public:
 	float firstEigenvalue;
 	int type;
 };
+
+bool operator< (const Segment &c1, const Segment &c2)
+{
+	return c1.vertIdxs[0] < c2.vertIdxs[0];
+}
 
 Segment::Segment(void)
 {
@@ -646,6 +653,7 @@ private:
 	void dispPropagateXY(vector<float> *sampleV3, vector<float> *sampleX, vector<float> *sampleY);
 	void dispCombineAB(Edge *edge1, Edge *edge2, Edge *edge3, Edge *edge4, float *sumAB);
 
+
 	float *gridScalars;
 	float *gridShowPositions, *gridV1s, *gridV2s, *gridV3s, *gridGradients, 
 	*edgePoints, *facePoints, *cellPoints;
@@ -930,399 +938,399 @@ static void tricubic_f(int sizex, int sizey, int sizez, float *data, float posit
 	}
 }
 
-		static void tricubic_3f(int sizex, int sizey, int sizez, float *data, float position[3], float value[3])
-		{
-			float indx, indy, indz, x, y, z;
-			x = modf (position[0] , &indx);
-			y = modf (position[1] , &indy);
-			z = modf (position[2] , &indz);
-			int iIndx = (int)indx;
-			int iIndy = (int)indy;
-			int iIndz = (int)indz;
-			iIndx --;
-			iIndy --;
-			iIndz --;
-			float validData0[4][4][4];
-			float validData1[4][4][4];
-			float validData2[4][4][4];
-			for ( int i = 0 ; i < 4 ; i ++ ) {
-				for ( int j = 0 ; j < 4 ; j ++ ) {
-					for ( int k = 0 ; k < 4 ; k ++ )
-					{
-						int index = getIndex(3, 0, iIndx+i, iIndy+j, iIndz+k, sizex, sizey, sizez);
-						validData0[i][j][k] = data[index];
-						validData1[i][j][k] = data[index+1];
-						validData2[i][j][k] = data[index+2];
-					}
-				}
-			}
-			value[0] = (float)tricubic(validData0, x, y, z);
-			value[1] = (float)tricubic(validData1, x, y, z);
-			value[2] = (float)tricubic(validData2, x, y, z);
-		}
-
-		static void tricubic_6f(int sizex, int sizey, int sizez, float *data, float position[3], float value[6])
-		{
-			float indx, indy, indz, x, y, z;
-			x = modf (position[0] , &indx);
-			y = modf (position[1] , &indy);
-			z = modf (position[2] , &indz);
-			int iIndx = (int)indx;
-			int iIndy = (int)indy;
-			int iIndz = (int)indz;
-			iIndx --;
-			iIndy --;
-			iIndz --;
-			float validData0[4][4][4];
-			float validData1[4][4][4];
-			float validData2[4][4][4];
-			float validData3[4][4][4];
-			float validData4[4][4][4];
-			float validData5[4][4][4];
-			for ( int i = 0 ; i < 4 ; i ++ ) {
-				for ( int j = 0 ; j < 4 ; j ++ ) {
-					for ( int k = 0 ; k < 4 ; k ++ )
-					{
-						int index = getIndex(6, 0, iIndx+i, iIndy+j, iIndz+k, sizex, sizey, sizez);
-						validData0[i][j][k] = data[index];
-						validData1[i][j][k] = data[index+1];
-						validData2[i][j][k] = data[index+2];
-						validData3[i][j][k] = data[index+3];
-						validData4[i][j][k] = data[index+4];
-						validData5[i][j][k] = data[index+5];
-					}
-				}
-			}
-			value[0] = tricubic(validData0, x, y, z);
-			value[1] = tricubic(validData1, x, y, z);
-			value[2] = tricubic(validData2, x, y, z);
-			value[3] = tricubic(validData3, x, y, z);
-			value[4] = tricubic(validData4, x, y, z);
-			value[5] = tricubic(validData5, x, y, z);
-		}
-
-
-
-
-
-		static void cubicCoef(float coef[4], float x)
-		{
-			float x2 = x * x;
-			float x3 = x2 * x;
-			coef[0] = -0.5 * x3 + x2 - 0.5 * x;
-			coef[1] = 1.5 * x3 - 2.5 * x2 + 1;
-			coef[2] = -1.5 * x3 + 2 * x2 + 0.5 * x;
-			coef[3] = 0.5 * x3 - 0.5 * x2;
-		}
-
-		static void buildEdgeTable(float *table, int level, int slot, float left, float right)
-		{
-			if(level > 10) return;
-			float mid = (left + right) / 2;
-			cubicCoef(&(table[slot*4]), mid);
-			buildEdgeTable(table, level+1, slot*2-1, left, mid);
-			buildEdgeTable(table, level+1, slot*2, mid, right);
-		}
-
-		static void bicubicCoef(float coef[16], float x, float y)
-		{
-			float x2 = x * x;
-			float x3 = x2 * x;
-			float cx[4];
-			cx[0] = -0.5 * x3 + x2 - 0.5 * x;
-			cx[1] = 1.5 * x3 - 2.5 * x2 + 1;
-			cx[2] = -1.5 * x3 + 2 * x2 + 0.5 * x;
-			cx[3] = 0.5 * x3 - 0.5 * x2;
-			float y2 = y * y;
-			float y3 = y2 * y;
-			float cy[4];
-			cy[0] = -0.5 * y3 + y2 - 0.5 * y;
-			cy[1] = 1.5 * y3 - 2.5 * y2 + 1;
-			cy[2] = -1.5 * y3 + 2 * y2 + 0.5 * y;
-			cy[3] = 0.5 * y3 - 0.5 * y2;
-			int count = 0;
-			for(int i = 0; i < 4; i++)
-				for(int j = 0; j < 4; j++)
-				{
-					coef[count] = cx[i]*cy[j];
-					count++;
-				}
-			}
-
-			static void tricubic_6f_table(int sizex, int sizey, int sizez, float *table, int axis, int ii, int jj, int kk, int index, float *data, float value[6])
+static void tricubic_3f(int sizex, int sizey, int sizez, float *data, float position[3], float value[3])
+{
+	float indx, indy, indz, x, y, z;
+	x = modf (position[0] , &indx);
+	y = modf (position[1] , &indy);
+	z = modf (position[2] , &indz);
+	int iIndx = (int)indx;
+	int iIndy = (int)indy;
+	int iIndz = (int)indz;
+	iIndx --;
+	iIndy --;
+	iIndz --;
+	float validData0[4][4][4];
+	float validData1[4][4][4];
+	float validData2[4][4][4];
+	for ( int i = 0 ; i < 4 ; i ++ ) {
+		for ( int j = 0 ; j < 4 ; j ++ ) {
+			for ( int k = 0 ; k < 4 ; k ++ )
 			{
-				float validData[4][6];
-				int count = 0;
-				switch(axis)
-				{
-					case 1:
-					for ( int i = 0 ; i < 4 ; i ++ )
-					{
-						int idx = getIndex(6, 0, ii+i-1, jj, kk, sizex, sizey, sizez);
-						validData[count][0] = data[idx];
-						validData[count][1] = data[idx+1];
-						validData[count][2] = data[idx+2];
-						validData[count][3] = data[idx+3];
-						validData[count][4] = data[idx+4];
-						validData[count][5] = data[idx+5];
-						count++;
-					}
-					break;
-					case 2:
-					for ( int i = 0 ; i < 4 ; i ++ )
-					{
-						int idx = getIndex(6, 0, ii, jj+i-1, kk, sizex, sizey, sizez);
-						validData[count][0] = data[idx];
-						validData[count][1] = data[idx+1];
-						validData[count][2] = data[idx+2];
-						validData[count][3] = data[idx+3];
-						validData[count][4] = data[idx+4];
-						validData[count][5] = data[idx+5];
-						count++;
-					}
-					break;
-					case 3:
-					for ( int i = 0 ; i < 4 ; i ++ )
-					{
-						int idx = getIndex(6, 0, ii, jj, kk+i-1, sizex, sizey, sizez);
-						validData[count][0] = data[idx];
-						validData[count][1] = data[idx+1];
-						validData[count][2] = data[idx+2];
-						validData[count][3] = data[idx+3];
-						validData[count][4] = data[idx+4];
-						validData[count][5] = data[idx+5];
-						count++;
-					}
-					break;
-				}
-				value[0] = 0;
-				value[1] = 0;
-				value[2] = 0;
-				value[3] = 0;
-				value[4] = 0;
-				value[5] = 0;
-				int tableIndex = 4 * index;
-				for ( int i = 0 ; i < 4 ; i ++ )
-				{
-					for ( int j = 0 ; j < 6 ; j ++ )
-					{
-						value[j] += table[tableIndex + i] * validData[i][j];
-					}
-				}
+				int index = getIndex(3, 0, iIndx+i, iIndy+j, iIndz+k, sizex, sizey, sizez);
+				validData0[i][j][k] = data[index];
+				validData1[i][j][k] = data[index+1];
+				validData2[i][j][k] = data[index+2];
 			}
+		}
+	}
+	value[0] = (float)tricubic(validData0, x, y, z);
+	value[1] = (float)tricubic(validData1, x, y, z);
+	value[2] = (float)tricubic(validData2, x, y, z);
+}
 
-			class ParallelEdge
+static void tricubic_6f(int sizex, int sizey, int sizez, float *data, float position[3], float value[6])
+{
+	float indx, indy, indz, x, y, z;
+	x = modf (position[0] , &indx);
+	y = modf (position[1] , &indy);
+	z = modf (position[2] , &indz);
+	int iIndx = (int)indx;
+	int iIndy = (int)indy;
+	int iIndz = (int)indz;
+	iIndx --;
+	iIndy --;
+	iIndz --;
+	float validData0[4][4][4];
+	float validData1[4][4][4];
+	float validData2[4][4][4];
+	float validData3[4][4][4];
+	float validData4[4][4][4];
+	float validData5[4][4][4];
+	for ( int i = 0 ; i < 4 ; i ++ ) {
+		for ( int j = 0 ; j < 4 ; j ++ ) {
+			for ( int k = 0 ; k < 4 ; k ++ )
 			{
-			private:
+				int index = getIndex(6, 0, iIndx+i, iIndy+j, iIndz+k, sizex, sizey, sizez);
+				validData0[i][j][k] = data[index];
+				validData1[i][j][k] = data[index+1];
+				validData2[i][j][k] = data[index+2];
+				validData3[i][j][k] = data[index+3];
+				validData4[i][j][k] = data[index+4];
+				validData5[i][j][k] = data[index+5];
+			}
+		}
+	}
+	value[0] = tricubic(validData0, x, y, z);
+	value[1] = tricubic(validData1, x, y, z);
+	value[2] = tricubic(validData2, x, y, z);
+	value[3] = tricubic(validData3, x, y, z);
+	value[4] = tricubic(validData4, x, y, z);
+	value[5] = tricubic(validData5, x, y, z);
+}
 
-				float thresh;
-				int gridx,gridy,gridz;
-				int *totalEdgePoints;
-				int dataType;
-				float* globalVec;
-				Edge *edges;
-				float *gridPoints;
-
-				float change;
-				int sizex,sizey,sizez, halfSize;
-				float*scalars,*tensors,*gradients;
-				float *edgeTable;
-				EigenVectorsAndValues3D tensorMVectorsAndValues;
 
 
-				bool getEigensolverGP(int index, EigenVectorsAndValues3D &eigenData);
-				bool getEigensolverCubicTable(int axis, int i, int j, int k, int index, float *edgeTable);
-				void getGridPointPosD(int index, float v[3]) const;
+
+
+static void cubicCoef(float coef[4], float x)
+{
+	float x2 = x * x;
+	float x3 = x2 * x;
+	coef[0] = -0.5 * x3 + x2 - 0.5 * x;
+	coef[1] = 1.5 * x3 - 2.5 * x2 + 1;
+	coef[2] = -1.5 * x3 + 2 * x2 + 0.5 * x;
+	coef[3] = 0.5 * x3 - 0.5 * x2;
+}
+
+static void buildEdgeTable(float *table, int level, int slot, float left, float right)
+{
+	if(level > 10) return;
+	float mid = (left + right) / 2;
+	cubicCoef(&(table[slot*4]), mid);
+	buildEdgeTable(table, level+1, slot*2-1, left, mid);
+	buildEdgeTable(table, level+1, slot*2, mid, right);
+}
+
+static void bicubicCoef(float coef[16], float x, float y)
+{
+	float x2 = x * x;
+	float x3 = x2 * x;
+	float cx[4];
+	cx[0] = -0.5 * x3 + x2 - 0.5 * x;
+	cx[1] = 1.5 * x3 - 2.5 * x2 + 1;
+	cx[2] = -1.5 * x3 + 2 * x2 + 0.5 * x;
+	cx[3] = 0.5 * x3 - 0.5 * x2;
+	float y2 = y * y;
+	float y3 = y2 * y;
+	float cy[4];
+	cy[0] = -0.5 * y3 + y2 - 0.5 * y;
+	cy[1] = 1.5 * y3 - 2.5 * y2 + 1;
+	cy[2] = -1.5 * y3 + 2 * y2 + 0.5 * y;
+	cy[3] = 0.5 * y3 - 0.5 * y2;
+	int count = 0;
+	for(int i = 0; i < 4; i++)
+		for(int j = 0; j < 4; j++)
+		{
+			coef[count] = cx[i]*cy[j];
+			count++;
+		}
+	}
+
+	static void tricubic_6f_table(int sizex, int sizey, int sizez, float *table, int axis, int ii, int jj, int kk, int index, float *data, float value[6])
+	{
+		float validData[4][6];
+		int count = 0;
+		switch(axis)
+		{
+			case 1:
+			for ( int i = 0 ; i < 4 ; i ++ )
+			{
+				int idx = getIndex(6, 0, ii+i-1, jj, kk, sizex, sizey, sizez);
+				validData[count][0] = data[idx];
+				validData[count][1] = data[idx+1];
+				validData[count][2] = data[idx+2];
+				validData[count][3] = data[idx+3];
+				validData[count][4] = data[idx+4];
+				validData[count][5] = data[idx+5];
+				count++;
+			}
+			break;
+			case 2:
+			for ( int i = 0 ; i < 4 ; i ++ )
+			{
+				int idx = getIndex(6, 0, ii, jj+i-1, kk, sizex, sizey, sizez);
+				validData[count][0] = data[idx];
+				validData[count][1] = data[idx+1];
+				validData[count][2] = data[idx+2];
+				validData[count][3] = data[idx+3];
+				validData[count][4] = data[idx+4];
+				validData[count][5] = data[idx+5];
+				count++;
+			}
+			break;
+			case 3:
+			for ( int i = 0 ; i < 4 ; i ++ )
+			{
+				int idx = getIndex(6, 0, ii, jj, kk+i-1, sizex, sizey, sizez);
+				validData[count][0] = data[idx];
+				validData[count][1] = data[idx+1];
+				validData[count][2] = data[idx+2];
+				validData[count][3] = data[idx+3];
+				validData[count][4] = data[idx+4];
+				validData[count][5] = data[idx+5];
+				count++;
+			}
+			break;
+		}
+		value[0] = 0;
+		value[1] = 0;
+		value[2] = 0;
+		value[3] = 0;
+		value[4] = 0;
+		value[5] = 0;
+		int tableIndex = 4 * index;
+		for ( int i = 0 ; i < 4 ; i ++ )
+		{
+			for ( int j = 0 ; j < 6 ; j ++ )
+			{
+				value[j] += table[tableIndex + i] * validData[i][j];
+			}
+		}
+	}
+
+	class ParallelEdge
+	{
+	private:
+
+		float thresh;
+		int gridx,gridy,gridz;
+		int *totalEdgePoints;
+		int dataType;
+		float* globalVec;
+		Edge *edges;
+		float *gridPoints;
+
+		float change;
+		int sizex,sizey,sizez, halfSize;
+		float*scalars,*tensors,*gradients;
+		float *edgeTable;
+		EigenVectorsAndValues3D tensorMVectorsAndValues;
+
+
+		bool getEigensolverGP(int index, EigenVectorsAndValues3D &eigenData);
+		bool getEigensolverCubicTable(int axis, int i, int j, int k, int index, float *edgeTable);
+		void getGridPointPosD(int index, float v[3]) const;
 				//bool getEigensolverCubic(float (&position)[3]);
-				bool getEigensolverCubic(float position[3]);
+		bool getEigensolverCubic(float position[3]);
 
-				bool adaptiveSamplingArrayTable(int si1, int si2, int axis, int ii, int jj, int kk, int *edgeSampleNum, float **sampleG,
-					float **sampleV1, float **sampleV3, float **X, float **Y, float **sampleProjG, float *edgeTable);
-				bool adaptiveRecursionArrayTable(int axis, int ii, int jj, int kk, int index, float g1[3], float g2[3], float v1_1[3], float v1_2[3],
-					float v3_1[3], float v3_2[3], list<float> *GL, list<float> *V1L, list<float> *V3L, int depth, float *edgeTable);
-				void extremalEdgeArray(int index1, int index2, Edge *edge, int si1, int si2, float *sampleV1, int edgeSampleNum, int *ltotalEdgePoints);
-				void orientV3Array(Edge *edge, float *sampleV3, int edgeSampleNum) const;
-				void propagateXYArray(Edge *edge, float *sampleV3, float *X, float *Y, int edgeSampleNum) const;
-				void projectGArray(float *sampleG, float *X, float *Y, float *sampleProjG, int edgeSampleNum) const;
-				void getWindingNumArray(Edge *edge, float *sampleProjG, int index1, int index2, int edgeSampleNum) const;
+		bool adaptiveSamplingArrayTable(int si1, int si2, int axis, int ii, int jj, int kk, int *edgeSampleNum, float **sampleG,
+			float **sampleV1, float **sampleV3, float **X, float **Y, float **sampleProjG, float *edgeTable);
+		bool adaptiveRecursionArrayTable(int axis, int ii, int jj, int kk, int index, float g1[3], float g2[3], float v1_1[3], float v1_2[3],
+			float v3_1[3], float v3_2[3], list<float> *GL, list<float> *V1L, list<float> *V3L, int depth, float *edgeTable);
+		void extremalEdgeArray(int index1, int index2, Edge *edge, int si1, int si2, float *sampleV1, int edgeSampleNum, int *ltotalEdgePoints);
+		void orientV3Array(Edge *edge, float *sampleV3, int edgeSampleNum) const;
+		void propagateXYArray(Edge *edge, float *sampleV3, float *X, float *Y, int edgeSampleNum) const;
+		void projectGArray(float *sampleG, float *X, float *Y, float *sampleProjG, int edgeSampleNum) const;
+		void getWindingNumArray(Edge *edge, float *sampleProjG, int index1, int index2, int edgeSampleNum) const;
 
-				void edgePhaseIteration(int index1, int index2, int si1, int si2, int axis, int i, int j, int k, Edge *ledges, int *ltotalEdgePoints, float *edgeTable);
-				void signedSphericalTriangleArea(float p1[3], float p2[3], float *area, float *phiC) const;
-				float getDihedral(float b1[3], float b2[3], float b3[3]) const;
-				int getEdgeIndex(int axis, int x, int y, int z) const;
-				void getV1(float v[3]) const;
-				void getV3(float v[3]) const;
-
-
-			public: 
-				void edgePhaseBegin(int cols, int rows, int pages);
+		void edgePhaseIteration(int index1, int index2, int si1, int si2, int axis, int i, int j, int k, Edge *ledges, int *ltotalEdgePoints, float *edgeTable);
+		void signedSphericalTriangleArea(float p1[3], float p2[3], float *area, float *phiC) const;
+		float getDihedral(float b1[3], float b2[3], float b3[3]) const;
+		int getEdgeIndex(int axis, int x, int y, int z) const;
+		void getV1(float v[3]) const;
+		void getV3(float v[3]) const;
 
 
-				bool allCubic;
-				bool *storeGrid_2DGradMag;
-				float *grid_2DGradMag;
+	public: 
+		void edgePhaseBegin(int cols, int rows, int pages);
+
+
+		bool allCubic;
+		bool *storeGrid_2DGradMag;
+		float *grid_2DGradMag;
 	//MathLib * math;
-				ParallelEdge(int lgridx,int lgridy,int lgridz,int *ltotalEdgePoints,Edge *ledges,bool lallCubic,float lglobalVec[3],int ldataType,float *lgridPoints,float lchange,bool *lstoreGrid_2DGradMag,float *lgrid_2DGradMag,int lsizex,int lsizey,int lsizez,int lhalfSize,float* lscalars,float* ltensors,float* lgradients,float *ledgeTable)
-				{
-					gridx=lgridx;
-					gridy=lgridy;
-					gridz=lgridz;
-					totalEdgePoints=ltotalEdgePoints;
-					edges = ledges;
-					allCubic=lallCubic;
-					globalVec = lglobalVec;
-					dataType = ldataType;
-					gridPoints = lgridPoints;
-					change=lchange;
-					storeGrid_2DGradMag = lstoreGrid_2DGradMag;
-					grid_2DGradMag = lgrid_2DGradMag;
-					thresh = cos(20 * (float)M_PI / 180);
-					sizex = lsizex;
-					sizey = lsizey;
-					sizez = lsizez;
-					halfSize = lhalfSize;
-					scalars = lscalars;
-					tensors = ltensors;
-					gradients = lgradients;
-					edgeTable = ledgeTable;
+		ParallelEdge(int lgridx,int lgridy,int lgridz,int *ltotalEdgePoints,Edge *ledges,bool lallCubic,float lglobalVec[3],int ldataType,float *lgridPoints,float lchange,bool *lstoreGrid_2DGradMag,float *lgrid_2DGradMag,int lsizex,int lsizey,int lsizez,int lhalfSize,float* lscalars,float* ltensors,float* lgradients,float *ledgeTable)
+		{
+			gridx=lgridx;
+			gridy=lgridy;
+			gridz=lgridz;
+			totalEdgePoints=ltotalEdgePoints;
+			edges = ledges;
+			allCubic=lallCubic;
+			globalVec = lglobalVec;
+			dataType = ldataType;
+			gridPoints = lgridPoints;
+			change=lchange;
+			storeGrid_2DGradMag = lstoreGrid_2DGradMag;
+			grid_2DGradMag = lgrid_2DGradMag;
+			thresh = cos(20 * (float)M_PI / 180);
+			sizex = lsizex;
+			sizey = lsizey;
+			sizez = lsizez;
+			halfSize = lhalfSize;
+			scalars = lscalars;
+			tensors = ltensors;
+			gradients = lgradients;
+			edgeTable = ledgeTable;
 
 
-				};
+		};
 
-				void getGradientGP(int index, float gradient[3]) const
-				{
-					gradient[0] = gradients[index];
-					gradient[1] = gradients[index+1];
-					gradient[2] = gradients[index+2];
-				}
+		void getGradientGP(int index, float gradient[3]) const
+		{
+			gradient[0] = gradients[index];
+			gradient[1] = gradients[index+1];
+			gradient[2] = gradients[index+2];
+		}
 
-				void getScalarCubic(float position[3], float *scalar) const
-				{
-					tricubic_f(sizex, sizey, sizez, scalars, position, scalar);
-				};
+		void getScalarCubic(float position[3], float *scalar) const
+		{
+			tricubic_f(sizex, sizey, sizez, scalars, position, scalar);
+		};
 
-				void getTensorGP(int index, float tensor[6]) const
-				{
-					tensor[0] = tensors[index];
-					tensor[1] = tensors[index+1];
-					tensor[2] = tensors[index+2];
-					tensor[3] = tensors[index+3];
-					tensor[4] = tensors[index+4];
-					tensor[5] = tensors[index+5];
-				}
+		void getTensorGP(int index, float tensor[6]) const
+		{
+			tensor[0] = tensors[index];
+			tensor[1] = tensors[index+1];
+			tensor[2] = tensors[index+2];
+			tensor[3] = tensors[index+3];
+			tensor[4] = tensors[index+4];
+			tensor[5] = tensors[index+5];
+		}
 
-				void getGradientCubicTable(int axis, int i, int j, int k, int index, float gradient[3], float *edgeTable) const
-				{
-					tricubic_3f_table(sizex, sizey, sizez, edgeTable, axis, i+2, j+2, k+2, index, gradients, gradient);
-				};
+		void getGradientCubicTable(int axis, int i, int j, int k, int index, float gradient[3], float *edgeTable) const
+		{
+			tricubic_3f_table(sizex, sizey, sizez, edgeTable, axis, i+2, j+2, k+2, index, gradients, gradient);
+		};
 
-				void getTensorCubicTable(int axis, int i, int j, int k, int index, float tensor[6], float *edgeTable) const
-				{
-					tricubic_6f_table(sizex, sizey, sizez, edgeTable, axis, i+2, j+2, k+2, index, tensors, tensor);
-				};
+		void getTensorCubicTable(int axis, int i, int j, int k, int index, float tensor[6], float *edgeTable) const
+		{
+			tricubic_6f_table(sizex, sizey, sizez, edgeTable, axis, i+2, j+2, k+2, index, tensors, tensor);
+		};
 
-				void getTensorCubic(float position[3], float tensor[6]) const
-				{
-					tricubic_6f(sizex, sizey, sizez, tensors, position, tensor);
-				};
+		void getTensorCubic(float position[3], float tensor[6]) const
+		{
+			tricubic_6f(sizex, sizey, sizez, tensors, position, tensor);
+		};
 
-			};
+	};
 
 
 
-			int ParallelEdge::getEdgeIndex(int axis, int x, int y, int z) const {
-				int index;
-				switch (axis)
-				{
-					case 1:
-					index = x * gridy * gridz + y * gridz + z;
-					return index;
-					break;
-					case 2:
-					index = (gridx - 1) * gridy * gridz +
-					x * (gridy - 1) * gridz + y * gridz + z;
-					return index;
-					break;
-					case 3:
-					index = (gridx - 1) * gridy * gridz +
-					gridx * (gridy - 1) * gridz +
-					x * gridy * (gridz - 1) + y * (gridz - 1) + z;
-					return index;
-					break;
-				}
-				return 0;
-			}
+	int ParallelEdge::getEdgeIndex(int axis, int x, int y, int z) const {
+		int index;
+		switch (axis)
+		{
+			case 1:
+			index = x * gridy * gridz + y * gridz + z;
+			return index;
+			break;
+			case 2:
+			index = (gridx - 1) * gridy * gridz +
+			x * (gridy - 1) * gridz + y * gridz + z;
+			return index;
+			break;
+			case 3:
+			index = (gridx - 1) * gridy * gridz +
+			gridx * (gridy - 1) * gridz +
+			x * gridy * (gridz - 1) + y * (gridz - 1) + z;
+			return index;
+			break;
+		}
+		return 0;
+	}
 
-			static float getDotP(float v1[3], float v2[3]) {
-				return v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2];
-			}
+	static float getDotP(float v1[3], float v2[3]) {
+		return v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2];
+	}
 
-			static int sign(float val) {
-				return (0 < val) - (val < 0);
-			}
+	static int sign(float val) {
+		return (0 < val) - (val < 0);
+	}
 
-			float ParallelEdge::getDihedral(float b1[3], float b2[3], float b3[3]) const
-			{
-				float b21[3], b23[3];
-				getCrossP(b2, b1, b21);
-				getCrossP(b2, b3, b23);
-				float norm = getNorm(b21);
-				if (norm != 0)
-				{
-					b21[0] = b21[0]/norm;
-					b21[1] = b21[1]/norm;
-					b21[2] = b21[2]/norm;
-				}
-				norm = getNorm(b23);
-				if (norm != 0)
-				{
-					b23[0] = b23[0]/norm;
-					b23[1] = b23[1]/norm;
-					b23[2] = b23[2]/norm;
-				}
-				float dotP = getDotP(b21, b23);
-				if (dotP > 1) dotP = 1;
-				if (dotP < -1) dotP = -1;
-				float phi = acos(dotP);
-				return phi;
-			}
+	float ParallelEdge::getDihedral(float b1[3], float b2[3], float b3[3]) const
+	{
+		float b21[3], b23[3];
+		getCrossP(b2, b1, b21);
+		getCrossP(b2, b3, b23);
+		float norm = getNorm(b21);
+		if (norm != 0)
+		{
+			b21[0] = b21[0]/norm;
+			b21[1] = b21[1]/norm;
+			b21[2] = b21[2]/norm;
+		}
+		norm = getNorm(b23);
+		if (norm != 0)
+		{
+			b23[0] = b23[0]/norm;
+			b23[1] = b23[1]/norm;
+			b23[2] = b23[2]/norm;
+		}
+		float dotP = getDotP(b21, b23);
+		if (dotP > 1) dotP = 1;
+		if (dotP < -1) dotP = -1;
+		float phi = acos(dotP);
+		return phi;
+	}
 
-			void ParallelEdge::signedSphericalTriangleArea(float p1[3], float p2[3], float *area, float *phiC) const
-			{
-				*phiC = getDihedral(p1, globalVec, p2);
-				float phiP1 = getDihedral(p2, p1, globalVec);
-				float phiP2 = getDihedral(globalVec, p2, p1);
-				*area = *phiC+phiP1+phiP2-(float)M_PI;
-				float first[3], second[3], up[3];
-				first[0] = p1[0]-globalVec[0];
-				first[1] = p1[1]-globalVec[1];
-				first[2] = p1[2]-globalVec[2];
-				second[0] = p2[0]-p1[0];
-				second[1] = p2[1]-p1[1];
-				second[2] = p2[2]-p1[2];
-				getCrossP(first, second, up);
-				int aSign = sign(getDotP(up, globalVec));
-				*area *= aSign;
-				*phiC *= aSign;
-			}
+	void ParallelEdge::signedSphericalTriangleArea(float p1[3], float p2[3], float *area, float *phiC) const
+	{
+		*phiC = getDihedral(p1, globalVec, p2);
+		float phiP1 = getDihedral(p2, p1, globalVec);
+		float phiP2 = getDihedral(globalVec, p2, p1);
+		*area = *phiC+phiP1+phiP2-(float)M_PI;
+		float first[3], second[3], up[3];
+		first[0] = p1[0]-globalVec[0];
+		first[1] = p1[1]-globalVec[1];
+		first[2] = p1[2]-globalVec[2];
+		second[0] = p2[0]-p1[0];
+		second[1] = p2[1]-p1[1];
+		second[2] = p2[2]-p1[2];
+		getCrossP(first, second, up);
+		int aSign = sign(getDotP(up, globalVec));
+		*area *= aSign;
+		*phiC *= aSign;
+	}
 
-			void ParallelEdge::orientV3Array(Edge *edge, float *sampleV3, int edgeSampleNum) const
-			{
-				edge->f = 0;
-				float oldEnd[3];
-				oldEnd[0] = sampleV3[3*(edgeSampleNum-1)];
-				oldEnd[1] = sampleV3[3*(edgeSampleNum-1)+1];
-				oldEnd[2] = sampleV3[3*(edgeSampleNum-1)+2];
-				for ( int i = 1 ; i < edgeSampleNum ; i ++ )
-				{
-					float fSign = (float)sign(getDotP(sampleV3+3*i, sampleV3+3*(i-1)));
-					if (fSign == 0) fSign = 1;
-					sampleV3[3*i+0] = fSign*sampleV3[3*i];
-					sampleV3[3*i+1] = fSign*sampleV3[3*i+1];
-					sampleV3[3*i+2] = fSign*sampleV3[3*i+2];
-				}
-				if (sign(getDotP(oldEnd, sampleV3+3*(edgeSampleNum-1))) == -1) edge->f = 1;
-			}
+	void ParallelEdge::orientV3Array(Edge *edge, float *sampleV3, int edgeSampleNum) const
+	{
+		edge->f = 0;
+		float oldEnd[3];
+		oldEnd[0] = sampleV3[3*(edgeSampleNum-1)];
+		oldEnd[1] = sampleV3[3*(edgeSampleNum-1)+1];
+		oldEnd[2] = sampleV3[3*(edgeSampleNum-1)+2];
+		for ( int i = 1 ; i < edgeSampleNum ; i ++ )
+		{
+			float fSign = (float)sign(getDotP(sampleV3+3*i, sampleV3+3*(i-1)));
+			if (fSign == 0) fSign = 1;
+			sampleV3[3*i+0] = fSign*sampleV3[3*i];
+			sampleV3[3*i+1] = fSign*sampleV3[3*i+1];
+			sampleV3[3*i+2] = fSign*sampleV3[3*i+2];
+		}
+		if (sign(getDotP(oldEnd, sampleV3+3*(edgeSampleNum-1))) == -1) edge->f = 1;
+	}
 
 
 /**
@@ -2047,7 +2055,8 @@ void General_Data::edgePhase(float* scalars,float* tensors,float* gradients, flo
 
 	//tbb::task_scheduler_init init(task_scheduler_init::automatic);  
 	ParallelEdge parallel_edge(gridx,gridy,gridz,totalEdgePoints,edges,allCubic,globalVec,dataType,gridPoints,change,storeGrid_2DGradMag,grid_2DGradMag,sizex,sizey,sizez,halfSize,scalars,tensors,gradients,edgeTable);
-	parallel_edge.edgePhaseBegin(gridz, gridy, gridx);
+	parallel_edge.edgePhaseBegin(gridx, gridy, gridz);
+	//parallel_edge.edgePhaseBegin(gridz, gridy, gridx);
 	//parallel_for( blocked_range3d<int>(0, gridz, 0, gridy,0, gridx),parallel_edge,auto_partitioner());
 
 	timeEnd = clock();
@@ -4501,7 +4510,8 @@ void ParallelCell::getShowPos(float position[3], float showPos[3])
 {
 	showPos[0] = ((float)position[0] - 2 - rightBackTop[0]) / halfDataSize;
 	showPos[1] = ((float)position[1] - 2 - rightBackTop[1]) / halfDataSize;
-	showPos[2] = ((float)position[2] - 2 - rightBackTop[2]) / halfDataSize * thickness;
+	showPos[2] = ((float)position[2] - 2 - rightBackTop[2]) / halfDataSize;
+	//showPos[2] = ((float)position[2] - 2 - rightBackTop[2]) / halfDataSize * thickness;
 }
 
 float ParallelCell::getFirstEigenvalueAndRelativeSaliencies(float relativeSaliencies[3],float* maxEigenvalue, float* minEigenvalue)
@@ -4574,43 +4584,43 @@ void ParallelCell::beginCellPhase(int cols, int rows, int pages) {
 			}
 		}
 	}
-		};
+};
 
-		void General_Data::cellPhase(float* scalars,float* tensors,float* gradients)
-		{
-			clock_t timeStart, timeEnd;
-			timeStart = clock();
-			cout << "Cell Phase Begin:" << endl;
-			points = new vector<Point>;
-			vertices = new vector<Vertex>;
+void General_Data::cellPhase(float* scalars,float* tensors,float* gradients)
+{
+	clock_t timeStart, timeEnd;
+	timeStart = clock();
+	cout << "Cell Phase Begin:" << endl;
+	points = new vector<Point>;
+	vertices = new vector<Vertex>;
 
 	//conpoints = new concurrent_vector<Point>;
 	//convertices = new concurrent_vector<Vertex>;
-			conpoints = new vector<Point>;
-			convertices = new vector<Vertex>;
-			change = 0.017f * gridSize;
-			dispCellX = (int)floor( gridx / 2.0 ) - 1;
-			dispCellY = (int)floor( gridy / 2.0 ) - 1;
-			dispCellZ = (int)floor( gridz / 2.0 ) - 1;
-			maxCellIndex = (gridx-1) * (gridy-1) * (gridz-1);
-			cells = new Cell[ maxCellIndex ] ;
-			totalCellPoints = new int(0);
+	conpoints = new vector<Point>;
+	convertices = new vector<Vertex>;
+	change = 0.1f * gridSize;
+	dispCellX = (int)floor( gridx / 2.0 ) - 1;
+	dispCellY = (int)floor( gridy / 2.0 ) - 1;
+	dispCellZ = (int)floor( gridz / 2.0 ) - 1;
+	maxCellIndex = (gridx-1) * (gridy-1) * (gridz-1);
+	cells = new Cell[ maxCellIndex ] ;
+	totalCellPoints = new int(0);
 
-			ParallelCell parallel_cell(gridx,gridy,gridz,totalCellPoints,edges,faces,cells,conpoints,dataType,gridPoints,change,sizex,sizey,sizez,halfSize,scalars,tensors,gradients,gridSize,maxEigenvalue, minEigenvalue,convertices,halfDataSize,rightBackTop,thickness);
-			parallel_cell.beginCellPhase(gridx, gridy, gridz);
-			vector<Point>::iterator it; 
-			for(it=conpoints->begin() ; it < conpoints->end(); it++) {
-				Point p;
+	ParallelCell parallel_cell(gridx,gridy,gridz,totalCellPoints,edges,faces,cells,conpoints,dataType,gridPoints,change,sizex,sizey,sizez,halfSize,scalars,tensors,gradients,gridSize,maxEigenvalue, minEigenvalue,convertices,halfDataSize,rightBackTop,thickness);
+	parallel_cell.beginCellPhase(gridx, gridy, gridz);
+	vector<Point>::iterator it; 
+	for(it=conpoints->begin() ; it < conpoints->end(); it++) {
+		Point p;
 
-				p.vertIdx = (*it).vertIdx;
-				p.relativeSaliencies[0] = (*it).relativeSaliencies[0];
-				p.relativeSaliencies[1] = (*it).relativeSaliencies[1];
-				p.relativeSaliencies[2] = (*it).relativeSaliencies[2];
-				p.localIntensity = (*it).localIntensity;
-				p.firstEigenvalue = (*it).firstEigenvalue;
-				p.type= (*it).type;
-				points->push_back(p);
-			}
+		p.vertIdx = (*it).vertIdx;
+		p.relativeSaliencies[0] = (*it).relativeSaliencies[0];
+		p.relativeSaliencies[1] = (*it).relativeSaliencies[1];
+		p.relativeSaliencies[2] = (*it).relativeSaliencies[2];
+		p.localIntensity = (*it).localIntensity;
+		p.firstEigenvalue = (*it).firstEigenvalue;
+		p.type= (*it).type;
+		points->push_back(p);
+	}
 /**
 	for(int i = 0; i < conpoints->size(); i++) {
 		Point p = conpoints[i];
@@ -4690,7 +4700,7 @@ void General_Data::getShowPos(float position[3], float showPos[3])
 
 	showPos[0] = ((float)position[0] - 2 - rightBackTop[0]) / halfDataSize;
 	showPos[1] = ((float)position[1] - 2 - rightBackTop[1]) / halfDataSize;
-	showPos[2] = ((float)position[2] - 2 - rightBackTop[2]) / halfDataSize * thickness;
+	showPos[2] = ((float)position[2] - 2 - rightBackTop[2]) / halfDataSize;
 }
 
 bool General_Data::getEigensolverCubic(float position[3])
@@ -4829,736 +4839,739 @@ void General_Data::buildCurve()
 			}
 		}
 	}
-			for ( int i = 0 ; i < gridx - 1 ; i ++ ) {
-				for ( int j = 0 ; j < gridy ; j ++ ) {
-					for ( int k = 0 ; k < gridz - 1 ; k ++ )
-					{
-						Face *face = &(faces[getFaceIndex(2, i, j, k)]);
-						if ( !face->valid ) continue;
-						if ( !face->extremal || j == 0 || j == gridy-1 ) continue;
-						Cell *cell1 = &(cells[getIndex(1, 0, i, j - 1, k, gridx - 1, gridy - 1, gridz - 1)]);
-						if ( !cell1->valid ) continue;
-						Cell *cell2 = &(cells[getIndex(1, 0, i, j, k, gridx - 1, gridy - 1, gridz - 1)]);
-						if ( !cell2->valid ) continue;
-						buildCurveIteration(face, cell1, cell2);
-					}
-				}
+	for ( int i = 0 ; i < gridx - 1 ; i ++ ) {
+		for ( int j = 0 ; j < gridy ; j ++ ) {
+			for ( int k = 0 ; k < gridz - 1 ; k ++ )
+			{
+				Face *face = &(faces[getFaceIndex(2, i, j, k)]);
+				if ( !face->valid ) continue;
+				if ( !face->extremal || j == 0 || j == gridy-1 ) continue;
+				Cell *cell1 = &(cells[getIndex(1, 0, i, j - 1, k, gridx - 1, gridy - 1, gridz - 1)]);
+				if ( !cell1->valid ) continue;
+				Cell *cell2 = &(cells[getIndex(1, 0, i, j, k, gridx - 1, gridy - 1, gridz - 1)]);
+				if ( !cell2->valid ) continue;
+				buildCurveIteration(face, cell1, cell2);
 			}
-					for ( int i = 0 ; i < gridx - 1 ; i ++ ) {
-						for ( int j = 0 ; j < gridy - 1 ; j ++ ) {
-							for ( int k = 0 ; k < gridz ; k ++ )
-							{
-								Face *face = &(faces[getFaceIndex(3, i, j, k)]);
-								if ( !face->valid ) continue;
-								if ( !face->extremal || k == 0 || k == gridz-1 ) continue;
-								Cell *cell1 = &(cells[getIndex(1, 0, i, j, k - 1, gridx - 1, gridy - 1, gridz - 1)]);
-								if ( !cell1->valid ) continue;
-								Cell *cell2 = &(cells[getIndex(1, 0, i, j, k, gridx - 1, gridy - 1, gridz - 1)]);
-								if ( !cell2->valid ) continue;
-								buildCurveIteration(face, cell1, cell2);
-							}
-						}
-					}
-							timeEnd = clock();
-							cout << "Spend Time: " << (timeEnd-timeStart)/CLOCKS_PER_SEC << endl;
-							cout << "Done!" << endl;
-							cout << "****************************************************************" << endl;
-						}
+		}
+	}
+	for ( int i = 0 ; i < gridx - 1 ; i ++ ) {
+		for ( int j = 0 ; j < gridy - 1 ; j ++ ) {
+			for ( int k = 0 ; k < gridz ; k ++ )
+			{
+				Face *face = &(faces[getFaceIndex(3, i, j, k)]);
+				if ( !face->valid ) continue;
+				if ( !face->extremal || k == 0 || k == gridz-1 ) continue;
+				Cell *cell1 = &(cells[getIndex(1, 0, i, j, k - 1, gridx - 1, gridy - 1, gridz - 1)]);
+				if ( !cell1->valid ) continue;
+				Cell *cell2 = &(cells[getIndex(1, 0, i, j, k, gridx - 1, gridy - 1, gridz - 1)]);
+				if ( !cell2->valid ) continue;
+				buildCurveIteration(face, cell1, cell2);
+			}
+		}
+	}
+	timeEnd = clock();
+	cout << "Spend Time: " << (timeEnd-timeStart)/CLOCKS_PER_SEC << endl;
+	cout << "Done!" << endl;
+	cout << "****************************************************************" << endl;
+}
 
 
-						int General_Data::getEdgeIndex(int axis, int x, int y, int z) {
-							int index;
-							switch (axis)
-							{
-								case 1:
-								index = x * gridy * gridz + y * gridz + z;
-								return index;
-								break;
-								case 2:
-								index = (gridx - 1) * gridy * gridz +
-								x * (gridy - 1) * gridz + y * gridz + z;
-								return index;
-								break;
-								case 3:
-								index = (gridx - 1) * gridy * gridz +
-								gridx * (gridy - 1) * gridz +
-								x * gridy * (gridz - 1) + y * (gridz - 1) + z;
-								return index;
-								break;
-							}
-							return 0;
-						}
+int General_Data::getEdgeIndex(int axis, int x, int y, int z) {
+	int index;
+	switch (axis)
+	{
+		case 1:
+		index = x * gridy * gridz + y * gridz + z;
+		return index;
+		break;
+		case 2:
+		index = (gridx - 1) * gridy * gridz +
+		x * (gridy - 1) * gridz + y * gridz + z;
+		return index;
+		break;
+		case 3:
+		index = (gridx - 1) * gridy * gridz +
+		gridx * (gridy - 1) * gridz +
+		x * gridy * (gridz - 1) + y * (gridz - 1) + z;
+		return index;
+		break;
+	}
+	return 0;
+}
 
-						void General_Data::buildSurfaceIteration(Edge *edge, Cell *cell1, Cell *cell2, Cell *cell3, Cell *cell4)
-						{
-							Quad quad;
-							if ( cell1->vertIdx < 0 )
-							{
-								Vertex vertex;
-								getShowPos(cell1->centroid, vertex.position);
-								quad.vertIdxs[0] = vertices->size();
-								cell1->vertIdx = quad.vertIdxs[0];
-								vertices->push_back(vertex);
-							}
-							else
-							{
-								quad.vertIdxs[0] = cell1->vertIdx;
-							}
-							if ( cell2->vertIdx < 0 )
-							{
-								Vertex vertex;
-								getShowPos(cell2->centroid, vertex.position);
-								quad.vertIdxs[1] = vertices->size();
-								cell2->vertIdx = quad.vertIdxs[1];
-								vertices->push_back(vertex);
-							}
-							else
-							{
-								quad.vertIdxs[1] = cell2->vertIdx;
-							}
-							if ( cell3->vertIdx < 0 )
-							{
-								Vertex vertex;
-								getShowPos(cell3->centroid, vertex.position);
-								quad.vertIdxs[2] = vertices->size();
-								cell3->vertIdx = quad.vertIdxs[2];
-								vertices->push_back(vertex);
-							}
-							else
-							{
-								quad.vertIdxs[2] = cell3->vertIdx;
-							}
-							if ( cell4->vertIdx < 0 )
-							{
-								Vertex vertex;
-								getShowPos(cell4->centroid, vertex.position);
-								quad.vertIdxs[3] = vertices->size();
-								cell4->vertIdx = quad.vertIdxs[3];
-								vertices->push_back(vertex);
-							}
-							else
-							{
-								quad.vertIdxs[3] = cell4->vertIdx;
-							}
-							getEigensolverCubic(edge->edgePoint);
-							quad.firstEigenvalue = getFirstEigenvalueAndRelativeSaliencies(quad.relativeSaliencies);
+void General_Data::buildSurfaceIteration(Edge *edge, Cell *cell1, Cell *cell2, Cell *cell3, Cell *cell4)
+{
+	Quad quad;
+	if ( cell1->vertIdx < 0 )
+	{
+		Vertex vertex;
+		getShowPos(cell1->centroid, vertex.position);
+		quad.vertIdxs[0] = vertices->size();
+		cell1->vertIdx = quad.vertIdxs[0];
+		vertices->push_back(vertex);
+	}
+	else
+	{
+		quad.vertIdxs[0] = cell1->vertIdx;
+	}
+	if ( cell2->vertIdx < 0 )
+	{
+		Vertex vertex;
+		getShowPos(cell2->centroid, vertex.position);
+		quad.vertIdxs[1] = vertices->size();
+		cell2->vertIdx = quad.vertIdxs[1];
+		vertices->push_back(vertex);
+	}
+	else
+	{
+		quad.vertIdxs[1] = cell2->vertIdx;
+	}
+	if ( cell3->vertIdx < 0 )
+	{
+		Vertex vertex;
+		getShowPos(cell3->centroid, vertex.position);
+		quad.vertIdxs[2] = vertices->size();
+		cell3->vertIdx = quad.vertIdxs[2];
+		vertices->push_back(vertex);
+	}
+	else
+	{
+		quad.vertIdxs[2] = cell3->vertIdx;
+	}
+	if ( cell4->vertIdx < 0 )
+	{
+		Vertex vertex;
+		getShowPos(cell4->centroid, vertex.position);
+		quad.vertIdxs[3] = vertices->size();
+		cell4->vertIdx = quad.vertIdxs[3];
+		vertices->push_back(vertex);
+	}
+	else
+	{
+		quad.vertIdxs[3] = cell4->vertIdx;
+	}
+	getEigensolverCubic(edge->edgePoint);
+	quad.firstEigenvalue = getFirstEigenvalueAndRelativeSaliencies(quad.relativeSaliencies);
 
 	//SelfAdjointEigenSolver<Matrix3f> eigensolver;
 	//getEigensolverCubic(edge->edgePoint, &eigensolver);
 	//quad.firstEigenvalue = getFirstEigenvalueAndRelativeSaliencies(&eigensolver, quad.relativeSaliencies);
-							getScalarCubic(edge->edgePoint, &(quad.localIntensity));
-							quad.type = edge->edgeTag;
-							quads->push_back(quad);
-						}
+	getScalarCubic(edge->edgePoint, &(quad.localIntensity));
+	quad.type = edge->edgeTag;
+	quads->push_back(quad);
+}
 
-						void General_Data::buildSurface()
-						{
-							clock_t timeStart, timeEnd;
-							timeStart = clock();
-							cout << "Build Surface Begin:" << endl;
-							quads = new vector<Quad>;
-							for ( int i = 0 ; i < gridx - 1 ; i ++ ) {
-								for ( int j = 0 ; j < gridy ; j ++ ) {
-									for ( int k = 0 ; k < gridz ; k ++ )
-									{
-										Edge *edge = &(edges[getEdgeIndex(1, i, j, k)]);
-										if ( !edge->valid ) continue;
-										if ( !edge->extremal || j == 0 || j == gridy-1 || k == 0 || k == gridz-1 ) continue;
-										Cell *cell1 = &(cells[getIndex(1, 0, i, j, k, gridx - 1, gridy - 1, gridz - 1)]);
-										if ( !cell1->valid ) continue;
-										Cell *cell2 = &(cells[getIndex(1, 0, i, j-1, k, gridx - 1, gridy - 1, gridz - 1)]);
-										if ( !cell2->valid ) continue;
-										Cell *cell3 = &(cells[getIndex(1, 0, i, j-1, k-1, gridx - 1, gridy - 1, gridz - 1)]);
-										if ( !cell3->valid ) continue;
-										Cell *cell4 = &(cells[getIndex(1, 0, i, j, k-1, gridx - 1, gridy - 1, gridz - 1)]);
-										if ( !cell4->valid ) continue;
-										buildSurfaceIteration(edge, cell1, cell2, cell3, cell4);
-									}
-								}
-							}
-									for ( int i = 0 ; i < gridx ; i ++ ) {
-										for ( int j = 0 ; j < gridy - 1 ; j ++ ) {
-											for ( int k = 0 ; k < gridz ; k ++ )
-											{
-												Edge *edge = &(edges[getEdgeIndex(2, i, j, k)]);
-												if ( !edge->valid ) continue;
-												if ( !edge->extremal || i == 0 || i == gridx-1 || k == 0 || k == gridz-1 ) continue;
-												Cell *cell1 = &(cells[getIndex(1, 0, i, j, k, gridx - 1, gridy - 1, gridz - 1)]);
-												if ( !cell1->valid ) continue;
-												Cell *cell2 = &(cells[getIndex(1, 0, i-1, j, k, gridx - 1, gridy - 1, gridz - 1)]);
-												if ( !cell2->valid ) continue;
-												Cell *cell3 = &(cells[getIndex(1, 0, i-1, j, k-1, gridx - 1, gridy - 1, gridz - 1)]);
-												if ( !cell3->valid ) continue;
-												Cell *cell4 = &(cells[getIndex(1, 0, i, j, k-1, gridx - 1, gridy - 1, gridz - 1)]);
-												if ( !cell4->valid ) continue;
-												buildSurfaceIteration(edge, cell1, cell2, cell3, cell4);
-											}
-										}
-									}
-											for ( int i = 0 ; i < gridx ; i ++ ) {
-												for ( int j = 0 ; j < gridy ; j ++ ) {
-													for ( int k = 0 ; k < gridz - 1 ; k ++ )
-													{
-														Edge *edge = &(edges[getEdgeIndex(3, i, j, k)]);
-														if ( !edge->valid ) continue;
-														if ( !edge->extremal || i == 0 || i == gridx-1 || j == 0 || j == gridy-1 ) continue;
-														Cell *cell1 = &(cells[getIndex(1, 0, i, j, k, gridx - 1, gridy - 1, gridz - 1)]);
-														if ( !cell1->valid ) continue;
-														Cell *cell2 = &(cells[getIndex(1, 0, i, j-1, k, gridx - 1, gridy - 1, gridz - 1)]);
-														if ( !cell2->valid ) continue;
-														Cell *cell3 = &(cells[getIndex(1, 0, i-1, j-1, k, gridx - 1, gridy - 1, gridz - 1)]);
-														if ( !cell3->valid ) continue;
-														Cell *cell4 = &(cells[getIndex(1, 0, i-1, j, k, gridx - 1, gridy - 1, gridz - 1)]);
-														if ( !cell4->valid ) continue;
-														buildSurfaceIteration(edge, cell1, cell2, cell3, cell4);
-													}
-												}
-											}
-													timeEnd = clock();
-													cout << "Spend Time: " << (timeEnd-timeStart)/CLOCKS_PER_SEC << endl;
-													cout << "Done!" << endl;
-													cout << "****************************************************************" << endl;
-												}
+void General_Data::buildSurface()
+{
+	clock_t timeStart, timeEnd;
+	timeStart = clock();
+	cout << "Build Surface Begin:" << endl;
+	quads = new vector<Quad>;
+	for ( int i = 0 ; i < gridx - 1 ; i ++ ) {
+		for ( int j = 0 ; j < gridy ; j ++ ) {
+			for ( int k = 0 ; k < gridz ; k ++ )
+			{
+				Edge *edge = &(edges[getEdgeIndex(1, i, j, k)]);
+				if ( !edge->valid ) continue;
+				if ( !edge->extremal || j == 0 || j == gridy-1 || k == 0 || k == gridz-1 ) continue;
+				Cell *cell1 = &(cells[getIndex(1, 0, i, j, k, gridx - 1, gridy - 1, gridz - 1)]);
+				if ( !cell1->valid ) continue;
+				Cell *cell2 = &(cells[getIndex(1, 0, i, j-1, k, gridx - 1, gridy - 1, gridz - 1)]);
+				if ( !cell2->valid ) continue;
+				Cell *cell3 = &(cells[getIndex(1, 0, i, j-1, k-1, gridx - 1, gridy - 1, gridz - 1)]);
+				if ( !cell3->valid ) continue;
+				Cell *cell4 = &(cells[getIndex(1, 0, i, j, k-1, gridx - 1, gridy - 1, gridz - 1)]);
+				if ( !cell4->valid ) continue;
+				buildSurfaceIteration(edge, cell1, cell2, cell3, cell4);
+			}
+		}
+	}
+	for ( int i = 0 ; i < gridx ; i ++ ) {
+		for ( int j = 0 ; j < gridy - 1 ; j ++ ) {
+			for ( int k = 0 ; k < gridz ; k ++ )
+			{
+				Edge *edge = &(edges[getEdgeIndex(2, i, j, k)]);
+				if ( !edge->valid ) continue;
+				if ( !edge->extremal || i == 0 || i == gridx-1 || k == 0 || k == gridz-1 ) continue;
+				Cell *cell1 = &(cells[getIndex(1, 0, i, j, k, gridx - 1, gridy - 1, gridz - 1)]);
+				if ( !cell1->valid ) continue;
+				Cell *cell2 = &(cells[getIndex(1, 0, i-1, j, k, gridx - 1, gridy - 1, gridz - 1)]);
+				if ( !cell2->valid ) continue;
+				Cell *cell3 = &(cells[getIndex(1, 0, i-1, j, k-1, gridx - 1, gridy - 1, gridz - 1)]);
+				if ( !cell3->valid ) continue;
+				Cell *cell4 = &(cells[getIndex(1, 0, i, j, k-1, gridx - 1, gridy - 1, gridz - 1)]);
+				if ( !cell4->valid ) continue;
+				buildSurfaceIteration(edge, cell1, cell2, cell3, cell4);
+			}
+		}
+	}
+	for ( int i = 0 ; i < gridx ; i ++ ) {
+		for ( int j = 0 ; j < gridy ; j ++ ) {
+			for ( int k = 0 ; k < gridz - 1 ; k ++ )
+			{
+				Edge *edge = &(edges[getEdgeIndex(3, i, j, k)]);
+				if ( !edge->valid ) continue;
+				if ( !edge->extremal || i == 0 || i == gridx-1 || j == 0 || j == gridy-1 ) continue;
+				Cell *cell1 = &(cells[getIndex(1, 0, i, j, k, gridx - 1, gridy - 1, gridz - 1)]);
+				if ( !cell1->valid ) continue;
+				Cell *cell2 = &(cells[getIndex(1, 0, i, j-1, k, gridx - 1, gridy - 1, gridz - 1)]);
+				if ( !cell2->valid ) continue;
+				Cell *cell3 = &(cells[getIndex(1, 0, i-1, j-1, k, gridx - 1, gridy - 1, gridz - 1)]);
+				if ( !cell3->valid ) continue;
+				Cell *cell4 = &(cells[getIndex(1, 0, i-1, j, k, gridx - 1, gridy - 1, gridz - 1)]);
+				if ( !cell4->valid ) continue;
+				buildSurfaceIteration(edge, cell1, cell2, cell3, cell4);
+			}
+		}
+	}
+	timeEnd = clock();
+	cout << "Spend Time: " << (timeEnd-timeStart)/CLOCKS_PER_SEC << endl;
+	cout << "Done!" << endl;
+	cout << "****************************************************************" << endl;
+}
 
 
-												class MRC_Data :
-												public General_Data
-												{
-												public:
-													MRC_Data();
-													~MRC_Data(void);
-													void getScalarGP(int index, float *scalar);
-													void getTensorGP(int index, float tensor[6]);
-													void getGradientGP(int index, float gradient[3]);
-													void getScalar(float position[3], float *scalar);
-													void getTensor(float position[3], float tensor[6]);
-													void getGradient(float position[3], float gradient[3]);
-													void getScalarCubic(float position[3], float *scalar);
-													void getTensorCubic(float position[3], float tensor[6]);
-													void getGradientCubic(float position[3], float gradient[3]);
-													void getTensorCubicTable(int axis, int i, int j, int k, int index, float tensor[6]);
-													void getGradientCubicTable(int axis, int i, int j, int k, int index, float gradient[3]);
-													void dataGeneration(char *filename);
-													void buildGrid();
-													void getGradientBicubicTable(int axis, int ii, int jj, int kk, float sGradients[subdNum][subdNum][3]);
-												private:
-													void MRCGeneration(char *filename);
+class MRC_Data :
+public General_Data
+{
+public:
+	MRC_Data();
+	~MRC_Data(void);
+	void getScalarGP(int index, float *scalar);
+	void getTensorGP(int index, float tensor[6]);
+	void getGradientGP(int index, float gradient[3]);
+	void getScalar(float position[3], float *scalar);
+	void getTensor(float position[3], float tensor[6]);
+	void getGradient(float position[3], float gradient[3]);
+	void getScalarCubic(float position[3], float *scalar);
+	void getTensorCubic(float position[3], float tensor[6]);
+	void getGradientCubic(float position[3], float gradient[3]);
+	void getTensorCubicTable(int axis, int i, int j, int k, int index, float tensor[6]);
+	void getGradientCubicTable(int axis, int i, int j, int k, int index, float gradient[3]);
+	void dataGeneration(char *filename);
+	void buildGrid();
+	void getGradientBicubicTable(int axis, int ii, int jj, int kk, float sGradients[subdNum][subdNum][3]);
+private:
+	void MRCGeneration(char *filename);
 	//void DTIGeneration(char *filename);
 
 
-												public:
-													float *scalars;
-													float *tensors;
-													float *gradients;
-													int iteration;
-													float *edgeTable;
-													float *faceTable;
-												};
+public:
+	float *scalars;
+	float *tensors;
+	float *gradients;
+	int iteration;
+	float *edgeTable;
+	float *faceTable;
+};
 
 
 
-												MRC_Data::MRC_Data():General_Data()
-												{
-													iteration = 4;
-													scalars = NULL;
-													tensors = NULL;
-													gradients = NULL;
-												}
+MRC_Data::MRC_Data():General_Data()
+{
+	iteration = 4;
+	scalars = NULL;
+	tensors = NULL;
+	gradients = NULL;
+}
 
-												MRC_Data::~MRC_Data(void)
-												{
-													delete[] scalars;
-													delete[] tensors;
-													delete[] gradients;
-													delete[] edgeTable;
-													delete[] faceTable;
-												}
+MRC_Data::~MRC_Data(void)
+{
+	delete[] scalars;
+	delete[] tensors;
+	delete[] gradients;
+	delete[] edgeTable;
+	delete[] faceTable;
+}
 
-												void MRC_Data::dataGeneration(char *filename)
-												{
-													clock_t timeStart, timeEnd;
-													timeStart = clock();
-													cout << "Read Data Begin:" << endl;
-													switch (dataType)
-													{
-														case 1:
-														MRCGeneration(filename);
-														break;
-														case 2:
-														MRCGeneration(filename);
+void MRC_Data::dataGeneration(char *filename)
+{
+	clock_t timeStart, timeEnd;
+	timeStart = clock();
+	cout << "Read Data Begin:" << endl;
+	switch (dataType)
+	{
+		case 1:
+		MRCGeneration(filename);
+		break;
+		case 2:
+		MRCGeneration(filename);
 		//DTIGeneration(filename);
-														break;
-													}
-													timeEnd = clock();
-													cout << "Spend Time: " << (timeEnd-timeStart)/CLOCKS_PER_SEC << endl;
-													cout << "Done!" << endl;
-													cout << "****************************************************************" << endl;
-												}
+		break;
+	}
+	timeEnd = clock();
+	cout << "Spend Time: " << (timeEnd-timeStart)/CLOCKS_PER_SEC << endl;
+	cout << "Done!" << endl;
+	cout << "****************************************************************" << endl;
+}
 
-												void gaussianiir3d(float *volume, long width, long height, long depth,
-													float sigma, int numsteps)
-												{
-													const long plane = width*height;
-													const long numel = plane*depth;
-													double lambda, dnu;
-													float nu, boundaryscale, postscale;
-													float *ptr;
-													long i, x, y, z;
-													int step;
+void gaussianiir3d(float *volume, long width, long height, long depth,
+	float sigma, int numsteps)
+{
+	const long plane = width*height;
+	const long numel = plane*depth;
+	double lambda, dnu;
+	float nu, boundaryscale, postscale;
+	float *ptr;
+	long i, x, y, z;
+	int step;
 
-													if(sigma <= 0 || numsteps < 0)
-														return;
+	if(sigma <= 0 || numsteps < 0)
+		return;
 
-													lambda = (sigma*sigma)/(2.0*numsteps);
-													dnu = (1.0 + 2.0*lambda - sqrt(1.0 + 4.0*lambda))/(2.0*lambda);
-													nu = (float)dnu;
-													boundaryscale = (float)(1.0/(1.0 - dnu));
-													postscale = (float)(pow(dnu/lambda,3*numsteps));
+	lambda = (sigma*sigma)/(2.0*numsteps);
+	dnu = (1.0 + 2.0*lambda - sqrt(1.0 + 4.0*lambda))/(2.0*lambda);
+	nu = (float)dnu;
+	boundaryscale = (float)(1.0/(1.0 - dnu));
+	postscale = (float)(pow(dnu/lambda,3*numsteps));
 
     /* Filter horizontally along each row */
-													for(z = 0; z < depth; z++)
-													{
-														for(y = 0; y < height; y++)
-														{
-															for(step = 0; step < numsteps; step++)
-															{
-																ptr = volume + width*(y + height*z);
-																ptr[0] *= boundaryscale;
+	for(z = 0; z < depth; z++)
+	{
+		for(y = 0; y < height; y++)
+		{
+			for(step = 0; step < numsteps; step++)
+			{
+				ptr = volume + width*(y + height*z);
+				ptr[0] *= boundaryscale;
 
                 /* Filter rightwards */
-																for(x = 1; x < width; x++)
-																	ptr[x] += nu*ptr[x - 1];
+				for(x = 1; x < width; x++)
+					ptr[x] += nu*ptr[x - 1];
 
-																ptr[x = width - 1] *= boundaryscale;
+				ptr[x = width - 1] *= boundaryscale;
 
                 /* Filter leftwards */
-																for(; x > 0; x--)
-																	ptr[x - 1] += nu*ptr[x];
-															}
-														}
-													}
+				for(; x > 0; x--)
+					ptr[x - 1] += nu*ptr[x];
+			}
+		}
+	}
 
     /* Filter vertically along each column */
-													for(z = 0; z < depth; z++)
-													{
-														for(x = 0; x < width; x++)
-														{
-															for(step = 0; step < numsteps; step++)
-															{
-																ptr = volume + x + plane*z;
-																ptr[0] *= boundaryscale;
+	for(z = 0; z < depth; z++)
+	{
+		for(x = 0; x < width; x++)
+		{
+			for(step = 0; step < numsteps; step++)
+			{
+				ptr = volume + x + plane*z;
+				ptr[0] *= boundaryscale;
 
                 /* Filter downwards */
-																for(i = width; i < plane; i += width)
-																	ptr[i] += nu*ptr[i - width];
+				for(i = width; i < plane; i += width)
+					ptr[i] += nu*ptr[i - width];
 
-																ptr[i = plane - width] *= boundaryscale;
+				ptr[i = plane - width] *= boundaryscale;
 
                 /* Filter upwards */
-																for(; i > 0; i -= width)
-																	ptr[i - width] += nu*ptr[i];
-															}
-														}
-													}
+				for(; i > 0; i -= width)
+					ptr[i - width] += nu*ptr[i];
+			}
+		}
+	}
 
     /* Filter along z-dimension */
-													for(y = 0; y < height; y++)
-													{
-														for(x = 0; x < width; x++)
-														{
-															for(step = 0; step < numsteps; step++)
-															{
-																ptr = volume + x + width*y;
-																ptr[0] *= boundaryscale;
+	for(y = 0; y < height; y++)
+	{
+		for(x = 0; x < width; x++)
+		{
+			for(step = 0; step < numsteps; step++)
+			{
+				ptr = volume + x + width*y;
+				ptr[0] *= boundaryscale;
 
-																for(i = plane; i < numel; i += plane)
-																	ptr[i] += nu*ptr[i - plane];
+				for(i = plane; i < numel; i += plane)
+					ptr[i] += nu*ptr[i - plane];
 
-																ptr[i = numel - plane] *= boundaryscale;
+				ptr[i = numel - plane] *= boundaryscale;
 
-																for(; i > 0; i -= plane)
-																	ptr[i - plane] += nu*ptr[i];
-															}
-														}
-													}
+				for(; i > 0; i -= plane)
+					ptr[i - plane] += nu*ptr[i];
+			}
+		}
+	}
 
-													for(i = 0; i < numel; i++)
-														volume[i] *= postscale;
+	for(i = 0; i < numel; i++)
+		volume[i] *= postscale;
 
-													return;
-												}
+	return;
+}
 
-												void MRC_Data::MRCGeneration(char *filename)
-												{
-													strcpy(dataName,filename);
-													float sigma = ((float)kernelSize + 1) / 6;
-													halfSize = (int)ceil(((float)kernelSize - 1) / 2);
-													cout << "MRC Format" << endl;
-													sizex = volData->GetSizeX();
-													sizey = volData->GetSizeY();
-													sizez = volData->GetSizeZ();
+void MRC_Data::MRCGeneration(char *filename)
+{
+	strcpy(dataName,filename);
+	float sigma = ((float)kernelSize + 1) / 6;
+	halfSize = (int)ceil(((float)kernelSize - 1) / 2);
+	cout << "MRC Format" << endl;
+	sizex = volData->GetSizeX();
+	sizey = volData->GetSizeY();
+	sizez = volData->GetSizeZ();
 
-													float* rawData = new float[ sizex * sizey * sizez ];
-													bool first = true;
-													for(int i = 0; i < sizez; i++) {
-														for(int j = 0; j < sizey; j++) {
-															for(int k = 0; k < sizex; k++) {
-																float d = volData->GetDataAt(k, j, i);
-																rawData[getIndex(1, 0, k, j, i, sizex, sizey, sizez)] = d;
-																if (first)
-																{
-																	first = false;
-																	minScalar = maxScalar = d;
-																}
-																if (minScalar > d) {
-																	minScalar = d;
-																} 
-																if (maxScalar < d){
-																	maxScalar = d;
-																} 
-
-
-															}
-														}
-													}
-													float *Ix2 = new float[ (sizex-2) * (sizey-2) * (sizez-2) ] ;
-													float *Iy2 = new float[ (sizex-2) * (sizey-2) * (sizez-2) ] ;
-													float *Iz2 = new float[ (sizex-2) * (sizey-2) * (sizez-2) ] ;
-													float *IxIy = new float[ (sizex-2) * (sizey-2) * (sizez-2) ] ;
-													float *IyIz = new float[ (sizex-2) * (sizey-2) * (sizez-2) ] ;
-													float *IxIz = new float[ (sizex-2) * (sizey-2) * (sizez-2) ] ;
-
-													for ( int i = 0 ; i < sizex - 2 ; i ++ ) {
-														for ( int j = 0 ; j < sizey - 2 ; j ++ ) {
-															for ( int k = 0 ; k < sizez - 2 ; k ++ )
-															{
-																int xForward = getIndex(1, 0, i+2, j+1, k+1, sizex, sizey, sizez);
-																int xBackward = getIndex(1, 0, i, j+1, k+1, sizex, sizey, sizez);
-																int yForward = getIndex(1, 0, i+1, j+2, k+1, sizex, sizey, sizez);
-																int yBackward = getIndex(1, 0, i+1, j, k+1, sizex, sizey, sizez);
-																int zForward = getIndex(1, 0, i+1, j+1, k+2, sizex, sizey, sizez);
-																int zBackward = getIndex(1, 0, i+1, j+1, k, sizex, sizey, sizez);
-																float Ix = ( rawData[xForward] - rawData[xBackward] ) / 2;
-																float Iy = ( rawData[yForward] - rawData[yBackward] ) / 2;
-																float Iz = ( rawData[zForward] - rawData[zBackward] ) / 2;
-																int index = getIndex(1, 0, i, j, k, sizex-2, sizey-2, sizez-2);
-																Ix2[index] = Ix * Ix;
-																Iy2[index] = Iy * Iy;
-																Iz2[index] = Iz * Iz;
-																IxIy[index] = Ix * Iy;
-																IyIz[index] = Iy * Iz;
-																IxIz[index] = Ix * Iz;
-															}
-														}
-													}
-
-													gaussianiir3d(Ix2, sizez-2, sizey-2, sizex-2, sigma, iteration);
-													gaussianiir3d(Iy2, sizez-2, sizey-2, sizex-2, sigma, iteration);
-													gaussianiir3d(Iz2, sizez-2, sizey-2, sizex-2, sigma, iteration);
-													gaussianiir3d(IxIy, sizez-2, sizey-2, sizex-2, sigma, iteration);
-													gaussianiir3d(IyIz, sizez-2, sizey-2, sizex-2, sigma, iteration);
-													gaussianiir3d(IxIz, sizez-2, sizey-2, sizex-2, sigma, iteration);
-
-													tensors = new float[ 6 * (sizex-2-2*halfSize) * (sizey-2-2*halfSize) * (sizez-2-2*halfSize) ] ;
-													for ( int i = 0 ; i < sizex - 2-2*halfSize ; i ++ ) {
-														for ( int j = 0 ; j < sizey - 2-2*halfSize ; j ++ ) {
-															for ( int k = 0 ; k < sizez - 2-2*halfSize ; k ++ )
-															{
-																int oldIndex = getIndex(1, 0, i+halfSize, j+halfSize, k+halfSize, sizex-2, sizey-2, sizez-2);
-																int index = getIndex(6, 0, i, j, k, sizex-2-2*halfSize, sizey-2-2*halfSize, sizez-2-2*halfSize);
-																tensors[index] = Ix2[oldIndex];
-																tensors[index+1] = IxIy[oldIndex];
-																tensors[index+2] = IxIz[oldIndex];
-																tensors[index+3] = Iy2[oldIndex];
-																tensors[index+4] = IyIz[oldIndex];
-																tensors[index+5] = Iz2[oldIndex];
-															}
-														}
-													}
-													gaussianiir3d(rawData, sizez, sizey, sizex, sigma, iteration);
-													gradients = new float[ 3 * (sizex-2-2*halfSize) * (sizey-2-2*halfSize) * (sizez-2-2*halfSize) ] ;
-													maxGradientNorm = 0;
-													for ( int i = 0 ; i < sizex-2-2*halfSize ; i ++ ) {
-														for ( int j = 0 ; j < sizey-2-2*halfSize ; j ++ ) {
-															for ( int k = 0 ; k < sizez-2-2*halfSize ; k ++ )
-															{
-																int xForward = getIndex(1, 0, i+2+halfSize, j+1+halfSize, k+1+halfSize, sizex, sizey, sizez);
-																int xBackward = getIndex(1, 0, i+halfSize, j+1+halfSize, k+1+halfSize, sizex, sizey, sizez);
-																int yForward = getIndex(1, 0, i+1+halfSize, j+2+halfSize, k+1+halfSize, sizex, sizey, sizez);
-																int yBackward = getIndex(1, 0, i+1+halfSize, j+halfSize, k+1+halfSize, sizex, sizey, sizez);
-																int zForward = getIndex(1, 0, i+1+halfSize, j+1+halfSize, k+2+halfSize, sizex, sizey, sizez);
-																int zBackward = getIndex(1, 0, i+1+halfSize, j+1+halfSize, k+halfSize, sizex, sizey, sizez);
-																float Ix = ( rawData[xForward] - rawData[xBackward] ) / 2;
-																float Iy = ( rawData[yForward] - rawData[yBackward] ) / 2;
-																float Iz = ( rawData[zForward] - rawData[zBackward] ) / 2;
-																int index = getIndex(3, 0, i, j, k, sizex-2-2*halfSize, sizey-2-2*halfSize, sizez-2-2*halfSize);
-																gradients[index] = Ix;
-																gradients[index+1] = Iy;
-																gradients[index+2] = Iz;
-																if (maxGradientNorm < getNorm(gradients+index)) maxGradientNorm = getNorm(gradients+index);
-															}
-														}
-													}
-													scalars = new float[ (sizex-2-2*halfSize) * (sizey-2-2*halfSize) * (sizez-2-2*halfSize) ] ;
-													for ( int i = 0 ; i < sizex-2-2*halfSize ; i ++ ) {
-														for ( int j = 0 ; j < sizey-2-2*halfSize ; j ++ ) {
-															for ( int k = 0 ; k < sizez-2-2*halfSize ; k ++ )
-															{
-																int oldIndex = getIndex(1, 0, i+1+halfSize, j+1+halfSize, k+1+halfSize, sizex, sizey, sizez);
-																int index = getIndex(1, 0, i, j, k, sizex-2-2*halfSize, sizey-2-2*halfSize, sizez-2-2*halfSize);
-																scalars[index] = rawData[oldIndex];
-															}
-														}
-													}
-													sizex = sizex-2-2*halfSize;
-													sizey = sizey-2-2*halfSize;
-													sizez = sizez-2-2*halfSize;
-													rightBackTop[0] = ((float)sizex-5) / 2;
-													rightBackTop[1] = ((float)sizey-5) / 2;
-													rightBackTop[2] = ((float)sizez-5) / 2;
-
-													delete[] rawData;
-													delete[] Ix2;
-													delete[] Iy2;
-													delete[] Iz2;
-													delete[] IxIy;
-													delete[] IyIz;
-													delete[] IxIz;
-													cout << "sizex " << sizex << endl;
-													cout << "Data Size: " << sizex << " * " << sizey << " * " << sizez << endl;
-												}
+	float* rawData = new float[ sizex * sizey * sizez ];
+	bool first = true;
+	for(int i = 0; i < sizez; i++) {
+		for(int j = 0; j < sizey; j++) {
+			for(int k = 0; k < sizex; k++) {
+				float d = volData->GetDataAt(k, j, i);
+				rawData[getIndex(1, 0, k, j, i, sizex, sizey, sizez)] = d;
+				if (first)
+				{
+					first = false;
+					minScalar = maxScalar = d;
+				}
+				if (minScalar > d) {
+					minScalar = d;
+				} 
+				if (maxScalar < d){
+					maxScalar = d;
+				} 
 
 
+			}
+		}
+	}
+	float *Ix2 = new float[ (sizex-2) * (sizey-2) * (sizez-2) ] ;
+	float *Iy2 = new float[ (sizex-2) * (sizey-2) * (sizez-2) ] ;
+	float *Iz2 = new float[ (sizex-2) * (sizey-2) * (sizez-2) ] ;
+	float *IxIy = new float[ (sizex-2) * (sizey-2) * (sizez-2) ] ;
+	float *IyIz = new float[ (sizex-2) * (sizey-2) * (sizez-2) ] ;
+	float *IxIz = new float[ (sizex-2) * (sizey-2) * (sizez-2) ] ;
+
+	for ( int i = 0 ; i < sizex - 2 ; i ++ ) {
+		for ( int j = 0 ; j < sizey - 2 ; j ++ ) {
+			for ( int k = 0 ; k < sizez - 2 ; k ++ )
+			{
+				int xForward = getIndex(1, 0, i+2, j+1, k+1, sizex, sizey, sizez);
+				int xBackward = getIndex(1, 0, i, j+1, k+1, sizex, sizey, sizez);
+				int yForward = getIndex(1, 0, i+1, j+2, k+1, sizex, sizey, sizez);
+				int yBackward = getIndex(1, 0, i+1, j, k+1, sizex, sizey, sizez);
+				int zForward = getIndex(1, 0, i+1, j+1, k+2, sizex, sizey, sizez);
+				int zBackward = getIndex(1, 0, i+1, j+1, k, sizex, sizey, sizez);
+				float Ix = ( rawData[xForward] - rawData[xBackward] ) / 2;
+				float Iy = ( rawData[yForward] - rawData[yBackward] ) / 2;
+				float Iz = ( rawData[zForward] - rawData[zBackward] ) / 2;
+				int index = getIndex(1, 0, i, j, k, sizex-2, sizey-2, sizez-2);
+				Ix2[index] = Ix * Ix;
+				Iy2[index] = Iy * Iy;
+				Iz2[index] = Iz * Iz;
+				IxIy[index] = Ix * Iy;
+				IyIz[index] = Iy * Iz;
+				IxIz[index] = Ix * Iz;
+			}
+		}
+	}
+
+	gaussianiir3d(Ix2, sizez-2, sizey-2, sizex-2, sigma, iteration);
+	gaussianiir3d(Iy2, sizez-2, sizey-2, sizex-2, sigma, iteration);
+	gaussianiir3d(Iz2, sizez-2, sizey-2, sizex-2, sigma, iteration);
+	gaussianiir3d(IxIy, sizez-2, sizey-2, sizex-2, sigma, iteration);
+	gaussianiir3d(IyIz, sizez-2, sizey-2, sizex-2, sigma, iteration);
+	gaussianiir3d(IxIz, sizez-2, sizey-2, sizex-2, sigma, iteration);
+
+	tensors = new float[ 6 * (sizex-2-2*halfSize) * (sizey-2-2*halfSize) * (sizez-2-2*halfSize) ] ;
+	for ( int i = 0 ; i < sizex - 2-2*halfSize ; i ++ ) {
+		for ( int j = 0 ; j < sizey - 2-2*halfSize ; j ++ ) {
+			for ( int k = 0 ; k < sizez - 2-2*halfSize ; k ++ )
+			{
+				int oldIndex = getIndex(1, 0, i+halfSize, j+halfSize, k+halfSize, sizex-2, sizey-2, sizez-2);
+				int index = getIndex(6, 0, i, j, k, sizex-2-2*halfSize, sizey-2-2*halfSize, sizez-2-2*halfSize);
+				tensors[index] = Ix2[oldIndex];
+				tensors[index+1] = IxIy[oldIndex];
+				tensors[index+2] = IxIz[oldIndex];
+				tensors[index+3] = Iy2[oldIndex];
+				tensors[index+4] = IyIz[oldIndex];
+				tensors[index+5] = Iz2[oldIndex];
+			}
+		}
+	}
+	gaussianiir3d(rawData, sizez, sizey, sizex, sigma, iteration);
+	gradients = new float[ 3 * (sizex-2-2*halfSize) * (sizey-2-2*halfSize) * (sizez-2-2*halfSize) ] ;
+	maxGradientNorm = 0;
+	for ( int i = 0 ; i < sizex-2-2*halfSize ; i ++ ) {
+		for ( int j = 0 ; j < sizey-2-2*halfSize ; j ++ ) {
+			for ( int k = 0 ; k < sizez-2-2*halfSize ; k ++ )
+			{
+				int xForward = getIndex(1, 0, i+2+halfSize, j+1+halfSize, k+1+halfSize, sizex, sizey, sizez);
+				int xBackward = getIndex(1, 0, i+halfSize, j+1+halfSize, k+1+halfSize, sizex, sizey, sizez);
+				int yForward = getIndex(1, 0, i+1+halfSize, j+2+halfSize, k+1+halfSize, sizex, sizey, sizez);
+				int yBackward = getIndex(1, 0, i+1+halfSize, j+halfSize, k+1+halfSize, sizex, sizey, sizez);
+				int zForward = getIndex(1, 0, i+1+halfSize, j+1+halfSize, k+2+halfSize, sizex, sizey, sizez);
+				int zBackward = getIndex(1, 0, i+1+halfSize, j+1+halfSize, k+halfSize, sizex, sizey, sizez);
+				float Ix = ( rawData[xForward] - rawData[xBackward] ) / 2;
+				float Iy = ( rawData[yForward] - rawData[yBackward] ) / 2;
+				float Iz = ( rawData[zForward] - rawData[zBackward] ) / 2;
+				int index = getIndex(3, 0, i, j, k, sizex-2-2*halfSize, sizey-2-2*halfSize, sizez-2-2*halfSize);
+				gradients[index] = Ix;
+				gradients[index+1] = Iy;
+				gradients[index+2] = Iz;
+				if (maxGradientNorm < getNorm(gradients+index)) maxGradientNorm = getNorm(gradients+index);
+			}
+		}
+	}
+	scalars = new float[ (sizex-2-2*halfSize) * (sizey-2-2*halfSize) * (sizez-2-2*halfSize) ] ;
+	for ( int i = 0 ; i < sizex-2-2*halfSize ; i ++ ) {
+		for ( int j = 0 ; j < sizey-2-2*halfSize ; j ++ ) {
+			for ( int k = 0 ; k < sizez-2-2*halfSize ; k ++ )
+			{
+				int oldIndex = getIndex(1, 0, i+1+halfSize, j+1+halfSize, k+1+halfSize, sizex, sizey, sizez);
+				int index = getIndex(1, 0, i, j, k, sizex-2-2*halfSize, sizey-2-2*halfSize, sizez-2-2*halfSize);
+				scalars[index] = rawData[oldIndex];
+			}
+		}
+	}
+	sizex = sizex-2-2*halfSize;
+	sizey = sizey-2-2*halfSize;
+	sizez = sizez-2-2*halfSize;
+	rightBackTop[0] = ((float)sizex-5) / 2;
+	rightBackTop[1] = ((float)sizey-5) / 2;
+	rightBackTop[2] = ((float)sizez-5) / 2;
+
+	delete[] rawData;
+	delete[] Ix2;
+	delete[] Iy2;
+	delete[] Iz2;
+	delete[] IxIy;
+	delete[] IyIz;
+	delete[] IxIz;
+	cout << "sizex " << sizex << endl;
+	cout << "Data Size: " << sizex << " * " << sizey << " * " << sizez << endl;
+}
 
 
-												void MRC_Data::getScalarGP(int index, float *scalar)
-												{
-													*scalar = scalars[index];
-												}
 
-												void MRC_Data::getGradientGP(int index, float gradient[3])
-												{
-													gradient[0] = gradients[index];
-													gradient[1] = gradients[index+1];
-													gradient[2] = gradients[index+2];
-												}
 
-												void MRC_Data::getTensorGP(int index, float tensor[6])
-												{
-													tensor[0] = tensors[index];
-													tensor[1] = tensors[index+1];
-													tensor[2] = tensors[index+2];
-													tensor[3] = tensors[index+3];
-													tensor[4] = tensors[index+4];
-													tensor[5] = tensors[index+5];
-												}
+void MRC_Data::getScalarGP(int index, float *scalar)
+{
+	*scalar = scalars[index];
+}
 
-												void MRC_Data::getScalar(float position[3], float *scalar)
-												{
-													trilinear_f(sizex, sizey, sizez, scalars, position, scalar);
-												}
+void MRC_Data::getGradientGP(int index, float gradient[3])
+{
+	gradient[0] = gradients[index];
+	gradient[1] = gradients[index+1];
+	gradient[2] = gradients[index+2];
+}
 
-												void MRC_Data::getGradient(float position[3], float gradient[3])
-												{
-													trilinear_3f(sizex, sizey, sizez, gradients, position, gradient);
-												}
+void MRC_Data::getTensorGP(int index, float tensor[6])
+{
+	tensor[0] = tensors[index];
+	tensor[1] = tensors[index+1];
+	tensor[2] = tensors[index+2];
+	tensor[3] = tensors[index+3];
+	tensor[4] = tensors[index+4];
+	tensor[5] = tensors[index+5];
+}
 
-												void MRC_Data::getTensor(float position[3], float tensor[6])
-												{
-													trilinear_6f(sizex, sizey, sizez, tensors, position, tensor);
-												}
+void MRC_Data::getScalar(float position[3], float *scalar)
+{
+	trilinear_f(sizex, sizey, sizez, scalars, position, scalar);
+}
 
-												void MRC_Data::getScalarCubic(float position[3], float *scalar)
-												{
-													tricubic_f(sizex, sizey, sizez, scalars, position, scalar);
-												}
+void MRC_Data::getGradient(float position[3], float gradient[3])
+{
+	trilinear_3f(sizex, sizey, sizez, gradients, position, gradient);
+}
 
-												void MRC_Data::getGradientCubic(float position[3], float gradient[3])
-												{
-													tricubic_3f(sizex, sizey, sizez, gradients, position, gradient);
-												}
+void MRC_Data::getTensor(float position[3], float tensor[6])
+{
+	trilinear_6f(sizex, sizey, sizez, tensors, position, tensor);
+}
 
-												void MRC_Data::getTensorCubic(float position[3], float tensor[6])
-												{
-													tricubic_6f(sizex, sizey, sizez, tensors, position, tensor);
-												}
+void MRC_Data::getScalarCubic(float position[3], float *scalar)
+{
+	tricubic_f(sizex, sizey, sizez, scalars, position, scalar);
+}
 
-												void MRC_Data::getGradientCubicTable(int axis, int i, int j, int k, int index, float gradient[3])
-												{
-													tricubic_3f_table(sizex, sizey, sizez, edgeTable, axis, i+2, j+2, k+2, index, gradients, gradient);
-												}
+void MRC_Data::getGradientCubic(float position[3], float gradient[3])
+{
+	tricubic_3f(sizex, sizey, sizez, gradients, position, gradient);
+}
 
-												void MRC_Data::getGradientBicubicTable(int axis, int ii, int jj, int kk, float sGradients[subdNum][subdNum][3])
-												{
-													float validData[16][3];
-													int count = 0;
-													switch(axis)
-													{
-														case 1:
-														for ( int i = 0 ; i < 4 ; i ++ )
-														{
-															for ( int j = 0 ; j < 4 ; j ++ )
-															{
-																int idx = getIndex(3, 0, ii+2, jj+i+1, kk+j+1, sizex, sizey, sizez);
-																validData[count][0] = gradients[idx];
-																validData[count][1] = gradients[idx+1];
-																validData[count][2] = gradients[idx+2];
-																count++;
-															}
-														}
-														break;
-														case 2:
-														for ( int i = 0 ; i < 4 ; i ++ )
-														{
-															for ( int j = 0 ; j < 4 ; j ++ )
-															{
-																int idx = getIndex(3, 0, ii+j+1, jj+2, kk+i+1, sizex, sizey, sizez);
-																validData[count][0] = gradients[idx];
-																validData[count][1] = gradients[idx+1];
-																validData[count][2] = gradients[idx+2];
-																count++;
-															}
-														}
-														break;
-														case 3:
-														for ( int i = 0 ; i < 4 ; i ++ )
-														{
-															for ( int j = 0 ; j < 4 ; j ++ )
-															{
-																int idx = getIndex(3, 0, ii+i+1, jj+j+1, kk+2, sizex, sizey, sizez);
-																validData[count][0] = gradients[idx];
-																validData[count][1] = gradients[idx+1];
-																validData[count][2] = gradients[idx+2];
-																count++;
-															}
-														}
-														break;
-													}
-													count = 0;
-													for ( int si = 0 ; si < subdNum ; si ++ )
-													{
-														for ( int sj = 0 ; sj < subdNum ; sj ++ )
-														{
-															int tableIndex = 16 * count;
-															count++;
-															sGradients[si][sj][0] = 0;
-															sGradients[si][sj][1] = 0;
-															sGradients[si][sj][2] = 0;
-															for ( int i = 0 ; i < 16 ; i ++ )
-															{
-																for ( int j = 0 ; j < 3 ; j ++ )
-																{
-																	sGradients[si][sj][j] += faceTable[tableIndex + i] * validData[i][j];
-																}
-															}
-														}
-													}
-												}
+void MRC_Data::getTensorCubic(float position[3], float tensor[6])
+{
+	tricubic_6f(sizex, sizey, sizez, tensors, position, tensor);
+}
 
-												void MRC_Data::getTensorCubicTable(int axis, int i, int j, int k, int index, float tensor[6])
-												{
-													tricubic_6f_table(sizex, sizey, sizez, edgeTable, axis, i+2, j+2, k+2, index, tensors, tensor);
-												}
+void MRC_Data::getGradientCubicTable(int axis, int i, int j, int k, int index, float gradient[3])
+{
+	tricubic_3f_table(sizex, sizey, sizez, edgeTable, axis, i+2, j+2, k+2, index, gradients, gradient);
+}
 
-												void MRC_Data::buildGrid()
-												{
-													clock_t timeStart, timeEnd;
-													timeStart = clock();
-													cout << "Build Grid Begin:" << endl;
-													int maxSize = sizex;
-													halfDataSize = rightBackTop[0];
-													if (maxSize < sizey)
-													{
-														maxSize = sizey;
-														halfDataSize = rightBackTop[1];
-													}
-													if (maxSize < sizez)
-													{
-														maxSize = sizez;
-														halfDataSize = rightBackTop[2];
-													}
+void MRC_Data::getGradientBicubicTable(int axis, int ii, int jj, int kk, float sGradients[subdNum][subdNum][3])
+{
+	float validData[16][3];
+	int count = 0;
+	switch(axis)
+	{
+		case 1:
+		for ( int i = 0 ; i < 4 ; i ++ )
+		{
+			for ( int j = 0 ; j < 4 ; j ++ )
+			{
+				int idx = getIndex(3, 0, ii+2, jj+i+1, kk+j+1, sizex, sizey, sizez);
+				validData[count][0] = gradients[idx];
+				validData[count][1] = gradients[idx+1];
+				validData[count][2] = gradients[idx+2];
+				count++;
+			}
+		}
+		break;
+		case 2:
+		for ( int i = 0 ; i < 4 ; i ++ )
+		{
+			for ( int j = 0 ; j < 4 ; j ++ )
+			{
+				int idx = getIndex(3, 0, ii+j+1, jj+2, kk+i+1, sizex, sizey, sizez);
+				validData[count][0] = gradients[idx];
+				validData[count][1] = gradients[idx+1];
+				validData[count][2] = gradients[idx+2];
+				count++;
+			}
+		}
+		break;
+		case 3:
+		for ( int i = 0 ; i < 4 ; i ++ )
+		{
+			for ( int j = 0 ; j < 4 ; j ++ )
+			{
+				int idx = getIndex(3, 0, ii+i+1, jj+j+1, kk+2, sizex, sizey, sizez);
+				validData[count][0] = gradients[idx];
+				validData[count][1] = gradients[idx+1];
+				validData[count][2] = gradients[idx+2];
+				count++;
+			}
+		}
+		break;
+	}
+	count = 0;
+	for ( int si = 0 ; si < subdNum ; si ++ )
+	{
+		for ( int sj = 0 ; sj < subdNum ; sj ++ )
+		{
+			int tableIndex = 16 * count;
+			count++;
+			sGradients[si][sj][0] = 0;
+			sGradients[si][sj][1] = 0;
+			sGradients[si][sj][2] = 0;
+			for ( int i = 0 ; i < 16 ; i ++ )
+			{
+				for ( int j = 0 ; j < 3 ; j ++ )
+				{
+					sGradients[si][sj][j] += faceTable[tableIndex + i] * validData[i][j];
+				}
+			}
+		}
+	}
+}
 
-													gridx = sizex - 4;
-													gridy = sizey - 4;
-													gridz = sizez - 4;
-													gridSize = 1;
-													gridPoints = new float[ 3 * gridx * gridy * gridz ] ;
-													for ( int i = 0 ; i < gridx ; i ++ )
-														for ( int j = 0 ; j < gridy ; j ++ )
-															for ( int k = 0 ; k < gridz ; k ++ )
-															{
-																int index = getIndex(3, 0, i, j, k, gridx, gridy, gridz);
-																gridPoints[index] = i + 2.0f;
-																gridPoints[index+1] = j + 2.0f;
-																gridPoints[index+2] = k + 2.0f;
-															}
+void MRC_Data::getTensorCubicTable(int axis, int i, int j, int k, int index, float tensor[6])
+{
+	tricubic_6f_table(sizex, sizey, sizez, edgeTable, axis, i+2, j+2, k+2, index, tensors, tensor);
+}
 
-															maxGrid = gridx;
-															if (maxGrid < gridy) maxGrid = gridy;
-															if (maxGrid < gridz) maxGrid = gridz;
-															maxGridIndex = gridx * gridy * gridz;
-															cout << "Grid Size: " << gridx << " * " << gridy << " * " << gridz << endl;
-															timeEnd = clock();
-															cout << "Spend Time: " << (timeEnd-timeStart)/CLOCKS_PER_SEC << endl;
-															cout << "Done!" << endl;
-															cout << "****************************************************************" << endl;
+void MRC_Data::buildGrid()
+{
+	clock_t timeStart, timeEnd;
+	timeStart = clock();
+	cout << "Build Grid Begin:" << endl;
+	int maxSize = sizex;
+	halfDataSize = rightBackTop[0];
+	if (maxSize < sizey)
+	{
+		maxSize = sizey;
+		halfDataSize = rightBackTop[1];
+	}
+	if (maxSize < sizez)
+	{
+		maxSize = sizez;
+		halfDataSize = rightBackTop[2];
+	}
 
-															timeStart = clock();
-															cout << "Calculate Edge Lookup Table Begin:" << endl;
-															edgeTable = new float[4100];
-															buildEdgeTable(edgeTable, 1, 2, 0, 1);
-															timeEnd = clock();
-															cout << "Spend Time: " << (timeEnd-timeStart)/CLOCKS_PER_SEC << endl;
-															cout << "Done!" << endl;
-															cout << "****************************************************************" << endl;
+	gridx = sizex - 4;
+	gridy = sizey - 4;
+	gridz = sizez - 4;
+	gridSize = 1;
+	gridPoints = new float[ 3 * gridx * gridy * gridz ] ;
+	for ( int i = 0 ; i < gridx ; i ++ )
+		for ( int j = 0 ; j < gridy ; j ++ )
+			for ( int k = 0 ; k < gridz ; k ++ )
+			{
+				int index = getIndex(3, 0, i, j, k, gridx, gridy, gridz);
+				gridPoints[index] = i + 2.0f;
+				gridPoints[index+1] = j + 2.0f;
+				gridPoints[index+2] = k + 2.0f;
+			}
 
-															timeStart = clock();
-															cout << "Calculate Face Lookup Table Begin:" << endl;
-															faceTable = new float[16*subdNum*subdNum];
-															buildFaceTable(faceTable, subdNum);
-															timeEnd = clock();
-															cout << "Spend Time: " << (timeEnd-timeStart)/CLOCKS_PER_SEC << endl;
-															cout << "Done!" << endl;
-															cout << "****************************************************************" << endl;
-														}
+			maxGrid = gridx;
+			if (maxGrid < gridy) maxGrid = gridy;
+			if (maxGrid < gridz) maxGrid = gridz;
+			maxGridIndex = gridx * gridy * gridz;
+			cout << "Grid Size: " << gridx << " * " << gridy << " * " << gridz << endl;
+			timeEnd = clock();
+			cout << "Spend Time: " << (timeEnd-timeStart)/CLOCKS_PER_SEC << endl;
+			cout << "Done!" << endl;
+			cout << "****************************************************************" << endl;
 
-														class Volume {
-														public:
-															Volume(int x, int y, int z);
-															Volume(int x, int y, int z, float val);
-															Volume(int x, int y, int z, int offx, int offy, int offz, Volume * vol);
-															Volume(const Volume& obj);
-															~Volume( );
+			timeStart = clock();
+			cout << "Calculate Edge Lookup Table Begin:" << endl;
+			edgeTable = new float[4100];
+			buildEdgeTable(edgeTable, 1, 2, 0, 1);
+			timeEnd = clock();
+			cout << "Spend Time: " << (timeEnd-timeStart)/CLOCKS_PER_SEC << endl;
+			cout << "Done!" << endl;
+			cout << "****************************************************************" << endl;
 
-															float getSpacingX();
-															float getSpacingY();
-															float getSpacingZ();
-															float getOriginX();
-															float getOriginY();
-															float getOriginZ();
-															int getSizeX();
-															int getSizeY();
-															int getSizeZ();
-															int getIndex(int x, int y, int z);
-															double getDataAt( int x, int y, int z );
-															double getDataAt( int index );
-															void setSpacing(float spx, float spy, float spz );
-															void setOrigin(float orgX, float orgY, float orgZ);
-															void setDataAt( int x, int y, int z, double d );
-															void setDataAt( int index, double d );
+			timeStart = clock();
+			cout << "Calculate Face Lookup Table Begin:" << endl;
+			faceTable = new float[16*subdNum*subdNum];
+			buildFaceTable(faceTable, subdNum);
+			timeEnd = clock();
+			cout << "Spend Time: " << (timeEnd-timeStart)/CLOCKS_PER_SEC << endl;
+			cout << "Done!" << endl;
+			cout << "****************************************************************" << endl;
+		}
 
-															Volume * getPseudoDensity();
-															Volume * getDistanceField(int rad, float randf);
-															int getNonZeroVoxelCount();
-															void print();
-															void subtract(Volume * vol);
-															void pad (int padBy, double padValue);
-															void applyMask(Volume * maskVol, double maskValue, bool keepMaskValue);
-															double getMin();
-															double getMax();
-															double getMaxValuePosition(int& maxX, int& maxY, int& maxZ);
-															double getLocalMax(int x, int y, int z, int radius);
-															double getLocalMin(int x, int y, int z, int radius);
+		class Volume {
+		public:
+			Volume(int x, int y, int z);
+			Volume(int x, int y, int z, float val);
+			Volume(int x, int y, int z, int offx, int offy, int offz, Volume * vol);
+			Volume(const Volume& obj);
+			~Volume( );
+
+			py::list getExtremalBonds1();
+			py::list getExtremalBonds2();
+
+			float getSpacingX();
+			float getSpacingY();
+			float getSpacingZ();
+			float getOriginX();
+			float getOriginY();
+			float getOriginZ();
+			int getSizeX();
+			int getSizeY();
+			int getSizeZ();
+			int getIndex(int x, int y, int z);
+			double getDataAt( int x, int y, int z );
+			double getDataAt( int index );
+			void setSpacing(float spx, float spy, float spz );
+			void setOrigin(float orgX, float orgY, float orgZ);
+			void setDataAt( int x, int y, int z, double d );
+			void setDataAt( int index, double d );
+
+			Volume * getPseudoDensity();
+			Volume * getDistanceField(int rad, float randf);
+			int getNonZeroVoxelCount();
+			void print();
+			void subtract(Volume * vol);
+			void pad (int padBy, double padValue);
+			void applyMask(Volume * maskVol, double maskValue, bool keepMaskValue);
+			double getMin();
+			double getMax();
+			double getMaxValuePosition(int& maxX, int& maxY, int& maxZ);
+			double getLocalMax(int x, int y, int z, int radius);
+			double getLocalMin(int x, int y, int z, int radius);
 
 			float getMean(); // Returns the mean value of all the voxels
 			float getEdgeMean(); // Returns the mean value of all the surface voxels but no interior voxels
@@ -5683,12 +5696,16 @@ void General_Data::buildCurve()
 			void setOrigSize(int newSize);
 			int getOrigSize();
 
-
+			vector<float> extremalPoints;
+			vector<int> extremalBonds1;
+			vector<int> extremalBonds2;
 
 			
 		private:
 			VolumeData * getVolumeData();
 			vector<int> histogram;
+			
+
 			/**
 			float change;
 			int maxEdgeIndex;
@@ -9555,6 +9572,56 @@ return 0 ;
 					return gridShowPositions;
 				}
 
+				float *General_Data::getEdgePoints()
+				{
+					return edgePoints;
+				}
+
+
+				vector<Vertex> *General_Data::getVertices()
+				{	
+					return vertices;
+				}
+
+				void padTo(std::string &str, const size_t num, const char paddingChar = ' ')
+				{
+					if(num > str.size()) {
+						str.insert(0, num - str.size(), paddingChar);
+					}
+				}
+
+				inline double doubleRound( double val )
+				{
+					if( val < 0 ) return ceil(val - 0.5);
+					return floor(val + 0.5);
+				}
+
+
+
+
+				vector<Segment> *General_Data::getSegments()
+				{
+					return segments;
+				}
+
+				
+
+				template<class T>
+				py::list std_vector_to_py_list(const std::vector<T>& v)
+				{
+    			py::object get_iter = py::iterator<std::vector<T> >();
+    			py::object iter = get_iter(v);
+    			py::list l(iter);
+    			return l;
+				}
+
+				py::list Volume::getExtremalBonds1() {
+					return std_vector_to_py_list(extremalBonds1);
+				}
+
+				py::list Volume::getExtremalBonds2() {
+					return std_vector_to_py_list(extremalBonds2);
+				}
 
 				void Volume::extremalCurveSkeleton(float thr, Volume* svol)
 				{
@@ -9580,16 +9647,59 @@ return 0 ;
 					float *faceTable = derivedData->faceTable;
 
 					currentData -> edgePhase(scalars,tensors,gradients,edgeTable);
+
 					currentData -> facePhase(scalars,tensors,gradients,faceTable);
+
 					currentData -> cellPhase(scalars,tensors,gradients);
+
 
 					currentData -> buildCurve();
 					currentData -> buildSurface();
 
+					vector<Segment> segments = (*currentData -> getSegments());
+					for(int i = 0; i < segments.size(); i++) {
+						extremalBonds1.push_back(segments[i].vertIdxs[0]);
+						extremalBonds2.push_back(segments[i].vertIdxs[1]);
+					}
+					vector<Vertex> vertices = (*currentData->getVertices());
 
+					int sizex = currentData->gridx;
+					int sizey = currentData->gridy;
+					int sizez = currentData->gridz;
 					
 					
-					currentData -> computeGridShowPositions();
+					ofstream myfile;
+					myfile.open ("extremal.pdb");
+					for(int i = 0; i < vertices.size(); i++) {
+						Vertex vertex = vertices[i];
+						string vIndex = std::to_string(i);
+						padTo(vIndex, 5);
+
+						string posx = std::to_string((0.6*sizex)+(float)vertex.position[0]*sizex/2.0);
+
+						//string posx = std::to_string(doubleRound(1000.0 * ((sizex/2.0) + (sizex/2.0)*vertex.position[0]) )/1000.0 );
+
+						
+						//string posy = std::to_string(doubleRound(1000.0 * ((sizey/2.0) + (sizey/2.0)*vertex.position[1]) )/1000.0 );
+
+						string posy = std::to_string((0.6*sizey)+(float)vertex.position[1]*sizey/2.0);
+
+						//string posz = std::to_string(doubleRound(1000.0 * ((sizez/2.0) + (sizez/2.0)*vertex.position[2]) )/1000.0 );
+
+						string posz = std::to_string((0.6*sizez)+(float)vertex.position[2]*sizez/2.0);
+
+						myfile << "ATOM  " << vIndex << "  CA  ALA " << vIndex << "     " << posx.substr(0,7) << " " << posy.substr(0,7) << " " << posz.substr(0,7) << "  1.00  1.00      S_00  0 " << endl;
+
+					}
+					myfile.close();
+
+					for(int i = 0; i < segments.size(); i++) {
+						Segment segment = segments[i];
+						//cout << segment.vertIdxs[0] << " " << segment.vertIdxs[1] << endl;
+					}
+					
+					
+					
 
 					/**
 					for ( int j = 0 ; j < 2 ; j ++ ) {
@@ -9603,7 +9713,7 @@ return 0 ;
 							//glVertex3f(gridShowPos[index2+0], gridShowPos[index2+1], gridShowPos[index2+2]);
 						}
 					}
-					**/
+					
 					int gridx = currentData->gridx;
 					int gridy = currentData->gridy;
 					int gridz = currentData->gridz;
@@ -9618,14 +9728,39 @@ return 0 ;
 									int index2 = wustl_mm::SkeletonMaker::getIndex(3, 0, i, j + 1, k, gridx, gridy, gridz);
 									int index3 = wustl_mm::SkeletonMaker::getIndex(3, 0, i, j + 1, k + 1, gridx, gridy, gridz);
 									int index4 = wustl_mm::SkeletonMaker::getIndex(3, 0, i, j, k + 1, gridx, gridy, gridz);
-									cout << currentData->getGridShowPositions()[index1+0] << " " << currentData->getGridShowPositions()[index1+1] << " " <<  currentData->getGridShowPositions()[index1+2] << endl;
-									float p1[3] = {currentData->getGridShowPositions()[index1+0], currentData->getGridShowPositions()[index1+1], currentData->getGridShowPositions()[index1+2]};
-									float p2[3] = {currentData->getGridShowPositions()[index2+0], currentData->getGridShowPositions()[index2+1], currentData->getGridShowPositions()[index2+2]};
-									float p3[3] = {currentData->getGridShowPositions()[index3+0], currentData->getGridShowPositions()[index3+1], currentData->getGridShowPositions()[index3+2]};
-									float p4[3] = {currentData->getGridShowPositions()[index4+0], currentData->getGridShowPositions()[index4+1], currentData->getGridShowPositions()[index4+2]};
+									//setDataAt(index1+0, index1+1, index1+2, 1);
+									//setDataAt(index2+0, index2+1, index2+2, 1);
+									//setDataAt(index3+0, index3+1, index3+2, 1);
+									//setDataAt(index4+0, index4+1, index4+2, 1);
+
+									//cout << currentData->getGridShowPositions()[index1+0] * (float)svol->getSizeX() << " " << currentData->getGridShowPositions()[index1+1] * (float)svol->getSizeY() << " " <<  currentData->getGridShowPositions()[index1+2] * (float)svol->getSizeZ() << endl;
+									float p1[3] = {currentData->getGridShowPositions()[index1+0] * (float)svol->getSizeX(), currentData->getGridShowPositions()[index1+1] * (float)svol->getSizeY(), currentData->getGridShowPositions()[index1+2] * (float)svol->getSizeZ()};
+									float p2[3] = {currentData->getGridShowPositions()[index2+0] * (float)svol->getSizeX(), currentData->getGridShowPositions()[index2+1] * (float)svol->getSizeY(), currentData->getGridShowPositions()[index2+2] * (float)svol->getSizeZ()};
+									float p3[3] = {currentData->getGridShowPositions()[index3+0] * (float)svol->getSizeX(), currentData->getGridShowPositions()[index3+1] * (float)svol->getSizeY(), currentData->getGridShowPositions()[index3+2] * (float)svol->getSizeZ()};
+									float p4[3] = {currentData->getGridShowPositions()[index4+0] * (float)svol->getSizeX(), currentData->getGridShowPositions()[index4+1] * (float)svol->getSizeY(), currentData->getGridShowPositions()[index4+2] * (float)svol->getSizeZ()};
+									extremalPoints.push_back((float)svol->getSizeX()+(currentData->getGridShowPositions()[index1+0] * (float)svol->getSizeX()));
+									extremalPoints.push_back((float)svol->getSizeY()+(currentData->getGridShowPositions()[index1+1] * (float)svol->getSizeY()));
+									extremalPoints.push_back((float)svol->getSizeZ()+(currentData->getGridShowPositions()[index1+2] * (float)svol->getSizeZ()));
+									extremalPoints.push_back((float)svol->getSizeX()+(currentData->getGridShowPositions()[index2+0] * (float)svol->getSizeX()));
+									extremalPoints.push_back((float)svol->getSizeY()+(currentData->getGridShowPositions()[index2+1] * (float)svol->getSizeY()));
+									extremalPoints.push_back((float)svol->getSizeZ()+(currentData->getGridShowPositions()[index2+2] * (float)svol->getSizeZ()));
+									extremalPoints.push_back((float)svol->getSizeX()+(currentData->getGridShowPositions()[index3+0] * (float)svol->getSizeX()));
+									extremalPoints.push_back((float)svol->getSizeY()+(currentData->getGridShowPositions()[index3+1] * (float)svol->getSizeY()));
+									extremalPoints.push_back((float)svol->getSizeZ()+(currentData->getGridShowPositions()[index3+2] * (float)svol->getSizeZ()));
+									//float p2[3] = {currentData->getGridShowPositions()[index2+0], currentData->getGridShowPositions()[index2+1], currentData->getGridShowPositions()[index2+2]};
+									//float p3[3] = {currentData->getGridShowPositions()[index3+0], currentData->getGridShowPositions()[index3+1], currentData->getGridShowPositions()[index3+2]};
+									//float p4[3] = {currentData->getGridShowPositions()[index4+0], currentData->getGridShowPositions()[index4+1], currentData->getGridShowPositions()[index4+2]};
+									//cout << p1 << endl;
+									
+									//extremalPoints.push_back(p1);
+									//extremalPoints.push_back(p2);
+									//extremalPoints.push_back(p3);
+									//extremalPoints.push_back(p4);
+
 							}
 						}
 					}
+					**/
 					
 
 				}

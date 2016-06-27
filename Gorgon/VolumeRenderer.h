@@ -80,6 +80,7 @@ namespace wustl_mm {
 			void PerformSmoothLaplacian(double convergenceRate, int iterations);
 			Volume * GetVolume();
 			Volume * PerformBinarySkeletonizationJu2007(double threshold, int minCurveSize, int minSurfaceSize);
+			Volume * PerformExtremalCurve2016();
 			Volume * PerformGrayscaleSkeletonizationAbeysinghe2008(double startDensity, int stepCount, int minCurveSize, int minSurfaceSize, int curveRadius, int surfaceRadius, int skeletonSmoothenRadius);
 			Volume * PerformPreservingGrayscaleSkeletonizationAbeysinghe2008(NonManifoldMesh_Annotated * preserveMesh, double startDensity, int stepCount, int minCurveSize, int minSurfaceSize, int curveRadius, int surfaceRadius, int skeletonSmoothenRadius);
 			void SetSpacing(float spX, float spY, float spZ);
@@ -90,6 +91,7 @@ namespace wustl_mm {
 			float GetOriginX();
 			float GetOriginY();
 			float GetOriginZ();
+			void loadExtremal(Volume * currentVol);
 		
 		private:
 			int GetHashKey(int x, int y, int z, int edge, int iScale);
@@ -996,6 +998,16 @@ namespace wustl_mm {
 			return outputVol;
 		}
 
+		Volume * VolumeRenderer::PerformExtremalCurve2016() {
+			//VolumeSkeletonizer * skeletonizer = new VolumeSkeletonizer(0,0,0,DEFAULT_SKELETON_DIRECTION_RADIUS);
+			dataVolume -> extremalCurveSkeleton(0.5, dataVolume);
+			//Volume * outputVol = skeletonizer->PerformExtremalCurveSkeletonization(dataVolume);
+			//delete skeletonizer;
+			return dataVolume;
+		}
+
+
+
 		Volume * VolumeRenderer::PerformGrayscaleSkeletonizationAbeysinghe2008(double startDensity, int stepCount, int minCurveSize, int minSurfaceSize, int curveRadius, int surfaceRadius, int skeletonRadius) {
 			double stepSize = (dataVolume->getMax() - startDensity) / stepCount;
 			if(!isZero(stepSize)) {
@@ -1082,6 +1094,32 @@ namespace wustl_mm {
 				return dataVolume->getOriginZ();
 			}
 			return Renderer::GetOriginZ();
+		}
+
+		void VolumeRenderer::loadExtremal(Volume * currentVol) {
+			vector<float> curvePoints = currentVol->extremalPoints;
+			GLfloat emissionColor[4] = {1.0, 1.0, 1.0, 1.0};
+			OpenGLUtils::SetColor(0.3, 0.8, 0.4, 0.7);
+			ofstream myfile;
+			myfile.open("extremal.pdb");
+			for(int i = 0; i < curvePoints.size()-3; i+=3) {
+
+				myfile << curvePoints[i] << " " << curvePoints[i+1] << " " << curvePoints[i+2] << endl;
+				//glPushAttrib(GL_LIGHTING_BIT);
+				
+				//glLoadName(static_cast<GLuint>(i));
+				//Renderer::DrawSphere(Vector3DFloat(curvePoints[i], curvePoints[i+1], curvePoints[i+2]), 3);
+				//glPopAttrib();
+
+				
+				//Renderer::DrawLine(Vector3DFloat(curvePoints[i], curvePoints[i+1], curvePoints[i+2]), Vector3DFloat(curvePoints[i+3], curvePoints[i+4], curvePoints[i+5]));
+				//float* currentPoint = curvePoints[i];
+				//cout << currentPoint[0] << " " << currentPoint[1] << " " << currentPoint[2] << endl;
+				//float* nextPoint = curvePoints[i+1];
+				//Renderer::DrawLine(Vector3DFloat(currentPoint[0], currentPoint[1], currentPoint[2]), Vector3DFloat(nextPoint[0], nextPoint[1], nextPoint[2]));
+			}
+			myfile.close();
+			
 		}
 	}
 }

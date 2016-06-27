@@ -301,6 +301,8 @@ BOOST_PYTHON_MODULE(libpyGORGON)
 		.def("getDataAt", getDataAt1)
 		.def("buildHistogram", &Volume::buildHistogram)
 		.def("getHistogramBinValue", &Volume::getHistogramBinValue)
+		.def("getExtremalBonds1", &Volume::getExtremalBonds1)
+		.def("getExtremalBonds2", &Volume::getExtremalBonds2)
 
 	;
 
@@ -389,6 +391,9 @@ BOOST_PYTHON_MODULE(libpyGORGON)
 		.def("setDisplayStyle", &VolumeRenderer::SetDisplayStyle)
 		.def("setObjectSpecificColoring", &VolumeRenderer::SetObjectSpecificColoring)
 		.def("updateBoundingBox", &VolumeRenderer::UpdateBoundingBox)
+		.def("loadExtremal", &VolumeRenderer::loadExtremal)
+		.def("performExtremalCurve2016", &VolumeRenderer::PerformExtremalCurve2016, return_value_policy<reference_existing_object>())
+		
 	;
 
 	class_< MeshRenderer, bases<Renderer> >("MeshRenderer", init<>())

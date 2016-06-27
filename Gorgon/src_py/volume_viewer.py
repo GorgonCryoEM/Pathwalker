@@ -10,6 +10,7 @@ from volume_surface_editor_form import VolumeSurfaceEditorForm
 from volume_binary_skeletonization_form import VolumeBinarySkeletonizationForm
 from volume_grayscale_skeletonization_form import VolumeGrayscaleSkeletonizationForm
 from volume_manual_skeletonization_form import VolumeManualSkeletonizationForm
+from extremecurve import ExtremeCurveForm
 from model_visualization_form import ModelVisualizationForm
 from volume_laplacian_smoothing_form import VolumeLaplacianSmoothingForm
 from volume_crop_form import VolumeCropForm
@@ -86,6 +87,7 @@ class VolumeViewer(BaseViewer):
         self.manualSkeletonizer = VolumeManualSkeletonizationForm(self.app, self, self)
         self.binarySkeletonizer = VolumeBinarySkeletonizationForm(self.app, self, self)
         self.grayscaleSkeletonizer = VolumeGrayscaleSkeletonizationForm(self.app, self, self)
+        self.extremalSkeleton = ExtremeCurveForm(self.app, self, self)
         self.cropper = VolumeCropForm(self.app, self, self)
         self.rawLoader = VolumeRawLoaderForm(self.app, self, self)
         self.laplacianSmoother = VolumeLaplacianSmoothingForm(self.app, self, self)

@@ -540,6 +540,8 @@ public:
 	int getFaceIndex(int axis, int x, int y, int z);
 	void setVolumeData(VolumeData * vData);
 	bool getEigensolverCubic(float num[3]);
+	float* getEigenvaluesCubic(float position[3]);
+	float getFirstEigenvalueSaliencies(float* eigenvalues, float relativeSaliencies[3]);
 	char dataName[256];
 	int *totalEdgePoints, *totalFacePoints, *totalCellPoints;
 	float maxIntensity, minIntensity, maxScalar, minScalar, *maxEigenvalue, *minEigenvalue;
@@ -1612,7 +1614,10 @@ bool ParallelEdge::getEigensolverCubicTable(int axis, int i, int j, int k, int i
 	//memcpy(tensorMVectorsAndValues.structureTensor, tensorM, sizeof(tensorMVectorsAndValues.structureTensor));
 	//MatlabWrapper wrapper;
 	MathLib * math = new MathLib();
+	//cout << "before " << tensorMVectorsAndValues.eigenValues[0] << " " << tensorMVectorsAndValues.eigenValues[1] << " " << tensorMVectorsAndValues.eigenValues[2] << endl;
+
 	math->EigenAnalysis(tensorMVectorsAndValues);
+	//cout << "after " << tensorMVectorsAndValues.eigenValues[0] << " " << tensorMVectorsAndValues.eigenValues[1] << " " << tensorMVectorsAndValues.eigenValues[2] << endl;
 	/**
 	Matrix3f tensorM;
 	tensorM << tensorV[0], tensorV[1], tensorV[2],
@@ -1991,10 +1996,13 @@ void ParallelEdge::edgePhaseIteration(int index1, int index2, int si1, int si2, 
 	delete[] sampleProjG;
 }
 
+
 void ParallelEdge::edgePhaseBegin(int cols, int rows, int pages) {
 	cout << "cols " << cols << " rows " << rows << " pages " << pages << endl;
 	int *ltotalEdgePoints= totalEdgePoints;			
 	Edge *ledges = edges;
+	
+
 
 	for( int i=0; i!=cols; ++i ){
 		for( int j=0; j!=rows; ++j ) {
@@ -2055,8 +2063,8 @@ void General_Data::edgePhase(float* scalars,float* tensors,float* gradients, flo
 
 	//tbb::task_scheduler_init init(task_scheduler_init::automatic);  
 	ParallelEdge parallel_edge(gridx,gridy,gridz,totalEdgePoints,edges,allCubic,globalVec,dataType,gridPoints,change,storeGrid_2DGradMag,grid_2DGradMag,sizex,sizey,sizez,halfSize,scalars,tensors,gradients,edgeTable);
-	parallel_edge.edgePhaseBegin(gridx, gridy, gridz);
-	//parallel_edge.edgePhaseBegin(gridz, gridy, gridx);
+	//parallel_edge.edgePhaseBegin(gridx, gridy, gridz);
+	parallel_edge.edgePhaseBegin(gridz, gridy, gridx);
 	//parallel_for( blocked_range3d<int>(0, gridz, 0, gridy,0, gridx),parallel_edge,auto_partitioner());
 
 	timeEnd = clock();
@@ -3259,6 +3267,8 @@ void General_Data::combineWindingNum(Edge *edge1, Edge *edge2, Edge *edge3, Edge
 		float v1[3];
 
 		getV1(v1);
+
+		cout << std::to_string(v1[0]) << " " << std::to_string(v1[1]) << " " << std::to_string(v1[2]) << endl;
 		float p10[3], p11[3], p13[3], p14[3];
 		p10[0] = p[0]-2*change*v1[0];
 		p10[1] = p[1]-2*change*v1[1];
@@ -4543,7 +4553,7 @@ void ParallelCell::buildPointIteration(Cell *cell, vector<Point> *points, vector
 	Point point;
 	getShowPos(cell->extremalPoint, vertex.position);
 	point.vertIdx = vertices->size();
-	vertices->push_back(vertex);
+	//vertices->push_back(vertex);
 	//SelfAdjointEigenSolver<Matrix3f> eigensolver;
 	getEigensolverCubic(cell->extremalPoint);
 	point.firstEigenvalue = getFirstEigenvalueAndRelativeSaliencies(point.relativeSaliencies,lmaxEigenvalue,lminEigenvalue);
@@ -4618,6 +4628,7 @@ void General_Data::cellPhase(float* scalars,float* tensors,float* gradients)
 		p.relativeSaliencies[2] = (*it).relativeSaliencies[2];
 		p.localIntensity = (*it).localIntensity;
 		p.firstEigenvalue = (*it).firstEigenvalue;
+		cout << "eigenvalue " << std::to_string(p.firstEigenvalue) << endl;
 		p.type= (*it).type;
 		points->push_back(p);
 	}
@@ -4642,7 +4653,7 @@ void General_Data::cellPhase(float* scalars,float* tensors,float* gradients)
 		p.position[1]=(*itv).position[1];
 		p.position[2]=(*itv).position[2];
 		//cout << p.position[0] << " " << p.position[1] << " " << p.position[0] << endl;
-		vertices->push_back(p);
+		//vertices->push_back(p);
 	}
 /**
 	for(int i = 0; i < convertices->size(); i++) {
@@ -4701,6 +4712,48 @@ void General_Data::getShowPos(float position[3], float showPos[3])
 	showPos[0] = ((float)position[0] - 2 - rightBackTop[0]) / halfDataSize;
 	showPos[1] = ((float)position[1] - 2 - rightBackTop[1]) / halfDataSize;
 	showPos[2] = ((float)position[2] - 2 - rightBackTop[2]) / halfDataSize;
+}
+
+float* General_Data::getEigenvaluesCubic(float position[3])
+{
+		int count = 0;
+	float epsilon = 1e-12;
+	float tensorV[6];
+	getTensorCubic(position, tensorV);
+	for ( int i = 0; i < 6; i ++ )
+	{
+		if ( fabs(tensorV[i]) < epsilon )
+		{
+			count ++;
+			tensorV[i] = epsilon;
+		}
+	}
+
+	float tensorM[3][3];
+	tensorM[0][0] = tensorV[0];
+	tensorM[0][1] = tensorV[1];
+	tensorM[0][2] = tensorV[2];
+	tensorM[1][0] = tensorV[1];
+	tensorM[1][1] = tensorV[3];
+	tensorM[1][2] = tensorV[4];
+	tensorM[2][0] = tensorV[2];
+	tensorM[2][1] = tensorV[4];
+	tensorM[2][2] = tensorV[5];
+	//EigenVectorsAndValues3D eigenData;
+	for(int r = 0; r < 3; r++) {
+		for(int c = 0; c < 3; c++) {
+			tensorMVectorsAndValues.structureTensor[r][c] = 0;
+
+		}
+	}
+	for(int r = 0; r < 3; r++) {
+		for(int c = 0; c < 3; c++) {
+			tensorMVectorsAndValues.structureTensor[r][c] = tensorM[r][c];
+		}
+	}
+	MathLib * math = new MathLib();
+	math->EigenAnalysis(tensorMVectorsAndValues);
+	return tensorMVectorsAndValues.eigenValues;
 }
 
 bool General_Data::getEigensolverCubic(float position[3])
@@ -4773,11 +4826,32 @@ float General_Data::getFirstEigenvalueAndRelativeSaliencies(float relativeSalien
 	return float(ev.Z() );
 }
 
+float General_Data::getFirstEigenvalueSaliencies(float* eigenvalues, float relativeSaliencies[3]) 
+{
+	Vector3DFloat ev = Vector3DFloat(eigenvalues[0], eigenvalues[1], eigenvalues[2]);
+	if ( ev.Z() > 0 )
+	{
+		relativeSaliencies[0] = float((ev.Z() - ev.Y() ) / ev.Z() );
+		relativeSaliencies[1] = float((ev.Y()  - ev.X() ) / ev.Z() );
+		relativeSaliencies[2] = float(ev.X() / ev.Z() );
+		if ((*minEigenvalue) > ev.Z() ) (*minEigenvalue) = ev.Z() ;
+		if ((*maxEigenvalue) < ev.Z() ) (*maxEigenvalue) = ev.Z() ;
+	}
+	else
+	{
+		relativeSaliencies[0] = 0;
+		relativeSaliencies[1] = 0;
+		relativeSaliencies[2] = 0;
+	}
+	return float(ev.Z() );
+}
+
 void General_Data::buildCurveIteration(Face *face, Cell *cell1, Cell *cell2)
 {
 	Segment segment;
 	if ( cell1->vertIdx < 0 )
 	{
+		cout << "cell1 vertIdx " << std::to_string(cell1->vertIdx) << endl;
 		Vertex vertex;
 		getShowPos(cell1->centroid, vertex.position);
 		segment.vertIdxs[0] = vertices->size();
@@ -4790,6 +4864,7 @@ void General_Data::buildCurveIteration(Face *face, Cell *cell1, Cell *cell2)
 	}
 	if ( cell2->vertIdx < 0 )
 	{
+		cout << "cell2 vertIdx " << std::to_string(cell2->vertIdx) << endl;
 		Vertex vertex;
 		getShowPos(cell2->centroid, vertex.position);
 		segment.vertIdxs[1] = vertices->size();
@@ -4801,8 +4876,11 @@ void General_Data::buildCurveIteration(Face *face, Cell *cell1, Cell *cell2)
 		segment.vertIdxs[1] = cell2->vertIdx;
 	}
 	//SelfAdjointEigenSolver<Matrix3f> eigensolver;
-	getEigensolverCubic(face->facePoint);
-	segment.firstEigenvalue = getFirstEigenvalueAndRelativeSaliencies(segment.relativeSaliencies);
+	//getEigensolverCubic(face->facePoint);
+	float* eigenValues = getEigenvaluesCubic(face->facePoint);
+	segment.firstEigenvalue = getFirstEigenvalueSaliencies(eigenValues, segment.relativeSaliencies);
+
+	//segment.firstEigenvalue = getFirstEigenvalueAndRelativeSaliencies(segment.relativeSaliencies);
 
 	//segment.firstEigenvalue = getFirstEigenvalueAndRelativeSaliencies(&eigensolver, segment.relativeSaliencies);
 	float localI;
@@ -4950,8 +5028,12 @@ void General_Data::buildSurfaceIteration(Edge *edge, Cell *cell1, Cell *cell2, C
 	{
 		quad.vertIdxs[3] = cell4->vertIdx;
 	}
-	getEigensolverCubic(edge->edgePoint);
-	quad.firstEigenvalue = getFirstEigenvalueAndRelativeSaliencies(quad.relativeSaliencies);
+
+	//segment.firstEigenvalue = getFirstEigenvalueSaliencies(eigenValues, segment.relativeSaliencies);
+	//getEigensolverCubic(edge->edgePoint);
+	float* eigenValues = getEigenvaluesCubic(edge->edgePoint);
+
+	quad.firstEigenvalue = getFirstEigenvalueSaliencies(eigenValues, quad.relativeSaliencies);
 
 	//SelfAdjointEigenSolver<Matrix3f> eigensolver;
 	//getEigensolverCubic(edge->edgePoint, &eigensolver);
@@ -5201,6 +5283,7 @@ void gaussianiir3d(float *volume, long width, long height, long depth,
 void MRC_Data::MRCGeneration(char *filename)
 {
 	strcpy(dataName,filename);
+	kernelSize = 3;
 	float sigma = ((float)kernelSize + 1) / 6;
 	halfSize = (int)ceil(((float)kernelSize - 1) / 2);
 	cout << "MRC Format" << endl;
@@ -5209,11 +5292,14 @@ void MRC_Data::MRCGeneration(char *filename)
 	sizez = volData->GetSizeZ();
 
 	float* rawData = new float[ sizex * sizey * sizez ];
+	ofstream myfile;
+	myfile.open("d.txt"); 
 	bool first = true;
 	for(int i = 0; i < sizez; i++) {
 		for(int j = 0; j < sizey; j++) {
 			for(int k = 0; k < sizex; k++) {
 				float d = volData->GetDataAt(k, j, i);
+				myfile << " " << d << endl;
 				rawData[getIndex(1, 0, k, j, i, sizex, sizey, sizez)] = d;
 				if (first)
 				{
@@ -5231,6 +5317,7 @@ void MRC_Data::MRCGeneration(char *filename)
 			}
 		}
 	}
+	myfile.close();
 	float *Ix2 = new float[ (sizex-2) * (sizey-2) * (sizez-2) ] ;
 	float *Iy2 = new float[ (sizex-2) * (sizey-2) * (sizez-2) ] ;
 	float *Iz2 = new float[ (sizex-2) * (sizey-2) * (sizez-2) ] ;
@@ -5270,6 +5357,7 @@ void MRC_Data::MRCGeneration(char *filename)
 	gaussianiir3d(IxIz, sizez-2, sizey-2, sizex-2, sigma, iteration);
 
 	tensors = new float[ 6 * (sizex-2-2*halfSize) * (sizey-2-2*halfSize) * (sizez-2-2*halfSize) ] ;
+	myfile.open("tensorsscalars.txt");
 	for ( int i = 0 ; i < sizex - 2-2*halfSize ; i ++ ) {
 		for ( int j = 0 ; j < sizey - 2-2*halfSize ; j ++ ) {
 			for ( int k = 0 ; k < sizez - 2-2*halfSize ; k ++ )
@@ -5282,6 +5370,7 @@ void MRC_Data::MRCGeneration(char *filename)
 				tensors[index+3] = Iy2[oldIndex];
 				tensors[index+4] = IyIz[oldIndex];
 				tensors[index+5] = Iz2[oldIndex];
+				myfile << std::to_string(tensors[index]) << " " << std::to_string(tensors[index+1]) << " " << std::to_string(tensors[index+2]) << " " <<  std::to_string(tensors[index+3]) << " " << std::to_string(tensors[index+4]) << " " << std::to_string(tensors[index+5]) << endl;
 			}
 		}
 	}
@@ -5305,6 +5394,7 @@ void MRC_Data::MRCGeneration(char *filename)
 				gradients[index] = Ix;
 				gradients[index+1] = Iy;
 				gradients[index+2] = Iz;
+				myfile << std::to_string(gradients[index]) << " " << std::to_string(gradients[index+1]) << " " << std::to_string(gradients[index+2]) << endl;
 				if (maxGradientNorm < getNorm(gradients+index)) maxGradientNorm = getNorm(gradients+index);
 			}
 		}
@@ -5317,9 +5407,11 @@ void MRC_Data::MRCGeneration(char *filename)
 				int oldIndex = getIndex(1, 0, i+1+halfSize, j+1+halfSize, k+1+halfSize, sizex, sizey, sizez);
 				int index = getIndex(1, 0, i, j, k, sizex-2-2*halfSize, sizey-2-2*halfSize, sizez-2-2*halfSize);
 				scalars[index] = rawData[oldIndex];
+				myfile << std::to_string(scalars[index]) << endl;
 			}
 		}
 	}
+	myfile.close();
 	sizex = sizex-2-2*halfSize;
 	sizey = sizey-2-2*halfSize;
 	sizez = sizez-2-2*halfSize;
@@ -5493,8 +5585,8 @@ void MRC_Data::buildGrid()
 	gridz = sizez - 4;
 	gridSize = 1;
 	gridPoints = new float[ 3 * gridx * gridy * gridz ] ;
-	for ( int i = 0 ; i < gridx ; i ++ )
-		for ( int j = 0 ; j < gridy ; j ++ )
+	for ( int i = 0 ; i < gridx ; i ++ ) {
+		for ( int j = 0 ; j < gridy ; j ++ ) {
 			for ( int k = 0 ; k < gridz ; k ++ )
 			{
 				int index = getIndex(3, 0, i, j, k, gridx, gridy, gridz);
@@ -5502,34 +5594,36 @@ void MRC_Data::buildGrid()
 				gridPoints[index+1] = j + 2.0f;
 				gridPoints[index+2] = k + 2.0f;
 			}
+		}
+	}
 
-			maxGrid = gridx;
-			if (maxGrid < gridy) maxGrid = gridy;
-			if (maxGrid < gridz) maxGrid = gridz;
-			maxGridIndex = gridx * gridy * gridz;
-			cout << "Grid Size: " << gridx << " * " << gridy << " * " << gridz << endl;
-			timeEnd = clock();
-			cout << "Spend Time: " << (timeEnd-timeStart)/CLOCKS_PER_SEC << endl;
-			cout << "Done!" << endl;
-			cout << "****************************************************************" << endl;
+	maxGrid = gridx;
+	if (maxGrid < gridy) maxGrid = gridy;
+	if (maxGrid < gridz) maxGrid = gridz;
+	maxGridIndex = gridx * gridy * gridz;
+	cout << "Grid Size: " << gridx << " * " << gridy << " * " << gridz << endl;
+	timeEnd = clock();
+	cout << "Spend Time: " << (timeEnd-timeStart)/CLOCKS_PER_SEC << endl;
+	cout << "Done!" << endl;
+	cout << "****************************************************************" << endl;
 
-			timeStart = clock();
-			cout << "Calculate Edge Lookup Table Begin:" << endl;
-			edgeTable = new float[4100];
-			buildEdgeTable(edgeTable, 1, 2, 0, 1);
-			timeEnd = clock();
-			cout << "Spend Time: " << (timeEnd-timeStart)/CLOCKS_PER_SEC << endl;
-			cout << "Done!" << endl;
-			cout << "****************************************************************" << endl;
+	timeStart = clock();
+	cout << "Calculate Edge Lookup Table Begin:" << endl;
+	edgeTable = new float[4100];
+	buildEdgeTable(edgeTable, 1, 2, 0, 1);
+	timeEnd = clock();
+	cout << "Spend Time: " << (timeEnd-timeStart)/CLOCKS_PER_SEC << endl;
+	cout << "Done!" << endl;
+	cout << "****************************************************************" << endl;
 
-			timeStart = clock();
-			cout << "Calculate Face Lookup Table Begin:" << endl;
-			faceTable = new float[16*subdNum*subdNum];
-			buildFaceTable(faceTable, subdNum);
-			timeEnd = clock();
-			cout << "Spend Time: " << (timeEnd-timeStart)/CLOCKS_PER_SEC << endl;
-			cout << "Done!" << endl;
-			cout << "****************************************************************" << endl;
+	timeStart = clock();
+	cout << "Calculate Face Lookup Table Begin:" << endl;
+	faceTable = new float[16*subdNum*subdNum];
+	buildFaceTable(faceTable, subdNum);
+	timeEnd = clock();
+	cout << "Spend Time: " << (timeEnd-timeStart)/CLOCKS_PER_SEC << endl;
+	cout << "Done!" << endl;
+	cout << "****************************************************************" << endl;
 		}
 
 		class Volume {
@@ -9670,36 +9764,66 @@ return 0 ;
 					
 					ofstream myfile;
 					myfile.open ("extremal.pdb");
+					cout << std::to_string(vertices.size()) << endl;
 					for(int i = 0; i < vertices.size(); i++) {
 						Vertex vertex = vertices[i];
 						string vIndex = std::to_string(i);
 						padTo(vIndex, 5);
 
-						string posx = std::to_string((0.6*sizex)+(float)vertex.position[0]*sizex/2.0);
+						string posx = std::to_string((0.6*sizex)+(float)vertex.position[0]*sizex/1.8);
 
 						//string posx = std::to_string(doubleRound(1000.0 * ((sizex/2.0) + (sizex/2.0)*vertex.position[0]) )/1000.0 );
 
 						
 						//string posy = std::to_string(doubleRound(1000.0 * ((sizey/2.0) + (sizey/2.0)*vertex.position[1]) )/1000.0 );
 
-						string posy = std::to_string((0.6*sizey)+(float)vertex.position[1]*sizey/2.0);
+						string posy = std::to_string((0.6*sizey)+(float)vertex.position[1]*sizey/1.8);
 
 						//string posz = std::to_string(doubleRound(1000.0 * ((sizez/2.0) + (sizez/2.0)*vertex.position[2]) )/1000.0 );
 
-						string posz = std::to_string((0.6*sizez)+(float)vertex.position[2]*sizez/2.0);
+						string posz = std::to_string((0.6*sizez)+(float)vertex.position[2]*sizez/1.8);
 
 						myfile << "ATOM  " << vIndex << "  CA  ALA " << vIndex << "     " << posx.substr(0,7) << " " << posy.substr(0,7) << " " << posz.substr(0,7) << "  1.00  1.00      S_00  0 " << endl;
 
 					}
 					myfile.close();
+					myfile.open("segments.txt");
 
 					for(int i = 0; i < segments.size(); i++) {
+
 						Segment segment = segments[i];
-						//cout << segment.vertIdxs[0] << " " << segment.vertIdxs[1] << endl;
+
+						float *saliencies = segment.relativeSaliencies;
+						bool hide = false;
+						if ( (saliencies[1] < saliencies[0] ) || (saliencies[1] < saliencies[2] ) ) hide = true;
+
+						float maxI = currentData->maxIntensity;
+						float minI = currentData->minIntensity;
+						float localI = segment.localIntensity;
+						int type = segment.type;
+						if ( ( type == 1 ) && ( ( localI - minI ) / ( maxI - minI ) <= 0.00 ) ) hide = true;
+						if ( ( type == 2 ) && ( ( localI - minI ) / ( maxI - minI ) >= 1.00 ) ) hide = true;
+
+						if(type == 1 && !hide) {
+							myfile << std::to_string(segment.vertIdxs[0]) << " " << std::to_string(segment.vertIdxs[1]) << endl;
+						}
 					}
+					myfile.close();				
 					
-					
-					
+					//DispCell dispCell = currentData->getDispCell();
+		//float maxGrid = currentData->getMaxGrid();
+		
+
+					//float* currentEdgePoints = (*currentData -> getEdgePoints());
+
+					//myfile.open("edgepoints.txt");
+					//for(int i = 0; i < currentEdgePoints.size(); i++) {
+
+						//Edge edge = currentEdgePoints[i];
+						//myfile << std::to_string(edge.edgePoint[0]) << " " << std::to_string(edge.edgePoint[1]) << " " << std::to_string(edge.edgePoint[2]) << endl;
+					//}
+					//myfile.close();	
+
 
 					/**
 					for ( int j = 0 ; j < 2 ; j ++ ) {

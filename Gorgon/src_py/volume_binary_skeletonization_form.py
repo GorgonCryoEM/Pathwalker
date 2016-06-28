@@ -29,6 +29,7 @@ class VolumeBinarySkeletonizationForm(BaseDialogWidget):
     def createUI(self):
         self.ui = Ui_DialogVolumeBinarySkeletonization()
         self.ui.setupUi(self)
+        
         self.connect(self.ui.horizontalSliderIsoLevel,QtCore.SIGNAL("valueChanged(int)"),self.isoValueChanged)
         self.connect(self.ui.comboBoxMethod, QtCore.SIGNAL("currentIndexChanged (int)"), self.methodChanged)                                            
         self.methodChanged(0)

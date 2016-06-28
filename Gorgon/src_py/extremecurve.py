@@ -90,7 +90,7 @@ class ExtremeCurveForm(BaseDialogWidget):
       self.generateAtoms("extremal.pdb")
       bonds1 = skeleton.getExtremalBonds1()
       bonds2 = skeleton.getExtremalBonds2()
-      print len(bonds1)
+      #print len(bonds1)
       for i in range(len(bonds1)):
                     #print str(bonds1[i]) + " " + str(bonds2[i])
         self.app.viewers['calpha'].renderer.drawAddedBond(bonds1[i], bonds2[i])

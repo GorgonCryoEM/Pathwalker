@@ -24,6 +24,7 @@
 #include <set>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 
 using namespace std;
 using namespace wustl_mm::Protein_Morph;
@@ -445,7 +446,14 @@ namespace wustl_mm {
 				return "unknown";
 			}
 			else {
-				return std::to_string((atm1.GetPosition() - atm2.GetPosition()).Length());
+				float val = (atm1.GetPosition() - atm2.GetPosition()).Length();
+  			stringstream ss (stringstream::in | stringstream::out);
+
+  			ss << val;
+
+  			string test = ss.str();
+				return test;
+				//return std::to_string((atm1.GetPosition() - atm2.GetPosition()).Length());
 
 		}
 	}
@@ -2214,41 +2222,12 @@ namespace wustl_mm {
 			return bondsToDelete;
 		}
 
-		string CAlphaRenderer::getDeletedBondAtoms() {
-
-			ofstream myfile;
-			myfile.open("noBondConstraints");
-			
-			string atomsToNotBond;
-				int atomIndex = 0;
-				unsigned int atom1;
-				unsigned int atom2;
-				for(AtomMapType::iterator it = atoms.begin(); it != atoms.end(); it++) {
-					if(it->second.GetSelected()) {
-						atomsToNotBond += std::to_string(it->second.GetResSeq());
-						if(atomIndex%2 == 0) {
-							atom1 = it->second.GetResSeq();
-							atomsToNotBond += " ";
-						}
-						else {
-							atom2 = it->second.GetResSeq();
-							atomsToNotBond += " ";
-
-						}
-						atomIndex += 1;
-					}
-			
-		}
-		myfile << atomsToNotBond;
-			myfile.close();
-			return atomsToNotBond;
-		}
 
 		vector<unsigned long long> CAlphaRenderer::getDeletedBonds1Ix() {
 			return ix1s;
 		}
 		
-		
+
 		
 
 

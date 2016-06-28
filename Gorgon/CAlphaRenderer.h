@@ -2247,7 +2247,8 @@ namespace wustl_mm {
 		vector<unsigned long long> CAlphaRenderer::getDeletedBonds1Ix() {
 			return ix1s;
 		}
-
+		
+		/**
 		void CAlphaRenderer::RemoveSelectedBonds(string nobonds) {
 				string sLine = nobonds;
 				std::stringstream ss(sLine);
@@ -2275,6 +2276,7 @@ namespace wustl_mm {
 						DeleteBond(currentBondIndex);
 					}
 				}
+
 		}
 
 
@@ -2307,6 +2309,7 @@ namespace wustl_mm {
 				}
 				
 			}
+			**/
 		
 
 

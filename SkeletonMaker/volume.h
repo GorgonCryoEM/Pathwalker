@@ -311,131 +311,7 @@ DispCell::~DispCell(void)
 {
 }
 
-class CGNSParallelEdge
-{
-private:
-	float thresh;
-	int gridx,gridy,gridz;
-	int *totalEdgePoints;
-	int dataType;
-	float* globalVec;
-	Edge *edges;
-	float *gridPoints;
-	float change;
-	float *coef;
 
-	void getGridPointPosD(int index, float v[3]) const;
-	void edgePhaseIteration(int index1, int index2, int axis, int i, int j, int k, Edge *ledges, int *ltotalEdgePoints) const;
-	bool adaptiveSamplingArray(float p1[3], float p2[3], int *edgeSampleNum, float **sampleG,
-		float **sampleV1, float **sampleV3, float **X, float **Y, float **sampleProjG) const;
-	bool adaptiveRecursionArray(float p1[3], float p2[3], float g1[3], float g2[3], float v1_1[3], float v1_2[3],
-		float v3_1[3], float v3_2[3], list<float> *GL, list<float> *V1L, list<float> *V3L, int depth) const;
-	void extremalEdgeArray(float p1[3], float p2[3], Edge *edge, float *sampleV1, int edgeSampleNum, int *ltotalEdgePoints) const;
-	void orientV3Array(Edge *edge, float *sampleV3, int edgeSampleNum) const;
-	void propagateXYArray(Edge *edge, float *sampleV3, float *X, float *Y, int edgeSampleNum) const;
-	void projectGArray(float *sampleG, float *X, float *Y, float *sampleProjG, int edgeSampleNum) const;
-	void getWindingNumArray(Edge *edge, float *sampleProjG, int index1, int index2, int edgeSampleNum) const;
-	void signedSphericalTriangleArea(float p1[3], float p2[3], float *area, float *phiC) const;
-	float getDihedral(float b1[3], float b2[3], float b3[3]) const;
-	int getEdgeIndex(int axis, int x, int y, int z) const;
-
-public: 
-	bool allCubic;
-	bool *storeGrid_2DGradMag;
-	float *grid_2DGradMag;
-
-	CGNSParallelEdge(int lgridx,int lgridy,int lgridz,int *ltotalEdgePoints,Edge *ledges,bool lallCubic,float lglobalVec[3],
-		int ldataType,float *lgridPoints,float lchange,bool *lstoreGrid_2DGradMag,float *lgrid_2DGradMag, float *lcoef)
-	{
-		gridx=lgridx;
-		gridy=lgridy;
-		gridz=lgridz;
-		totalEdgePoints=ltotalEdgePoints;
-		edges = ledges;
-		allCubic=lallCubic;
-		globalVec = lglobalVec;
-		dataType = ldataType;
-		gridPoints = lgridPoints;
-		change=lchange;
-		storeGrid_2DGradMag = lstoreGrid_2DGradMag;
-		grid_2DGradMag = lgrid_2DGradMag;
-		thresh = cos(20 * (float)M_PI / 180);
-		coef = lcoef;
-	};
-};
-
-/**
-	void operator()(const tbb::blocked_range3d<int>& r)	const {
-		for( int i=r.cols().begin(); i!=r.cols().end(); ++i ){
-			for( int j=r.rows().begin(); j!=r.rows().end(); ++j ) {
-				for( int k=r.pages().begin();k!=r.pages().end();++k){
-					if (i+1==gridx)
-						continue;
-					int index1 = getIndex(1, 0, i, j, k, gridx, gridy, gridz);
-					int index2 = getIndex(1, 0, i + 1, j, k, gridx, gridy, gridz);
-					edgePhaseIteration(index1, index2, 1, i, j, k, edges, totalEdgePoints);
-				}
-			}
-		}
-		for( int i=r.cols().begin(); i!=r.cols().end(); ++i ){
-			for( int j=r.rows().begin(); j!=r.rows().end(); ++j ) {
-				for( int k=r.pages().begin();k!=r.pages().end();++k){
-					if(j+1==gridy)
-						continue;
-					int index1 = getIndex(1, 0, i, j, k, gridx, gridy, gridz);
-					int index2 = getIndex(1, 0, i, j + 1, k, gridx, gridy, gridz);
-					edgePhaseIteration(index1, index2, 2, i, j, k, edges, totalEdgePoints);
-				}
-			}
-		}
-		for( int i=r.cols().begin(); i!=r.cols().end(); ++i ){
-			for( int j=r.rows().begin(); j!=r.rows().end(); ++j ) {
-				for( int k=r.pages().begin();k!=r.pages().end();++k){
-					if(k+1==gridz)
-						continue;
-					int index1 = getIndex(1, 0, i, j, k, gridx, gridy, gridz);
-					int index2 = getIndex(1, 0, i, j, k + 1, gridx, gridy, gridz);
-					edgePhaseIteration(index1, index2, 3, i, j, k, edges, totalEdgePoints);
-				}
-			}
-		}
-	};
-};
-**/
-/**
-void CGNSParallelEdge::getGridPointPosD(int index, float v[3]) const
-{
-	v[0] = gridPoints[3*index];
-	v[1] = gridPoints[3*index+1];
-	v[2] = gridPoints[3*index+2];
-}
-
-
-
-void CGNSParallelEdge::edgePhaseIteration(int index1, int index2, int axis, int i, int j, int k, Edge *ledges, int *ltotalEdgePoints) const
-{
-	float *sampleG, *sampleV1, *sampleV3, *X, *Y, *sampleProjG;
-	int edgeSampleNum;
-	float p1[3], p2[3];
-	getGridPointPosD(index1, p1);
-	getGridPointPosD(index2, p2);
-	if (!adaptiveSamplingArray(p1, p2, &edgeSampleNum, &sampleG, &sampleV1, &sampleV3, &X, &Y, &sampleProjG)) return;
-	Edge *edge = &(ledges[getEdgeIndex(axis, i, j, k)]);
-	edge->valid = true;
-	extremalEdgeArray(p1, p2, edge, sampleV1, edgeSampleNum, ltotalEdgePoints);
-	orientV3Array(edge, sampleV3, edgeSampleNum);
-	propagateXYArray(edge, sampleV3, X, Y, edgeSampleNum);
-	projectGArray(sampleG, X, Y, sampleProjG, edgeSampleNum);
-	getWindingNumArray(edge, sampleProjG, index1, index2, edgeSampleNum);
-	delete[] sampleG;
-	delete[] sampleV1;
-	delete[] sampleV3;
-	delete[] X;
-	delete[] Y;
-	delete[] sampleProjG;
-	
-}
-**/
 
 class CGNSParallelFace
 {
@@ -1030,7 +906,9 @@ static void buildEdgeTable(float *table, int level, int slot, float left, float 
 	if(level > 10) return;
 	float mid = (left + right) / 2;
 	cubicCoef(&(table[slot*4]), mid);
-	buildEdgeTable(table, level+1, slot*2-1, left, mid);
+	float* currentSlotVal = &(table[slot*4]);
+	cout << "slot " << slot << " " << currentSlotVal[0] << " " << currentSlotVal[1] << " " << currentSlotVal[2] << endl;
+ 	buildEdgeTable(table, level+1, slot*2-1, left, mid);
 	buildEdgeTable(table, level+1, slot*2, mid, right);
 }
 
@@ -1703,6 +1581,8 @@ bool ParallelEdge::adaptiveSamplingArrayTable(int si1, int si2, int axis, int ii
 	//getV3(&eigensolver1, v3_1);
 	getV1(v1_2);
 	getV3(v3_2);
+	ofstream myfile;
+
 	//getV3(&eigensolver2, v3_2);
 
 	for ( int j = 0; j < 3; j ++ )
@@ -1998,16 +1878,18 @@ void ParallelEdge::edgePhaseIteration(int index1, int index2, int si1, int si2, 
 
 
 void ParallelEdge::edgePhaseBegin(int cols, int rows, int pages) {
-	cout << "cols " << cols << " rows " << rows << " pages " << pages << endl;
+	cout << "cols " << cols << " rows " << rows << " pages " << pages << " gridx " << gridx << "gridy " << gridy << " gridz " << gridz << endl;
 	int *ltotalEdgePoints= totalEdgePoints;			
 	Edge *ledges = edges;
 	
-
-
+	ofstream myfile;
+	myfile.open("indexes.txt", ios::app);
+	
 	for( int i=0; i!=cols; ++i ){
 		for( int j=0; j!=rows; ++j ) {
 			for( int k=0; k!=pages;++k){
 				if (i+1==gridx)
+					//myfile << std::to_string(i) << " " << std::to_string(j) << " " << std::to_string(k) << " " << std::to_string(gridx) << endl;
 					continue;
 				int sIndex1 = getIndex(1, 0, i+2, j+2, k+2, sizex, sizey, sizez);
 				int sIndex2 = getIndex(1, 0, i+3, j+2, k+2, sizex, sizey, sizez);
@@ -2021,6 +1903,7 @@ void ParallelEdge::edgePhaseBegin(int cols, int rows, int pages) {
 		for( int j=0; j!=rows; ++j ) {
 			for( int k=0; k!=pages;++k){
 				if(j+1==gridy)
+					//myfile << std::to_string(i) << " " << std::to_string(j) << " " << std::to_string(k) << " " << std::to_string(gridy) << endl;
 					continue;
 				int sIndex1 = getIndex(1, 0, i+2, j+2, k+2, sizex, sizey, sizez);
 				int sIndex2 = getIndex(1, 0, i+2, j+3, k+2, sizex, sizey, sizez);
@@ -2034,6 +1917,7 @@ void ParallelEdge::edgePhaseBegin(int cols, int rows, int pages) {
 		for( int j=0; j!=rows; ++j ) {
 			for( int k=0; k!=pages;++k){
 				if(k+1==gridz)
+					//myfile << std::to_string(i) << " " << std::to_string(j) << " " << std::to_string(k) << " " << std::to_string(gridz) << endl;
 					continue;
 				int sIndex1 = getIndex(1, 0, i+2, j+2, k+2, sizex, sizey, sizez);
 				int sIndex2 = getIndex(1, 0, i+2, j+2, k+3, sizex, sizey, sizez);
@@ -2043,6 +1927,721 @@ void ParallelEdge::edgePhaseBegin(int cols, int rows, int pages) {
 			}
 		}
 	}
+	myfile.close();
+}
+
+class CGNSParallelEdge
+{
+private:
+	float thresh;
+	int gridx,gridy,gridz;
+	int *totalEdgePoints;
+	int dataType;
+	float* globalVec;
+	Edge *edges;
+	float *gridPoints;
+	float change;
+	float *coef;
+
+	void edgePhaseBegin(int cols, int rows, int pages);	
+	void getGridPointPosD(int index, float v[3]);
+	void edgePhaseIteration(int index1, int index2, int axis, int i, int j, int k, Edge *ledges, int *ltotalEdgePoints);
+	bool adaptiveSamplingArray(float p1[3], float p2[3], int *edgeSampleNum, float **sampleG,
+		float **sampleV1, float **sampleV3, float **X, float **Y, float **sampleProjG);
+	bool adaptiveRecursionArray(float p1[3], float p2[3], float g1[3], float g2[3], float v1_1[3], float v1_2[3],
+		float v3_1[3], float v3_2[3], list<float> *GL, list<float> *V1L, list<float> *V3L, int depth);
+	void extremalEdgeArray(float p1[3], float p2[3], Edge *edge, float *sampleV1, int edgeSampleNum, int *ltotalEdgePoints);
+	void orientV3Array(Edge *edge, float *sampleV3, int edgeSampleNum);
+	void propagateXYArray(Edge *edge, float *sampleV3, float *X, float *Y, int edgeSampleNum);
+	void projectGArray(float *sampleG, float *X, float *Y, float *sampleProjG, int edgeSampleNum);
+	void getWindingNumArray(Edge *edge, float *sampleProjG, int index1, int index2, int edgeSampleNum);
+	void signedSphericalTriangleArea(float p1[3], float p2[3], float *area, float *phiC);
+	float getDihedral(float b1[3], float b2[3], float b3[3]);
+	int getEdgeIndex(int axis, int x, int y, int z);
+
+public:
+	bool getEigensolverPN(float position[3]);
+	//void signedSphericalTriangleArea(float p1[3], float p2[3], float *area, float *phiC);
+	void getV1(float v[3]);
+	void getV3(float v[3]);
+	bool allCubic;
+	bool *storeGrid_2DGradMag;
+	float *grid_2DGradMag;
+	EigenVectorsAndValues3D tensorMVectorsAndValues;
+
+	CGNSParallelEdge(int lgridx,int lgridy,int lgridz,int *ltotalEdgePoints,Edge *ledges,bool lallCubic,float lglobalVec[3],
+		int ldataType,float *lgridPoints,float lchange,bool *lstoreGrid_2DGradMag,float *lgrid_2DGradMag, float *lcoef)
+	{
+		gridx=lgridx;
+		gridy=lgridy;
+		gridz=lgridz;
+		totalEdgePoints=ltotalEdgePoints;
+		edges = ledges;
+		allCubic=lallCubic;
+		globalVec = lglobalVec;
+		dataType = ldataType;
+		gridPoints = lgridPoints;
+		change=lchange;
+		storeGrid_2DGradMag = lstoreGrid_2DGradMag;
+		grid_2DGradMag = lgrid_2DGradMag;
+		thresh = cos(20 * (float)M_PI / 180);
+		coef = lcoef;
+	};
+	void getScalarPN(float position[3], float *scalar)
+	{
+		float x = position[0];
+		float y = position[1];
+		float z = position[2];
+		*scalar = coef[56]*pow(x,6) + coef[63]*pow(x,5)*y + coef[57]*pow(x,5)*z + coef[35]*pow(x,5) + coef[69]*pow(x,4)*pow(y,2) + coef[64]*pow(x,4)*y*z +
+			coef[41]*pow(x,4)*y + coef[58]*pow(x,4)*pow(z,2) + coef[36]*pow(x,4)*z + coef[20]*pow(x,4) + coef[74]*pow(x,3)*pow(y,3) + coef[70]*pow(x,3)*pow(y,2)*z +
+			coef[46]*pow(x,3)*pow(y,2) + coef[65]*pow(x,3)*y*pow(z,2) + coef[42]*pow(x,3)*y*z + coef[25]*pow(x,3)*y + coef[59]*pow(x,3)*pow(z,3) + coef[37]*pow(x,3)*pow(z,2) +
+			coef[21]*pow(x,3)*z + coef[10]*pow(x,3) + coef[78]*pow(x,2)*pow(y,4) + coef[75]*pow(x,2)*pow(y,3)*z + coef[50]*pow(x,2)*pow(y,3) + coef[71]*pow(x,2)*pow(y,2)*pow(z,2) +
+			coef[47]*pow(x,2)*pow(y,2)*z + coef[29]*pow(x,2)*pow(y,2) + coef[66]*pow(x,2)*y*pow(z,3) + coef[43]*pow(x,2)*y*pow(z,2) + coef[26]*pow(x,2)*y*z +
+			coef[14]*pow(x,2)*y + coef[60]*pow(x,2)*pow(z,4) + coef[38]*pow(x,2)*pow(z,3) + coef[22]*pow(x,2)*pow(z,2) + coef[11]*pow(x,2)*z + coef[4]*pow(x,2) +
+			coef[81]*x*pow(y,5) + coef[79]*x*pow(y,4)*z + coef[53]*x*pow(y,4) + coef[76]*x*pow(y,3)*pow(z,2) + coef[51]*x*pow(y,3)*z + coef[32]*x*pow(y,3) +
+			coef[72]*x*pow(y,2)*pow(z,3) + coef[48]*x*pow(y,2)*pow(z,2) + coef[30]*x*pow(y,2)*z + coef[17]*x*pow(y,2) + coef[67]*x*y*pow(z,4) + coef[44]*x*y*pow(z,3) +
+			coef[27]*x*y*pow(z,2) + coef[15]*x*y*z + coef[7]*x*y + coef[61]*x*pow(z,5) + coef[39]*x*pow(z,4) + coef[23]*x*pow(z,3) +
+			coef[12]*x*pow(z,2) + coef[5]*x*z + coef[1]*x + coef[83]*pow(y,6) + coef[82]*pow(y,5)*z + coef[55]*pow(y,5) + coef[80]*pow(y,4)*pow(z,2) +
+			coef[54]*pow(y,4)*z + coef[34]*pow(y,4) + coef[77]*pow(y,3)*pow(z,3) + coef[52]*pow(y,3)*pow(z,2) + coef[33]*pow(y,3)*z + coef[19]*pow(y,3) +
+			coef[73]*pow(y,2)*pow(z,4) + coef[49]*pow(y,2)*pow(z,3) + coef[31]*pow(y,2)*pow(z,2) + coef[18]*pow(y,2)*z + coef[9]*pow(y,2) + coef[68]*y*pow(z,5) +
+			coef[45]*y*pow(z,4) + coef[28]*y*pow(z,3) + coef[16]*y*pow(z,2) + coef[8]*y*z + coef[3]*y + coef[62]*pow(z,6) + coef[40]*pow(z,5) +
+			coef[24]*pow(z,4) + coef[13]*pow(z,3) + coef[6]*pow(z,2) + coef[2]*z + coef[0];
+	};
+
+	void getGradientPN(float position[3], float gradient[3])
+	{
+		float x = position[0];
+		float y = position[1];
+		float z = position[2];
+		gradient[0] = 6*coef[56]*pow(x,5) + 5*coef[63]*pow(x,4)*y + 5*coef[57]*pow(x,4)*z + 5*coef[35]*pow(x,4) + 4*coef[69]*pow(x,3)*pow(y,2) +
+			4*coef[64]*pow(x,3)*y*z + 4*coef[41]*pow(x,3)*y + 4*coef[58]*pow(x,3)*pow(z,2) + 4*coef[36]*pow(x,3)*z + 4*coef[20]*pow(x,3) + 3*coef[74]*pow(x,2)*pow(y,3) +
+			3*coef[70]*pow(x,2)*pow(y,2)*z + 3*coef[46]*pow(x,2)*pow(y,2) + 3*coef[65]*pow(x,2)*y*pow(z,2) + 3*coef[42]*pow(x,2)*y*z + 3*coef[25]*pow(x,2)*y +
+			3*coef[59]*pow(x,2)*pow(z,3) + 3*coef[37]*pow(x,2)*pow(z,2) + 3*coef[21]*pow(x,2)*z + 3*coef[10]*pow(x,2) + 2*coef[78]*x*pow(y,4) + 2*coef[75]*x*pow(y,3)*z +
+			2*coef[50]*x*pow(y,3) + 2*coef[71]*x*pow(y,2)*pow(z,2) + 2*coef[47]*x*pow(y,2)*z + 2*coef[29]*x*pow(y,2) + 2*coef[66]*x*y*pow(z,3) +
+			2*coef[43]*x*y*pow(z,2) + 2*coef[26]*x*y*z + 2*coef[14]*x*y + 2*coef[60]*x*pow(z,4) + 2*coef[38]*x*pow(z,3) + 2*coef[22]*x*pow(z,2) +
+			2*coef[11]*x*z + 2*coef[4]*x + coef[81]*pow(y,5) + coef[79]*pow(y,4)*z + coef[53]*pow(y,4) + coef[76]*pow(y,3)*pow(z,2) + coef[51]*pow(y,3)*z +
+			coef[32]*pow(y,3) + coef[72]*pow(y,2)*pow(z,3) + coef[48]*pow(y,2)*pow(z,2) + coef[30]*pow(y,2)*z + coef[17]*pow(y,2) + coef[67]*y*pow(z,4) + coef[44]*y*pow(z,3) +
+			coef[27]*y*pow(z,2) + coef[15]*y*z + coef[7]*y + coef[61]*pow(z,5) + coef[39]*pow(z,4) + coef[23]*pow(z,3) + coef[12]*pow(z,2) + coef[5]*z + coef[1];
+		gradient[1] = coef[63]*pow(x,5) + 2*coef[69]*pow(x,4)*y + coef[64]*pow(x,4)*z + coef[41]*pow(x,4) + 3*coef[74]*pow(x,3)*pow(y,2) + 2*coef[70]*pow(x,3)*y*z +
+			2*coef[46]*pow(x,3)*y + coef[65]*pow(x,3)*pow(z,2) + coef[42]*pow(x,3)*z + coef[25]*pow(x,3) + 4*coef[78]*pow(x,2)*pow(y,3) + 3*coef[75]*pow(x,2)*pow(y,2)*z +
+			3*coef[50]*pow(x,2)*pow(y,2) + 2*coef[71]*pow(x,2)*y*pow(z,2) + 2*coef[47]*pow(x,2)*y*z + 2*coef[29]*pow(x,2)*y + coef[66]*pow(x,2)*pow(z,3) + coef[43]*pow(x,2)*pow(z,2) +
+			coef[26]*pow(x,2)*z + coef[14]*pow(x,2) + 5*coef[81]*x*pow(y,4) + 4*coef[79]*x*pow(y,3)*z + 4*coef[53]*x*pow(y,3) + 3*coef[76]*x*pow(y,2)*pow(z,2) +
+			3*coef[51]*x*pow(y,2)*z + 3*coef[32]*x*pow(y,2) + 2*coef[72]*x*y*pow(z,3) + 2*coef[48]*x*y*pow(z,2) + 2*coef[30]*x*y*z + 2*coef[17]*x*y +
+			coef[67]*x*pow(z,4) + coef[44]*x*pow(z,3) + coef[27]*x*pow(z,2) + coef[15]*x*z + coef[7]*x + 6*coef[83]*pow(y,5) + 5*coef[82]*pow(y,4)*z +
+			5*coef[55]*pow(y,4) + 4*coef[80]*pow(y,3)*pow(z,2) + 4*coef[54]*pow(y,3)*z + 4*coef[34]*pow(y,3) + 3*coef[77]*pow(y,2)*pow(z,3) + 3*coef[52]*pow(y,2)*pow(z,2) +
+			3*coef[33]*pow(y,2)*z + 3*coef[19]*pow(y,2) + 2*coef[73]*y*pow(z,4) + 2*coef[49]*y*pow(z,3) + 2*coef[31]*y*pow(z,2) + 2*coef[18]*y*z +
+			2*coef[9]*y + coef[68]*pow(z,5) + coef[45]*pow(z,4) + coef[28]*pow(z,3) + coef[16]*pow(z,2) + coef[8]*z + coef[3];
+		gradient[2] = coef[57]*pow(x,5) + coef[64]*pow(x,4)*y + 2*coef[58]*pow(x,4)*z + coef[36]*pow(x,4) + coef[70]*pow(x,3)*pow(y,2) + 2*coef[65]*pow(x,3)*y*z +
+			coef[42]*pow(x,3)*y + 3*coef[59]*pow(x,3)*pow(z,2) + 2*coef[37]*pow(x,3)*z + coef[21]*pow(x,3) + coef[75]*pow(x,2)*pow(y,3) + 2*coef[71]*pow(x,2)*pow(y,2)*z +
+			coef[47]*pow(x,2)*pow(y,2) + 3*coef[66]*pow(x,2)*y*pow(z,2) + 2*coef[43]*pow(x,2)*y*z + coef[26]*pow(x,2)*y + 4*coef[60]*pow(x,2)*pow(z,3) + 3*coef[38]*pow(x,2)*pow(z,2) +
+			2*coef[22]*pow(x,2)*z + coef[11]*pow(x,2) + coef[79]*x*pow(y,4) + 2*coef[76]*x*pow(y,3)*z + coef[51]*x*pow(y,3) + 3*coef[72]*x*pow(y,2)*pow(z,2) +
+			2*coef[48]*x*pow(y,2)*z + coef[30]*x*pow(y,2) + 4*coef[67]*x*y*pow(z,3) + 3*coef[44]*x*y*pow(z,2) + 2*coef[27]*x*y*z + coef[15]*x*y +
+			5*coef[61]*x*pow(z,4) + 4*coef[39]*x*pow(z,3) + 3*coef[23]*x*pow(z,2) + 2*coef[12]*x*z + coef[5]*x + coef[82]*pow(y,5) + 2*coef[80]*pow(y,4)*z +
+			coef[54]*pow(y,4) + 3*coef[77]*pow(y,3)*pow(z,2) + 2*coef[52]*pow(y,3)*z + coef[33]*pow(y,3) + 4*coef[73]*pow(y,2)*pow(z,3) + 3*coef[49]*pow(y,2)*pow(z,2) +
+			2*coef[31]*pow(y,2)*z + coef[18]*pow(y,2) + 5*coef[68]*y*pow(z,4) + 4*coef[45]*y*pow(z,3) + 3*coef[28]*y*pow(z,2) + 2*coef[16]*y*z + coef[8]*y +
+			6*coef[62]*pow(z,5) + 5*coef[40]*pow(z,4) + 4*coef[24]*pow(z,3) + 3*coef[13]*pow(z,2) + 2*coef[6]*z + coef[2];
+	};
+
+	void getTensorPN(float position[3], float tensor[6])
+	{
+		float x = position[0];
+		float y = position[1];
+		float z = position[2];
+		tensor[0] = 30*coef[56]*pow(x,4) + 20*coef[63]*pow(x,3)*y + 20*coef[57]*pow(x,3)*z + 20*coef[35]*pow(x,3) + 12*coef[69]*pow(x,2)*pow(y,2) +
+			12*coef[64]*pow(x,2)*y*z + 12*coef[41]*pow(x,2)*y + 12*coef[58]*pow(x,2)*pow(z,2) + 12*coef[36]*pow(x,2)*z + 12*coef[20]*pow(x,2) + 6*coef[74]*x*pow(y,3) +
+			6*coef[70]*x*pow(y,2)*z + 6*coef[46]*x*pow(y,2) + 6*coef[65]*x*y*pow(z,2) + 6*coef[42]*x*y*z + 6*coef[25]*x*y + 6*coef[59]*x*pow(z,3) +
+			6*coef[37]*x*pow(z,2) + 6*coef[21]*x*z + 6*coef[10]*x + 2*coef[78]*pow(y,4) + 2*coef[75]*pow(y,3)*z + 2*coef[50]*pow(y,3) +
+			2*coef[71]*pow(y,2)*pow(z,2) + 2*coef[47]*pow(y,2)*z + 2*coef[29]*pow(y,2) + 2*coef[66]*y*pow(z,3) + 2*coef[43]*y*pow(z,2) + 2*coef[26]*y*z +
+			2*coef[14]*y + 2*coef[60]*pow(z,4) + 2*coef[38]*pow(z,3) + 2*coef[22]*pow(z,2) + 2*coef[11]*z + 2*coef[4];
+		tensor[1] = 5*coef[63]*pow(x,4) + 8*coef[69]*pow(x,3)*y + 4*coef[64]*pow(x,3)*z + 4*coef[41]*pow(x,3) + 9*coef[74]*pow(x,2)*pow(y,2) +
+			6*coef[70]*pow(x,2)*y*z + 6*coef[46]*pow(x,2)*y + 3*coef[65]*pow(x,2)*pow(z,2) + 3*coef[42]*pow(x,2)*z + 3*coef[25]*pow(x,2) + 8*coef[78]*x*pow(y,3) +
+			6*coef[75]*x*pow(y,2)*z + 6*coef[50]*x*pow(y,2) + 4*coef[71]*x*y*pow(z,2) + 4*coef[47]*x*y*z + 4*coef[29]*x*y + 2*coef[66]*x*pow(z,3) +
+			2*coef[43]*x*pow(z,2) + 2*coef[26]*x*z + 2*coef[14]*x + 5*coef[81]*pow(y,4) + 4*coef[79]*pow(y,3)*z + 4*coef[53]*pow(y,3) +
+			3*coef[76]*pow(y,2)*pow(z,2) + 3*coef[51]*pow(y,2)*z + 3*coef[32]*pow(y,2) + 2*coef[72]*y*pow(z,3) + 2*coef[48]*y*pow(z,2) + 2*coef[30]*y*z +
+			2*coef[17]*y + coef[67]*pow(z,4) + coef[44]*pow(z,3) + coef[27]*pow(z,2) + coef[15]*z + coef[7];
+		tensor[2] = 5*coef[57]*pow(x,4) + 4*coef[64]*pow(x,3)*y + 8*coef[58]*pow(x,3)*z + 4*coef[36]*pow(x,3) + 3*coef[70]*pow(x,2)*pow(y,2) +
+			6*coef[65]*pow(x,2)*y*z + 3*coef[42]*pow(x,2)*y + 9*coef[59]*pow(x,2)*pow(z,2) + 6*coef[37]*pow(x,2)*z + 3*coef[21]*pow(x,2) + 2*coef[75]*x*pow(y,3) +
+			4*coef[71]*x*pow(y,2)*z + 2*coef[47]*x*pow(y,2) + 6*coef[66]*x*y*pow(z,2) + 4*coef[43]*x*y*z + 2*coef[26]*x*y + 8*coef[60]*x*pow(z,3) +
+			6*coef[38]*x*pow(z,2) + 4*coef[22]*x*z + 2*coef[11]*x + coef[79]*pow(y,4) + 2*coef[76]*pow(y,3)*z + coef[51]*pow(y,3) +
+			3*coef[72]*pow(y,2)*pow(z,2) + 2*coef[48]*pow(y,2)*z + coef[30]*pow(y,2) + 4*coef[67]*y*pow(z,3) + 3*coef[44]*y*pow(z,2) + 2*coef[27]*y*z +
+			coef[15]*y + 5*coef[61]*pow(z,4) + 4*coef[39]*pow(z,3) + 3*coef[23]*pow(z,2) + 2*coef[12]*z + coef[5];
+		tensor[3] = 2*coef[69]*pow(x,4) + 6*coef[74]*pow(x,3)*y + 2*coef[70]*pow(x,3)*z + 2*coef[46]*pow(x,3) + 12*coef[78]*pow(x,2)*pow(y,2) +
+			6*coef[75]*pow(x,2)*y*z + 6*coef[50]*pow(x,2)*y + 2*coef[71]*pow(x,2)*pow(z,2) + 2*coef[47]*pow(x,2)*z + 2*coef[29]*pow(x,2) + 20*coef[81]*x*pow(y,3) +
+			12*coef[79]*x*pow(y,2)*z + 12*coef[53]*x*pow(y,2) + 6*coef[76]*x*y*pow(z,2) + 6*coef[51]*x*y*z + 6*coef[32]*x*y + 2*coef[72]*x*pow(z,3) +
+			2*coef[48]*x*pow(z,2) + 2*coef[30]*x*z + 2*coef[17]*x + 30*coef[83]*pow(y,4) + 20*coef[82]*pow(y,3)*z + 20*coef[55]*pow(y,3) +
+			12*coef[80]*pow(y,2)*pow(z,2) + 12*coef[54]*pow(y,2)*z + 12*coef[34]*pow(y,2) + 6*coef[77]*y*pow(z,3) + 6*coef[52]*y*pow(z,2) + 6*coef[33]*y*z +
+			6*coef[19]*y + 2*coef[73]*pow(z,4) + 2*coef[49]*pow(z,3) + 2*coef[31]*pow(z,2) + 2*coef[18]*z + 2*coef[9];
+		tensor[4] = coef[64]*pow(x,4) + 2*coef[70]*pow(x,3)*y + 2*coef[65]*pow(x,3)*z + coef[42]*pow(x,3) + 3*coef[75]*pow(x,2)*pow(y,2) + 4*coef[71]*pow(x,2)*y*z +
+			2*coef[47]*pow(x,2)*y + 3*coef[66]*pow(x,2)*pow(z,2) + 2*coef[43]*pow(x,2)*z + coef[26]*pow(x,2) + 4*coef[79]*x*pow(y,3) + 6*coef[76]*x*pow(y,2)*z +
+			3*coef[51]*x*pow(y,2) + 6*coef[72]*x*y*pow(z,2) + 4*coef[48]*x*y*z + 2*coef[30]*x*y + 4*coef[67]*x*pow(z,3) + 3*coef[44]*x*pow(z,2) +
+			2*coef[27]*x*z + coef[15]*x + 5*coef[82]*pow(y,4) + 8*coef[80]*pow(y,3)*z + 4*coef[54]*pow(y,3) + 9*coef[77]*pow(y,2)*pow(z,2) +
+			6*coef[52]*pow(y,2)*z + 3*coef[33]*pow(y,2) + 8*coef[73]*y*pow(z,3) + 6*coef[49]*y*pow(z,2) + 4*coef[31]*y*z + 2*coef[18]*y +
+			5*coef[68]*pow(z,4) + 4*coef[45]*pow(z,3) + 3*coef[28]*pow(z,2) + 2*coef[16]*z + coef[8];
+		tensor[5] = 2*coef[58]*pow(x,4) + 2*coef[65]*pow(x,3)*y + 6*coef[59]*pow(x,3)*z + 2*coef[37]*pow(x,3) + 2*coef[71]*pow(x,2)*pow(y,2) +
+			6*coef[66]*pow(x,2)*y*z + 2*coef[43]*pow(x,2)*y + 12*coef[60]*pow(x,2)*pow(z,2) + 6*coef[38]*pow(x,2)*z + 2*coef[22]*pow(x,2) + 2*coef[76]*x*pow(y,3) +
+			6*coef[72]*x*pow(y,2)*z + 2*coef[48]*x*pow(y,2) + 12*coef[67]*x*y*pow(z,2) + 6*coef[44]*x*y*z + 2*coef[27]*x*y + 20*coef[61]*x*pow(z,3) +
+			12*coef[39]*x*pow(z,2) + 6*coef[23]*x*z + 2*coef[12]*x + 2*coef[80]*pow(y,4) + 6*coef[77]*pow(y,3)*z + 2*coef[52]*pow(y,3) +
+			12*coef[73]*pow(y,2)*pow(z,2) + 6*coef[49]*pow(y,2)*z + 2*coef[31]*pow(y,2) + 20*coef[68]*y*pow(z,3) + 12*coef[45]*y*pow(z,2) + 6*coef[28]*y*z +
+			2*coef[16]*y + 30*coef[62]*pow(z,4) + 20*coef[40]*pow(z,3) + 12*coef[24]*pow(z,2) + 6*coef[13]*z + 2*coef[6];
+	};
+};
+
+
+
+void CGNSParallelEdge::getGridPointPosD(int index, float v[3])
+{
+	v[0] = gridPoints[3*index];
+	v[1] = gridPoints[3*index+1];
+	v[2] = gridPoints[3*index+2];
+}
+
+
+
+int CGNSParallelEdge::getEdgeIndex(int axis, int x, int y, int z) {
+	int index;
+	switch (axis)
+	{
+	case 1:
+		index = x * gridy * gridz + y * gridz + z;
+		return index;
+		break;
+	case 2:
+		index = (gridx - 1) * gridy * gridz +
+			x * (gridy - 1) * gridz + y * gridz + z;
+		return index;
+		break;
+	case 3:
+		index = (gridx - 1) * gridy * gridz +
+			gridx * (gridy - 1) * gridz +
+			x * gridy * (gridz - 1) + y * (gridz - 1) + z;
+		return index;
+		break;
+	}
+	return 0;
+}
+
+
+
+bool CGNSParallelEdge::getEigensolverPN(float position[3])
+{
+	int count = 0;
+	float epsilon = 1e-12;
+	float tensorV[6];
+	getTensorPN(position, tensorV);
+	for ( int i = 0; i < 6; i ++ )
+	{
+		if ( fabs(tensorV[i]) < epsilon )
+		{
+			count ++;
+			tensorV[i] = epsilon;
+		}
+	}
+	float tensorM[3][3];
+	tensorM[0][0] = tensorV[0];
+	tensorM[0][1] = tensorV[1];
+	tensorM[0][2] = tensorV[2];
+	tensorM[1][0] = tensorV[1];
+	tensorM[1][1] = tensorV[3];
+	tensorM[1][2] = tensorV[4];
+	tensorM[2][0] = tensorV[2];
+	tensorM[2][1] = tensorV[4];
+	tensorM[2][2] = tensorV[5];
+	//EigenVectorsAndValues3D eigenData;
+	for(int r = 0; r < 3; r++) {
+		for(int c = 0; c < 3; c++) {
+			tensorMVectorsAndValues.structureTensor[r][c] = 0;
+
+		}
+	}
+	for(int r = 0; r < 3; r++) {
+		for(int c = 0; c < 3; c++) {
+			tensorMVectorsAndValues.structureTensor[r][c] = tensorM[r][c];
+		}
+	}
+	MathLib * math = new MathLib();
+	math->EigenAnalysis(tensorMVectorsAndValues);
+	if ( count > 1 ) return false;
+	return true;
+}
+
+void CGNSParallelEdge::getV1(float v[3])
+{
+	
+
+		Vector3DFloat ev;
+			Vector3DFloat currentEdge1(tensorMVectorsAndValues.structureTensor[2][0], tensorMVectorsAndValues.structureTensor[2][1], tensorMVectorsAndValues.structureTensor[2][2]);
+			currentEdge1 = normalize(currentEdge1);
+			ev = currentEdge1;
+		
+
+	v[0] = (float)ev.X();
+	v[1] = (float)ev.Y();
+	v[2] = (float)ev.Z();
+}
+
+void CGNSParallelEdge::getV3(float v[3])
+{
+	
+
+		Vector3DFloat ev;
+			Vector3DFloat currentEdge1(tensorMVectorsAndValues.structureTensor[0][0], tensorMVectorsAndValues.structureTensor[0][1], tensorMVectorsAndValues.structureTensor[0][2]);
+			currentEdge1 = normalize(currentEdge1);
+			ev = currentEdge1;
+		
+
+	v[0] = (float)ev.X();
+	v[1] = (float)ev.Y();
+	v[2] = (float)ev.Z();
+}
+
+bool CGNSParallelEdge::adaptiveRecursionArray(float p1[3], float p2[3], float g1[3], float g2[3], float v1_1[3], float v1_2[3],
+		float v3_1[3], float v3_2[3], list<float> *GL, list<float> *V1L, list<float> *V3L, int depth)
+{
+	depth ++;
+	if ( depth > 10 ) return true;
+	float cosG, cosV1, cosV3;
+	float normG = getNorm(g1)*getNorm(g2);
+	float normV1 = getNorm(v1_1)*getNorm(v1_2);
+	float normV3 = getNorm(v3_1)*getNorm(v3_2);
+	if (normG == 0) cosG = 1;
+	else cosG = getDotP(g1, g2)/normG;
+	if (normV1 == 0) cosV1 = 1;
+	else cosV1 = getDotP(v1_1, v1_2)/normV1;
+	if (normV3 == 0) cosV3 = 1;
+	else cosV3 = getDotP(v3_1, v3_2)/normV3;
+	if ( cosG > thresh && fabs(cosV1) > thresh && fabs(cosV3) > thresh ) return true;
+
+	float p[3];
+	p[0] = (p1[0]+p2[0])/2;
+	p[1] = (p1[1]+p2[1])/2;
+	p[2] = (p1[2]+p2[2])/2;
+	float g[3], v1[3], v3[3];
+	
+
+	//SelfAdjointEigenSolver<Matrix3f> eigensolver;
+	getGradientPN(p, g);
+	if ( !getEigensolverPN(p) ) return false;
+	getV1(v1);
+	getV3(v3);
+
+
+	//if ( !getEigensolverPN(p, &eigensolver) ) return false;
+	//getV1(&eigensolver, v1);
+	//getV3(&eigensolver, v3);
+
+	if ( !adaptiveRecursionArray(p1, p, g1, g, v1_1, v1, v3_1, v3, GL, V1L, V3L, depth) ) return false;
+	for ( int j = 0; j < 3; j ++ )
+	{
+		GL->push_back(g[j]);
+		V1L->push_back(v1[j]);
+		V3L->push_back(v3[j]);
+	}
+	if ( !adaptiveRecursionArray(p, p2, g, g2, v1, v1_2, v3, v3_2, GL, V1L, V3L, depth) ) return false;
+	
+	return true;
+}
+
+bool CGNSParallelEdge::adaptiveSamplingArray(float p1[3], float p2[3], int *edgeSampleNum, float **sampleG,
+		float **sampleV1, float **sampleV3, float **X, float **Y, float **sampleProjG)
+{
+	float epsilon = 1e-12;
+	int depth = 0;
+	list<float> sampleGList, sampleV1List, sampleV3List;
+	list<float> *sampleGLP, *sampleV1LP, *sampleV3LP;
+	sampleGLP = &sampleGList;
+	sampleV1LP = &sampleV1List;
+	sampleV3LP = &sampleV3List;
+	//SelfAdjointEigenSolver<Matrix3f> eigensolver1, eigensolver2;
+	float g1[3], g2[3];
+	getGradientPN(p1, g1);
+	getGradientPN(p2, g2);
+	if ( getNorm(g1) < epsilon || getNorm(g2) < epsilon ) return false;
+	if ( !getEigensolverPN(p1) ) return false;
+	if ( !getEigensolverPN(p2) ) return false;
+	//if ( !getEigensolverPN(p1, &eigensolver1) ) return false;
+//	if ( !getEigensolverPN(p2, &eigensolver2) ) return false;
+	float v1_1[3], v3_1[3], v1_2[3], v3_2[3];
+	getV1(v1_1);
+	getV3(v3_1);
+	getV1(v1_2);
+	getV3(v3_2);
+	
+	//getV1(&eigensolver1, v1_1);
+	//getV3(&eigensolver1, v3_1);
+	//getV1(&eigensolver2, v1_2);
+	//getV3(&eigensolver2, v3_2);
+	
+
+	for ( int j = 0; j < 3; j ++ )
+	{
+		sampleGLP->push_back(g1[j]);
+		sampleV1LP->push_back(v1_1[j]);
+		sampleV3LP->push_back(v3_1[j]);
+	}
+	if ( !adaptiveRecursionArray(p1, p2, g1, g2, v1_1, v1_2, v3_1, v3_2, sampleGLP, sampleV1LP, sampleV3LP, depth) ) return false;
+	for ( int j = 0; j < 3; j ++ )
+	{
+		sampleGLP->push_back(g2[j]);
+		sampleV1LP->push_back(v1_2[j]);
+		sampleV3LP->push_back(v3_2[j]);
+	}
+
+	*edgeSampleNum = (int)(sampleGLP->size()/3);
+	*sampleG = new float[3*(*edgeSampleNum)];
+	*sampleV1 = new float[3*(*edgeSampleNum)];
+	*sampleV3 = new float[3*(*edgeSampleNum)];
+	*X = new float[3*(*edgeSampleNum)];
+	*Y = new float[3*(*edgeSampleNum)];
+	*sampleProjG = new float[3*(*edgeSampleNum)];
+	list<float>::iterator ig = sampleGLP->begin();
+	list<float>::iterator iv1 = sampleV1LP->begin();
+	list<float>::iterator iv3 = sampleV3LP->begin();
+	for ( int i = 0 ; ig != sampleGLP->end() ; ig ++, iv1 ++, iv3 ++, i ++ )
+	{
+		(*sampleG)[i] = *ig;
+		(*sampleV1)[i] = *iv1;
+		(*sampleV3)[i] = *iv3;
+	}
+	
+	return true;
+}
+
+void CGNSParallelEdge::extremalEdgeArray(float p1[3], float p2[3], Edge *edge, float *sampleV1, int edgeSampleNum, int *ltotalEdgePoints)
+{
+	for ( int i = 1 ; i < edgeSampleNum ; i ++ )
+	{
+		float fSign = (float)sign(getDotP(sampleV1+3*i, sampleV1+3*(i-1)));
+		if (fSign == 0) fSign = 1;
+		sampleV1[3*i] = fSign*sampleV1[3*i];
+		sampleV1[3*i+1] = fSign*sampleV1[3*i+1];
+		sampleV1[3*i+2] = fSign*sampleV1[3*i+2];
+	}
+	float g1[3], g2[3];
+	getGradientPN(p1, g1);
+	getGradientPN(p2, g2);
+	float d1 = getDotP(sampleV1, g1);
+	float d2 = getDotP(sampleV1+3*(edgeSampleNum-1), g2);
+	if (sign(d1*d2) == -1)
+	{
+		(*ltotalEdgePoints)++;
+		float p[3];
+		linearInterpolate(d1, d2, 0, p1, p2, p);
+		edge->edgePoint[0] = p[0];
+		edge->edgePoint[1] = p[1];
+		edge->edgePoint[2] = p[2];
+		//SelfAdjointEigenSolver<Matrix3f> eigensolver;
+		//getEigensolverPN(p, &eigensolver);
+		getEigensolverPN(p);
+
+		float v1[3];
+		float p10[3], p11[3], p13[3], p14[3];
+		//getV1(&eigensolver, v1);
+		getV1(v1);
+		p10[0] = p[0]-2*change*v1[0];
+		p10[1] = p[1]-2*change*v1[1];
+		p10[2] = p[2]-2*change*v1[2];
+		p11[0] = p[0]-change*v1[0];
+		p11[1] = p[1]-change*v1[1];
+		p11[2] = p[2]-change*v1[2];
+		p13[0] = p[0]+change*v1[0];
+		p13[1] = p[1]+change*v1[1];
+		p13[2] = p[2]+change*v1[2];
+		p14[0] = p[0]+2*change*v1[0];
+		p14[1] = p[1]+2*change*v1[1];
+		p14[2] = p[2]+2*change*v1[2];
+
+		float f10, f11, f13, f14, f;
+		getScalarPN(p10, &f10);
+		getScalarPN(p11, &f11);
+		getScalarPN(p13, &f13);
+		getScalarPN(p14, &f14);
+		getScalarPN(p, &f);
+		edge->extremal = true;
+		float secondDiff = -f10+16*f11-30*f+16*f13-f14;
+		if (secondDiff < 0) edge->edgeTag = 1;
+		else edge->edgeTag = 2;
+	}
+}
+
+
+void CGNSParallelEdge::signedSphericalTriangleArea(float p1[3], float p2[3], float *area, float *phiC)
+{
+	//*phiC = getDihedral(p1, globalVec, p2);
+	//float phiP1 = getDihedral(p2, p1, globalVec);
+	//float phiP2 = getDihedral(globalVec, p2, p1);
+	float phiP1 = 0.0;
+	float phiP2 = 0.0;
+	*area = *phiC+phiP1+phiP2-(float)M_PI;
+	float first[3], second[3], up[3];
+	first[0] = p1[0]-globalVec[0];
+	first[1] = p1[1]-globalVec[1];
+	first[2] = p1[2]-globalVec[2];
+	second[0] = p2[0]-p1[0];
+	second[1] = p2[1]-p1[1];
+	second[2] = p2[2]-p1[2];
+	getCrossP(first, second, up);
+	int aSign = sign(getDotP(up, globalVec));
+	*area *= aSign;
+	*phiC *= aSign;
+}
+
+void CGNSParallelEdge::orientV3Array(Edge *edge, float *sampleV3, int edgeSampleNum)
+{
+	edge->f = 0;
+	float oldEnd[3];
+	oldEnd[0] = sampleV3[3*(edgeSampleNum-1)];
+	oldEnd[1] = sampleV3[3*(edgeSampleNum-1)+1];
+	oldEnd[2] = sampleV3[3*(edgeSampleNum-1)+2];
+	for ( int i = 1 ; i < edgeSampleNum ; i ++ )
+	{
+		float fSign = (float)sign(getDotP(sampleV3+3*i, sampleV3+3*(i-1)));
+		if (fSign == 0) fSign = 1;
+		sampleV3[3*i+0] = fSign*sampleV3[3*i];
+		sampleV3[3*i+1] = fSign*sampleV3[3*i+1];
+		sampleV3[3*i+2] = fSign*sampleV3[3*i+2];
+	}
+	if (sign(getDotP(oldEnd, sampleV3+3*(edgeSampleNum-1))) == -1) edge->f = 1;
+}
+
+void CGNSParallelEdge::propagateXYArray(Edge *edge, float *sampleV3, float *X, float *Y, int edgeSampleNum)
+{
+	float epsilon = 1e-12;
+	float ox[3], oz[3];
+	ox[0] = 1;
+	ox[1] = 0;
+	ox[2] = 0;
+	oz[0] = 0;
+	oz[1] = 0;
+	oz[2] = 1;
+	for ( int i = 0 ; i < edgeSampleNum ; i ++ )
+	{
+		float *v = sampleV3+3*i;
+		float axle[3];
+		getCrossP(oz, v, axle);
+		float axleNorm = getNorm(axle);
+		if (axleNorm > epsilon)
+		{
+			axle[0] = axle[0] / axleNorm;
+			axle[1] = axle[1] / axleNorm;
+			axle[2] = axle[2] / axleNorm;
+			float angleCos = getDotP(oz, v);
+			if (angleCos > 1) angleCos = 1;
+			if (angleCos < -1) angleCos = -1;
+			float angle = acos(angleCos);
+			float a = getDotP(ox, axle)*(1-angleCos);
+			float crossP[3];
+			getCrossP(axle, ox, crossP);
+			float b = sin(angle);
+			ox[0] = ox[0]*angleCos + axle[0]*a + crossP[0]*b;
+			ox[1] = ox[1]*angleCos + axle[1]*a + crossP[1]*b;
+			ox[2] = ox[2]*angleCos + axle[2]*a + crossP[2]*b;
+			oz[0] = v[0];
+			oz[1] = v[1];
+			oz[2] = v[2];
+		}
+		X[3*i] = ox[0];
+		X[3*i+1] = ox[1];
+		X[3*i+2] = ox[2];
+		getCrossP(v, ox, Y+3*i);
+	}
+	float area = 0;
+	float phiC = 0;
+	for ( int i = 0 ; i < edgeSampleNum-1 ; i ++ )
+	{
+		float *p1 = sampleV3+3*i;
+		float *p2 = sampleV3+3*(i+1);
+		float incArea, incPhiC;
+		signedSphericalTriangleArea(p1, p2, &incArea, &incPhiC);
+		area += incArea;
+		phiC += incPhiC;
+	}
+	edge->a = area;
+	edge->b = phiC;
+}
+
+void CGNSParallelEdge::projectGArray(float *sampleG, float *X, float *Y, float *sampleProjG, int edgeSampleNum)
+{
+	for ( int i = 0 ; i < edgeSampleNum ; i ++ )
+	{
+		float *g = sampleG+3*i;
+		float *x = X+3*i;
+		float *y = Y+3*i;
+		sampleProjG[3*i] = getDotP(g, x);
+		sampleProjG[3*i+1] = getDotP(g, y);
+		sampleProjG[3*i+2] = 0;
+	}
+}
+
+void CGNSParallelEdge::getWindingNumArray(Edge *edge, float *sampleProjG, int index1, int index2, int edgeSampleNum)
+{
+	float totalAngle = 0;
+	float epsilon = 1e-12;
+	float *end1 = sampleProjG;
+	for ( int i = 1 ; i < edgeSampleNum ; i ++ )
+	{
+		float *end2 = sampleProjG+3*i;
+		float end1Norm = getNorm2(end1);
+		float end2Norm = getNorm2(end2);
+		if (end1Norm > 0 && end2Norm > 0)
+		{
+			float angleCos = getDotP(end1, end2) / (end1Norm*end2Norm);
+			if (angleCos > 1) angleCos = 1;
+			if (angleCos < -1) angleCos = -1;
+			float localAngle = acos( angleCos );
+			float crossP[3];
+			getCrossP(end1, end2, crossP);
+			localAngle *= sign(crossP[2]);
+			totalAngle += localAngle;
+		}
+		end1 = end2;
+	}
+	edge->w = totalAngle;
+	if (!storeGrid_2DGradMag[index1])
+	{
+		storeGrid_2DGradMag[index1] = true;
+		grid_2DGradMag[index1] = getNorm(sampleProjG);
+	}
+	if (!storeGrid_2DGradMag[index2])
+	{
+		storeGrid_2DGradMag[index2] = true;
+		grid_2DGradMag[index2] = getNorm(sampleProjG+3*(edgeSampleNum-1));
+	}
+}
+
+void CGNSParallelEdge::edgePhaseIteration(int index1, int index2, int axis, int i, int j, int k, Edge *ledges, int *ltotalEdgePoints) {
+	float *sampleG, *sampleV1, *sampleV3, *X, *Y, *sampleProjG;
+	int edgeSampleNum;
+	float p1[3], p2[3];
+	getGridPointPosD(index1, p1);
+	getGridPointPosD(index2, p2);
+	
+	if (!adaptiveSamplingArray(p1, p2, &edgeSampleNum, &sampleG, &sampleV1, &sampleV3, &X, &Y, &sampleProjG)) return;
+	Edge *edge = &(ledges[getEdgeIndex(axis, i, j, k)]);
+	edge->valid = true;
+	
+	extremalEdgeArray(p1, p2, edge, sampleV1, edgeSampleNum, ltotalEdgePoints);
+	
+	orientV3Array(edge, sampleV3, edgeSampleNum);
+	propagateXYArray(edge, sampleV3, X, Y, edgeSampleNum);
+	projectGArray(sampleG, X, Y, sampleProjG, edgeSampleNum);
+	getWindingNumArray(edge, sampleProjG, index1, index2, edgeSampleNum);
+	delete[] sampleG;
+	delete[] sampleV1;
+	delete[] sampleV3;
+	delete[] X;
+	delete[] Y;
+	delete[] sampleProjG;
+	
+}
+
+
+/**
+	void operator()(const tbb::blocked_range3d<int>& r)	const {
+		for( int i=r.cols().begin(); i!=r.cols().end(); ++i ){
+			for( int j=r.rows().begin(); j!=r.rows().end(); ++j ) {
+				for( int k=r.pages().begin();k!=r.pages().end();++k){
+					if (i+1==gridx)
+						continue;
+					int index1 = getIndex(1, 0, i, j, k, gridx, gridy, gridz);
+					int index2 = getIndex(1, 0, i + 1, j, k, gridx, gridy, gridz);
+					edgePhaseIteration(index1, index2, 1, i, j, k, edges, totalEdgePoints);
+				}
+			}
+		}
+		for( int i=r.cols().begin(); i!=r.cols().end(); ++i ){
+			for( int j=r.rows().begin(); j!=r.rows().end(); ++j ) {
+				for( int k=r.pages().begin();k!=r.pages().end();++k){
+					if(j+1==gridy)
+						continue;
+					int index1 = getIndex(1, 0, i, j, k, gridx, gridy, gridz);
+					int index2 = getIndex(1, 0, i, j + 1, k, gridx, gridy, gridz);
+					edgePhaseIteration(index1, index2, 2, i, j, k, edges, totalEdgePoints);
+				}
+			}
+		}
+		for( int i=r.cols().begin(); i!=r.cols().end(); ++i ){
+			for( int j=r.rows().begin(); j!=r.rows().end(); ++j ) {
+				for( int k=r.pages().begin();k!=r.pages().end();++k){
+					if(k+1==gridz)
+						continue;
+					int index1 = getIndex(1, 0, i, j, k, gridx, gridy, gridz);
+					int index2 = getIndex(1, 0, i, j, k + 1, gridx, gridy, gridz);
+					edgePhaseIteration(index1, index2, 3, i, j, k, edges, totalEdgePoints);
+				}
+			}
+		}
+	};
+};
+**/
+/**
+void CGNSParallelEdge::getGridPointPosD(int index, float v[3]) const
+{
+	v[0] = gridPoints[3*index];
+	v[1] = gridPoints[3*index+1];
+	v[2] = gridPoints[3*index+2];
+}
+
+
+
+void CGNSParallelEdge::edgePhaseIteration(int index1, int index2, int axis, int i, int j, int k, Edge *ledges, int *ltotalEdgePoints) const
+{
+	float *sampleG, *sampleV1, *sampleV3, *X, *Y, *sampleProjG;
+	int edgeSampleNum;
+	float p1[3], p2[3];
+	getGridPointPosD(index1, p1);
+	getGridPointPosD(index2, p2);
+	if (!adaptiveSamplingArray(p1, p2, &edgeSampleNum, &sampleG, &sampleV1, &sampleV3, &X, &Y, &sampleProjG)) return;
+	Edge *edge = &(ledges[getEdgeIndex(axis, i, j, k)]);
+	edge->valid = true;
+	extremalEdgeArray(p1, p2, edge, sampleV1, edgeSampleNum, ltotalEdgePoints);
+	orientV3Array(edge, sampleV3, edgeSampleNum);
+	propagateXYArray(edge, sampleV3, X, Y, edgeSampleNum);
+	projectGArray(sampleG, X, Y, sampleProjG, edgeSampleNum);
+	getWindingNumArray(edge, sampleProjG, index1, index2, edgeSampleNum);
+	delete[] sampleG;
+	delete[] sampleV1;
+	delete[] sampleV3;
+	delete[] X;
+	delete[] Y;
+	delete[] sampleProjG;
+	
+}
+**/
+
+void CGNSParallelEdge::edgePhaseBegin(int cols, int rows, int pages) {
+	for( int i=0; i!=cols; ++i ){
+			for( int j=0; j!=rows; ++j ) {
+				for( int k=0;k!=pages;++k){
+					if (i+1==gridx)
+						continue;
+					int index1 = getIndex(1, 0, i, j, k, gridx, gridy, gridz);
+					int index2 = getIndex(1, 0, i + 1, j, k, gridx, gridy, gridz);
+					edgePhaseIteration(index1, index2, 1, i, j, k, edges, totalEdgePoints);
+				}
+			}
+		}
+		for( int i=0; i!=cols; ++i ){
+			for( int j=0; j!=rows; ++j ) {
+				for( int k=0;k!=pages;++k){
+					if(j+1==gridy)
+						continue;
+					int index1 = getIndex(1, 0, i, j, k, gridx, gridy, gridz);
+					int index2 = getIndex(1, 0, i, j + 1, k, gridx, gridy, gridz);
+					edgePhaseIteration(index1, index2, 2, i, j, k, edges, totalEdgePoints);
+				}
+			}
+		}
+		for( int i=0; i!=cols; ++i ){
+			for( int j=0; j!=rows; ++j ) {
+				for( int k=0;k!=pages;++k){
+					if(k+1==gridz)
+						continue;
+					int index1 = getIndex(1, 0, i, j, k, gridx, gridy, gridz);
+					int index2 = getIndex(1, 0, i, j, k + 1, gridx, gridy, gridz);
+					edgePhaseIteration(index1, index2, 3, i, j, k, edges, totalEdgePoints);
+				}
+			}
+		}
 }
 
 void General_Data::edgePhase(float* scalars,float* tensors,float* gradients, float *edgeTable)
@@ -2066,6 +2665,9 @@ void General_Data::edgePhase(float* scalars,float* tensors,float* gradients, flo
 	//parallel_edge.edgePhaseBegin(gridx, gridy, gridz);
 	parallel_edge.edgePhaseBegin(gridz, gridy, gridx);
 	//parallel_for( blocked_range3d<int>(0, gridz, 0, gridy,0, gridx),parallel_edge,auto_partitioner());
+	//CGNSParallelEdge parallel_edge(gridx,gridy,gridz,totalEdgePoints,edges,allCubic,globalVec,
+		//dataType,gridPoints,change,storeGrid_2DGradMag,grid_2DGradMag,coef);
+	//parallel_edge.edgePhaseBegin(gridz, gridy, gridx);
 
 	timeEnd = clock();
 	cout << "Spend Time: " << (timeEnd-timeStart)/CLOCKS_PER_SEC << endl;
@@ -3268,7 +3870,6 @@ void General_Data::combineWindingNum(Edge *edge1, Edge *edge2, Edge *edge3, Edge
 
 		getV1(v1);
 
-		cout << std::to_string(v1[0]) << " " << std::to_string(v1[1]) << " " << std::to_string(v1[2]) << endl;
 		float p10[3], p11[3], p13[3], p14[3];
 		p10[0] = p[0]-2*change*v1[0];
 		p10[1] = p[1]-2*change*v1[1];
@@ -4628,7 +5229,6 @@ void General_Data::cellPhase(float* scalars,float* tensors,float* gradients)
 		p.relativeSaliencies[2] = (*it).relativeSaliencies[2];
 		p.localIntensity = (*it).localIntensity;
 		p.firstEigenvalue = (*it).firstEigenvalue;
-		cout << "eigenvalue " << std::to_string(p.firstEigenvalue) << endl;
 		p.type= (*it).type;
 		points->push_back(p);
 	}
@@ -4851,7 +5451,7 @@ void General_Data::buildCurveIteration(Face *face, Cell *cell1, Cell *cell2)
 	Segment segment;
 	if ( cell1->vertIdx < 0 )
 	{
-		cout << "cell1 vertIdx " << std::to_string(cell1->vertIdx) << endl;
+
 		Vertex vertex;
 		getShowPos(cell1->centroid, vertex.position);
 		segment.vertIdxs[0] = vertices->size();
@@ -4864,7 +5464,7 @@ void General_Data::buildCurveIteration(Face *face, Cell *cell1, Cell *cell2)
 	}
 	if ( cell2->vertIdx < 0 )
 	{
-		cout << "cell2 vertIdx " << std::to_string(cell2->vertIdx) << endl;
+
 		Vertex vertex;
 		getShowPos(cell2->centroid, vertex.position);
 		segment.vertIdxs[1] = vertices->size();
@@ -5324,7 +5924,6 @@ void MRC_Data::MRCGeneration(char *filename)
 	float *IxIy = new float[ (sizex-2) * (sizey-2) * (sizez-2) ] ;
 	float *IyIz = new float[ (sizex-2) * (sizey-2) * (sizez-2) ] ;
 	float *IxIz = new float[ (sizex-2) * (sizey-2) * (sizez-2) ] ;
-
 	for ( int i = 0 ; i < sizex - 2 ; i ++ ) {
 		for ( int j = 0 ; j < sizey - 2 ; j ++ ) {
 			for ( int k = 0 ; k < sizez - 2 ; k ++ )
@@ -5345,6 +5944,7 @@ void MRC_Data::MRCGeneration(char *filename)
 				IxIy[index] = Ix * Iy;
 				IyIz[index] = Iy * Iz;
 				IxIz[index] = Ix * Iz;
+
 			}
 		}
 	}
@@ -5370,7 +5970,6 @@ void MRC_Data::MRCGeneration(char *filename)
 				tensors[index+3] = Iy2[oldIndex];
 				tensors[index+4] = IyIz[oldIndex];
 				tensors[index+5] = Iz2[oldIndex];
-				myfile << std::to_string(tensors[index]) << " " << std::to_string(tensors[index+1]) << " " << std::to_string(tensors[index+2]) << " " <<  std::to_string(tensors[index+3]) << " " << std::to_string(tensors[index+4]) << " " << std::to_string(tensors[index+5]) << endl;
 			}
 		}
 	}
@@ -5394,7 +5993,6 @@ void MRC_Data::MRCGeneration(char *filename)
 				gradients[index] = Ix;
 				gradients[index+1] = Iy;
 				gradients[index+2] = Iz;
-				myfile << std::to_string(gradients[index]) << " " << std::to_string(gradients[index+1]) << " " << std::to_string(gradients[index+2]) << endl;
 				if (maxGradientNorm < getNorm(gradients+index)) maxGradientNorm = getNorm(gradients+index);
 			}
 		}
@@ -5407,8 +6005,7 @@ void MRC_Data::MRCGeneration(char *filename)
 				int oldIndex = getIndex(1, 0, i+1+halfSize, j+1+halfSize, k+1+halfSize, sizex, sizey, sizez);
 				int index = getIndex(1, 0, i, j, k, sizex-2-2*halfSize, sizey-2-2*halfSize, sizez-2-2*halfSize);
 				scalars[index] = rawData[oldIndex];
-				myfile << std::to_string(scalars[index]) << endl;
-			}
+				}
 		}
 	}
 	myfile.close();
@@ -9764,26 +10361,28 @@ return 0 ;
 					
 					ofstream myfile;
 					myfile.open ("extremal.pdb");
-					cout << std::to_string(vertices.size()) << endl;
-					for(int i = 0; i < vertices.size(); i++) {
+						for(int i = 0; i < vertices.size(); i++) {
 						Vertex vertex = vertices[i];
-						string vIndex = std::to_string(i);
-						padTo(vIndex, 5);
+						//string vIndex = std::to_string(i);
+						//padTo(vIndex, 5);
+						string posx = "hi";
+						string posy = "hi";
+						string posz = "hi";
 
-						string posx = std::to_string((0.6*sizex)+(float)vertex.position[0]*sizex/1.8);
+						//string posx = std::to_string((0.6*sizex)+(float)vertex.position[0]*sizex/1.8);
 
 						//string posx = std::to_string(doubleRound(1000.0 * ((sizex/2.0) + (sizex/2.0)*vertex.position[0]) )/1000.0 );
 
 						
 						//string posy = std::to_string(doubleRound(1000.0 * ((sizey/2.0) + (sizey/2.0)*vertex.position[1]) )/1000.0 );
 
-						string posy = std::to_string((0.6*sizey)+(float)vertex.position[1]*sizey/1.8);
+						//string posy = std::to_string((0.6*sizey)+(float)vertex.position[1]*sizey/1.8);
 
 						//string posz = std::to_string(doubleRound(1000.0 * ((sizez/2.0) + (sizez/2.0)*vertex.position[2]) )/1000.0 );
 
-						string posz = std::to_string((0.6*sizez)+(float)vertex.position[2]*sizez/1.8);
+						//string posz = std::to_string((0.6*sizez)+(float)vertex.position[2]*sizez/1.8);
 
-						myfile << "ATOM  " << vIndex << "  CA  ALA " << vIndex << "     " << posx.substr(0,7) << " " << posy.substr(0,7) << " " << posz.substr(0,7) << "  1.00  1.00      S_00  0 " << endl;
+						//myfile << "ATOM  " << vIndex << "  CA  ALA " << vIndex << "     " << posx.substr(0,7) << " " << posy.substr(0,7) << " " << posz.substr(0,7) << "  1.00  1.00      S_00  0 " << endl;
 
 					}
 					myfile.close();
@@ -9805,7 +10404,7 @@ return 0 ;
 						if ( ( type == 2 ) && ( ( localI - minI ) / ( maxI - minI ) >= 1.00 ) ) hide = true;
 
 						if(type == 1 && !hide) {
-							myfile << std::to_string(segment.vertIdxs[0]) << " " << std::to_string(segment.vertIdxs[1]) << endl;
+							//myfile << std::to_string(segment.vertIdxs[0]) << " " << std::to_string(segment.vertIdxs[1]) << endl;
 						}
 					}
 					myfile.close();				

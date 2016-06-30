@@ -453,8 +453,6 @@ namespace wustl_mm {
 
   			string test = ss.str();
 				return test;
-				//return std::to_string((atm1.GetPosition() - atm2.GetPosition()).Length());
-
 		}
 	}
 

@@ -1889,7 +1889,6 @@ void ParallelEdge::edgePhaseBegin(int cols, int rows, int pages) {
 		for( int j=0; j!=rows; ++j ) {
 			for( int k=0; k!=pages;++k){
 				if (i+1==gridx)
-					//myfile << std::to_string(i) << " " << std::to_string(j) << " " << std::to_string(k) << " " << std::to_string(gridx) << endl;
 					continue;
 				int sIndex1 = getIndex(1, 0, i+2, j+2, k+2, sizex, sizey, sizez);
 				int sIndex2 = getIndex(1, 0, i+3, j+2, k+2, sizex, sizey, sizez);
@@ -1903,7 +1902,6 @@ void ParallelEdge::edgePhaseBegin(int cols, int rows, int pages) {
 		for( int j=0; j!=rows; ++j ) {
 			for( int k=0; k!=pages;++k){
 				if(j+1==gridy)
-					//myfile << std::to_string(i) << " " << std::to_string(j) << " " << std::to_string(k) << " " << std::to_string(gridy) << endl;
 					continue;
 				int sIndex1 = getIndex(1, 0, i+2, j+2, k+2, sizex, sizey, sizez);
 				int sIndex2 = getIndex(1, 0, i+2, j+3, k+2, sizex, sizey, sizez);
@@ -1917,7 +1915,6 @@ void ParallelEdge::edgePhaseBegin(int cols, int rows, int pages) {
 		for( int j=0; j!=rows; ++j ) {
 			for( int k=0; k!=pages;++k){
 				if(k+1==gridz)
-					//myfile << std::to_string(i) << " " << std::to_string(j) << " " << std::to_string(k) << " " << std::to_string(gridz) << endl;
 					continue;
 				int sIndex1 = getIndex(1, 0, i+2, j+2, k+2, sizex, sizey, sizez);
 				int sIndex2 = getIndex(1, 0, i+2, j+2, k+3, sizex, sizey, sizez);
@@ -10371,24 +10368,6 @@ return 0 ;
 					myfile.open ("extremal.pdb");
 						for(int i = 0; i < vertices.size(); i++) {
 						Vertex vertex = vertices[i];
-						//string vIndex = std::to_string(i);
-						//padTo(vIndex, 5);
-
-						//string posx = std::to_string((0.6*sizex)+(float)vertex.position[0]*sizex/1.8);
-
-						//string posx = std::to_string(doubleRound(1000.0 * ((sizex/2.0) + (sizex/2.0)*vertex.position[0]) )/1000.0 );
-
-						
-						//string posy = std::to_string(doubleRound(1000.0 * ((sizey/2.0) + (sizey/2.0)*vertex.position[1]) )/1000.0 );
-
-						//string posy = std::to_string((0.6*sizey)+(float)vertex.position[1]*sizey/1.8);
-
-						//string posz = std::to_string(doubleRound(1000.0 * ((sizez/2.0) + (sizez/2.0)*vertex.position[2]) )/1000.0 );
-
-						//string posz = std::to_string((0.6*sizez)+(float)vertex.position[2]*sizez/1.8);
-
-						//myfile << "ATOM  " << vIndex << "  CA  ALA " << vIndex << "     " << posx.substr(0,7) << " " << posy.substr(0,7) << " " << posz.substr(0,7) << "  1.00  1.00      S_00  0 " << endl;
-
 					}
 					myfile.close();
 					myfile.open("segments.txt");
@@ -10409,7 +10388,7 @@ return 0 ;
 						if ( ( type == 2 ) && ( ( localI - minI ) / ( maxI - minI ) >= 1.00 ) ) hide = true;
 
 						if(type == 1 && !hide) {
-							//myfile << std::to_string(segment.vertIdxs[0]) << " " << std::to_string(segment.vertIdxs[1]) << endl;
+													
 						}
 					}
 					myfile.close();				
@@ -10424,8 +10403,7 @@ return 0 ;
 					//for(int i = 0; i < currentEdgePoints.size(); i++) {
 
 						//Edge edge = currentEdgePoints[i];
-						//myfile << std::to_string(edge.edgePoint[0]) << " " << std::to_string(edge.edgePoint[1]) << " " << std::to_string(edge.edgePoint[2]) << endl;
-					//}
+											//}
 					//myfile.close();	
 
 

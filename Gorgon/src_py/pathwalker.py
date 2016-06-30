@@ -399,6 +399,7 @@ class Pathwalker(BaseDockWidget):
  
 
   def preprocess(self):
+      #self.app.viewers["volume"].loadDataFromFile(str(self.volumeName))
       preprocessors = ""
       for i in range(self.ui.listWidget_2.count()):
         currentProcessor = "--process "+str(self.ui.listWidget_2.item(i).text())
@@ -406,6 +407,7 @@ class Pathwalker(BaseDockWidget):
           currentProcessor += " "
         preprocessors += currentProcessor
       command = "python EMAN2/bin/e2proc3d.py " + self.volumeName + " EMAN2/bin/map.mrc " + preprocessors
+      print command
       os.system(command)
       #subprocess.call(['python','EMAN2/bin/e2proc3d.py',self.volumeName, 'EMAN2/bin/map.mrc',preprocessors])
       self.app.viewers["volume"].loadDataFromFile("EMAN2/bin/map.mrc")

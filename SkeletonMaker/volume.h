@@ -2779,6 +2779,14 @@ static void buildFaceTable(float *table, int subdNum)
 
 	General_Data::General_Data()
 	{
+		allCubic = true;
+		kernelSize = 3;
+		height = 256;
+		width = 256;
+		slices = 50;
+		thickness = 1.00;
+		resolution = 40;
+		dataType = 1;
 		storeGridShowPos = storeGridScalar = storeGridVector = storeGridGradient = 
 		storeEdgePoint = storeFacePoint = storeCellPoint = storeDispCell = false;
 
@@ -2815,7 +2823,7 @@ static void buildFaceTable(float *table, int subdNum)
 		quads = NULL;
 		points = NULL;
 		vertices = NULL;
-		dataType = 1;
+		//dataType = 1;
 	}
 
 	General_Data::~General_Data(void)
@@ -5154,7 +5162,7 @@ void ParallelCell::buildPointIteration(Cell *cell, vector<Point> *points, vector
 	Point point;
 	getShowPos(cell->extremalPoint, vertex.position);
 	point.vertIdx = vertices->size();
-	//vertices->push_back(vertex);
+	vertices->push_back(vertex);
 	//SelfAdjointEigenSolver<Matrix3f> eigensolver;
 	getEigensolverCubic(cell->extremalPoint);
 	point.firstEigenvalue = getFirstEigenvalueAndRelativeSaliencies(point.relativeSaliencies,lmaxEigenvalue,lminEigenvalue);
@@ -5253,7 +5261,7 @@ void General_Data::cellPhase(float* scalars,float* tensors,float* gradients)
 		p.position[1]=(*itv).position[1];
 		p.position[2]=(*itv).position[2];
 		//cout << p.position[0] << " " << p.position[1] << " " << p.position[0] << endl;
-		//vertices->push_back(p);
+		vertices->push_back(p);
 	}
 /**
 	for(int i = 0; i < convertices->size(); i++) {
@@ -10345,7 +10353,7 @@ return 0 ;
 
 
 					currentData -> buildCurve();
-					currentData -> buildSurface();
+					//currentData -> buildSurface();
 
 					vector<Segment> segments = (*currentData -> getSegments());
 					for(int i = 0; i < segments.size(); i++) {
@@ -10365,9 +10373,6 @@ return 0 ;
 						Vertex vertex = vertices[i];
 						//string vIndex = std::to_string(i);
 						//padTo(vIndex, 5);
-						string posx = "hi";
-						string posy = "hi";
-						string posz = "hi";
 
 						//string posx = std::to_string((0.6*sizex)+(float)vertex.position[0]*sizex/1.8);
 

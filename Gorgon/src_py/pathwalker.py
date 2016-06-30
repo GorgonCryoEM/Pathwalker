@@ -406,7 +406,7 @@ class Pathwalker(BaseDockWidget):
         if i != self.ui.listWidget_2.count()-1:
           currentProcessor += " "
         preprocessors += currentProcessor
-      command = "python EMAN2/bin/e2proc3d.py " + self.volumeName + " EMAN2/bin/map.mrc " + preprocessors
+      command = "python EMAN2/bin/e2proc3d.py " + '"' + self.volumeName + '"' + " EMAN2/bin/map.mrc " + preprocessors
       print command
       os.system(command)
       #subprocess.call(['python','EMAN2/bin/e2proc3d.py',self.volumeName, 'EMAN2/bin/map.mrc',preprocessors])

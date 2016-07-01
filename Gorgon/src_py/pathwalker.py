@@ -14,6 +14,16 @@ from volume_viewer import *
 from calpha_choose_chain_to_load_form import CAlphaChooseChainToLoadForm
 from seq_model.Chain import Chain
 
+from EMAN2 import *
+from optparse import OptionParser
+from math import *
+import os.path
+import pyemtbx.options
+from pyemtbx.options import intvararg_callback
+from pyemtbx.options import floatvararg_callback
+from time import time
+from numpy import arange
+
 from string import split, upper
 
 #todo: if pathwalker mode, allow for calpha_viewer to delete or add using ctrl + click
@@ -111,7 +121,12 @@ class Pathwalker(BaseDockWidget):
       minLength = "--minlen="+str(self.ui.spinBox_2.value())
       lengthThreshold = "--lenthr="+str(self.ui.spinBox_3.value())
       angleThreshold = "--angthr="+str(self.ui.doubleSpinBox.value())
-      subprocess.call(['python','EMAN2/bin/e2pwhelixfit.py','--mapin=EMAN2/bin/map.mrc','--pdbin=path0.pdb','--output=path0.pdb',densityThreshold,'--mapwohelix map_nohlx.mrc',minLength,lengthThreshold,angleThreshold])
+      currentDir = os.path.dirname(os.path.abspath(__file__))+"/"
+      whelixScript = currentDir+"EMAN2/bin/e2pwhelixfit.py"
+      mapIn = "--mapin="+currentDir+"EMAN2/bin/map.mrc"
+      pdbIn = "--pdbin="+currentDir+"path0.pdb"
+      pdbOut = "--output="+currentDir+"path0.pdb"
+      subprocess.call(['python',whelixScript,mapIn,pdbIn,pdbOut,densityThreshold,'--mapwohelix map_nohlx.mrc',minLength,lengthThreshold,angleThreshold])
       self.app.viewers['calpha'].unloadData()
       self.generatePathwalkedAtoms("path0.pdb")
       print 'Finished finding helices'
@@ -121,7 +136,11 @@ class Pathwalker(BaseDockWidget):
       nsheets = "--nsht="+str(self.ui.spinBox_4.value())
       minLength = "--minlen="+str(self.ui.spinBox_5.value())
       scoreThreshold = "--cutoff="+str(self.ui.doubleSpinBox_2.value())
-      subprocess.call(['python','EMAN2/bin/e2pwsheetfit.py','--pdbin=path0.pdb','--output=path0.pdb',nsheets,minLength,scoreThreshold])
+      currentDir = os.path.dirname(os.path.abspath(__file__))+"/"
+      sheetScript = currentDir + 'EMAN2/bin/e2pwsheetfit.py'
+      pdbIn = "--pdbin="+currentDir+"path0.pdb"
+      pdbOut = "--output="+currentDir+"path0.pdb"
+      subprocess.call(['python',sheetScript,pdbIn,pdbOut,nsheets,minLength,scoreThreshold])
       self.app.viewers['calpha'].unloadData()
       self.generatePathwalkedAtoms("path0.pdb")
       print 'Finished finding sheets'
@@ -151,10 +170,14 @@ class Pathwalker(BaseDockWidget):
         currentProcessor += " "
       processors += currentProcessor
     paramStrings = processors+":ampweight="+str(self.ui.lineEdit_6.text())+":nseg="+str(self.ui.lineEdit_5.text())+":verbose=1:minsegsep="+str(self.ui.lineEdit_8.text())+":pseudoatom=1:thr="+str(self.ui.lineEdit_7.text())
-    command = "python EMAN2/bin/e2segment3d.py EMAN2/bin/map.mrc --pdbout=pseudoatoms.pdb " + paramStrings
+    currentDir = os.path.dirname(os.path.abspath(__file__))+"/"
+    segmentFile = currentDir + "EMAN2/bin/e2segment3d.py"
+    mapFile = currentDir + "EMAN2/bin/map.mrc"
+    atomFile = currentDir + "pseudoatoms.pdb"
+    command = "python " + segmentFile + " " + mapFile + " --pdbout=" + atomFile + " " + paramStrings
     os.system(command)
     #subprocess.call(['python','EMAN2/bin/e2segment3d.py','EMAN2/bin/map.mrc','--pdbout=pseudoatoms.pdb',paramStrings])
-    self.generateAtoms("pseudoatoms.pdb")
+    self.generateAtoms(atomFile)
 
   def pathwalkButtonPress(self):
       print 'Pathwalking...'
@@ -184,18 +207,24 @@ class Pathwalker(BaseDockWidget):
 
       cTerminus = "--start="+str(self.ui.lineEdit_13.text())
       nTerminus = "--end="+str(self.ui.lineEdit_14.text())
+      currentDir = os.path.dirname(os.path.abspath(__file__))+"/"
+      pathwalkerfile = currentDir + 'EMAN2/bin/e2pathwalker.py'
+      atomfile = currentDir + 'pseudoatoms.pdb'
+      mapfile = "--mapfile="+currentDir+"EMAN2/bin/map.mrc"
+      outfile = "--output="+currentDir+"path0.pdb"
       if cTerminus == "--start=":
         if nTerminus == "--end=":
-          subprocess.call(['python','EMAN2/bin/e2pathwalker.py','pseudoatoms.pdb', '--mapfile=EMAN2/bin/map.mrc','--output=path0.pdb',deletedAtoms,'--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,bondsToPrevent,newBonds])
+          subprocess.call(['python',pathwalkerfile,atomfile, mapfile,outfile,deletedAtoms,'--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,bondsToPrevent,newBonds])
         else:
-          subprocess.call(['python','EMAN2/bin/e2pathwalker.py','pseudoatoms.pdb', '--mapfile=EMAN2/bin/map.mrc','--output=path0.pdb',deletedAtoms,'--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,nTerminus,bondsToPrevent,newBonds])
+          subprocess.call(['python',pathwalkerfile,atomfile, mapfile,outfile,deletedAtoms,'--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,nTerminus,bondsToPrevent,newBonds])
       else:
         if nTerminus == "--end=":
-          subprocess.call(['python','EMAN2/bin/e2pathwalker.py','pseudoatoms.pdb', '--mapfile=EMAN2/bin/map.mrc','--output=path0.pdb',deletedAtoms,'--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,cTerminus,bondsToPrevent,newBonds])
+          subprocess.call(['python',pathwalkerfile,atomfile, mapfile,outfile,deletedAtoms,'--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,cTerminus,bondsToPrevent,newBonds])
         else:
-          subprocess.call(['python','EMAN2/bin/e2pathwalker.py','pseudoatoms.pdb', '--mapfile=EMAN2/bin/map.mrc','--output=path0.pdb',deletedAtoms,'--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,nTerminus,cTerminus,bondsToPrevent,newBonds])
+          subprocess.call(['python',pathwalkerfile,atomfile, mapfile,outfile,deletedAtoms,'--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,nTerminus,cTerminus,bondsToPrevent,newBonds])
       self.app.viewers['calpha'].unloadData()
-      self.generatePathwalkedAtoms("path0.pdb")
+      pathfile = currentDir + "path0.pdb"
+      self.generatePathwalkedAtoms(pathfile)
       self.app.viewers['calpha'].emitModelChanged()
       self.app.viewers['calpha'].deletedatoms = []
 
@@ -400,17 +429,24 @@ class Pathwalker(BaseDockWidget):
 
   def preprocess(self):
       #self.app.viewers["volume"].loadDataFromFile(str(self.volumeName))
+      #param_dict = {}
+      #data = EMData(str(self.volumeName))
+      
       preprocessors = ""
       for i in range(self.ui.listWidget_2.count()):
+        #data.process_inplace(str(self.ui.listWidget_2.item(i).text()), param_dict)
         currentProcessor = "--process "+str(self.ui.listWidget_2.item(i).text())
         if i != self.ui.listWidget_2.count()-1:
           currentProcessor += " "
         preprocessors += currentProcessor
-      command = "python EMAN2/bin/e2proc3d.py " + '"' + self.volumeName + '"' + " EMAN2/bin/map.mrc " + preprocessors
+      currentDir = os.path.dirname(os.path.abspath(__file__))+"/"
+      command = "python " + '"' + currentDir + "EMAN2/bin/e2proc3d.py" + '"' + " " + '"' + self.volumeName + '"' + " " + currentDir + "EMAN2/bin/map.mrc " + preprocessors
+      #data.write_image("EMAN2/bin/map.mrc", img_index, EMUtil.get_image_ext_type("unknown"), False, None, file_mode_map[options.outmode], not(options.swap))
       print command
       os.system(command)
+      outputMap = currentDir + "EMAN2/bin/map.mrc"
       #subprocess.call(['python','EMAN2/bin/e2proc3d.py',self.volumeName, 'EMAN2/bin/map.mrc',preprocessors])
-      self.app.viewers["volume"].loadDataFromFile("EMAN2/bin/map.mrc")
+      self.app.viewers["volume"].loadDataFromFile(outputMap)
 
 
         

@@ -470,10 +470,15 @@ def main():
 				fi = index_d[option1]
 				if options.verbose>1 : print "process -> ",options.process[fi]
 				(filtername, param_dict) = parsemodopt(options.process[fi])
-				if not param_dict : param_dict={}
+				if not param_dict :
+					print "empty param dict"
+					param_dict={}
+
+				print "filtername "+filtername
 
 				#Parse the options to convert the image file name to EMData object(for both plain image file and bdb file)
 				for key in param_dict.keys():
+					print "param_dict "+str(param_dict[key])
 					if str(param_dict[key]).find('bdb:')!=-1 or not str(param_dict[key]).isdigit():
 						try:
 							if  os.path.is_file(param_dict[key]) :
@@ -481,8 +486,12 @@ def main():
 						except:
 							pass
 
-				if filtername in oopprocs : data=data.process(filtername,param_dict)
-				else : data.process_inplace(filtername, param_dict)
+				if filtername in oopprocs :
+					data=data.process(filtername,param_dict)
+				else :
+					data.process_inplace(filtername, param_dict)
+				#if filtername in oopprocs : data=data.process(filtername,param_dict)
+				#else : data.process_inplace(filtername, param_dict)
 				index_d[option1] += 1
 
 			elif option1 == "ralignzphi":

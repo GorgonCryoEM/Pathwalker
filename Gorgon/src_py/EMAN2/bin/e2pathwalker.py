@@ -48,10 +48,10 @@ import tempfile
 import os
 import subprocess
 import ctypes
-import calpha_viewer
+#import calpha_viewer
 import os.path
-from libpyGORGON import CAlphaRenderer
-from libpyGORGON import PDBAtom
+#from libpyGORGON import CAlphaRenderer
+#from libpyGORGON import PDBAtom
 import csv
 
 def check_exists(outfile, overwrite=False):
@@ -93,16 +93,16 @@ def norm_vector(a,b):
 def distance(point1, point2):
 	return math.sqrt(sum([(x[0]-x[1])**2 for x in zip(point1, point2)]))
 
-def determineIfDeleted(self, point1, point2):
-	ca1 = findAtom(self, point1)
-	ca2 = findAtom(self, point2)
-	if ca1.getDeletedBondAtom() != 18446744073709551615:
-		print ca1.getDeletedBondAtom()
+#def determineIfDeleted(self, point1, point2):
+#	ca1 = findAtom(self, point1)
+#	ca2 = findAtom(self, point2)
+#	if ca1.getDeletedBondAtom() != 18446744073709551615:
+#		print ca1.getDeletedBondAtom()
 	#print "ca1 getResSeq" + str(ca1.getDeletedBondAtom())
-	if ca1.getDeletedBondAtom() == ca2.getResSeq():	
-		return 10000
-	else:
-		return distance(point1, point2)
+#	if ca1.getDeletedBondAtom() == ca2.getResSeq():	
+#		return 10000
+#	else:
+#		return distance(point1, point2)
 
 
 def read_pdb(filename, atomtype=None, chain=None, noisemodel=None):
@@ -248,7 +248,7 @@ class PathWalker(object):
 	def __init__(self, filename=None, outfile=None, start=None, end=None, edgefile=None, edges=None, dmin=2.0, dmax=5.0, average=3.78, atomtype='CA', chain=None, noise=0, solver=False, json=True, overwrite=False, mrcfile=None,  mrcweight=1000, mapthresh=0, subunit=1, nobonds=None, newbonds=None, deletedatoms=None):
 
 		# Run parameters
-		self.renderer = CAlphaRenderer()
+		#self.renderer = CAlphaRenderer()
 		self.dmin = dmin
 		self.dmax = dmax
 		self.average = average	
@@ -659,8 +659,9 @@ class PathWalker(object):
 		f.close()
 
 		self.write_tsplib(filename=tspfile)
-		
-		args =' '.join(['./LKH',lkhfile])
+		lkhDir = os.path.dirname(os.path.abspath(__file__))+"/LKH"
+		args =' '.join([lkhDir,lkhfile])
+		#args =' '.join(['./LKH',lkhfile])
 		print args
 		try:
 			a = subprocess.Popen(args, shell=True)

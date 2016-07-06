@@ -34,10 +34,8 @@ class Pathwalker(BaseDockWidget):
     self.app = main
     self.renderer = VolumeRenderer()
     
-    self.volumeName = "volume name"
-    self.nobonds = ""
+    self.volumeName = str(self.app.viewers["volume"].fileName)
     self.createUi()
-    self.pathWalkerMode = True
     self.connect(self.ui.preprocessPushButton, QtCore.SIGNAL("clicked()"), self.preprocessButtonPress)
     self.connect(self.ui.pushButtonBrowseAtomScore, QtCore.SIGNAL("clicked (bool)"), self.loadVolume)
     self.connect(self.ui.pushButton_2, QtCore.SIGNAL("clicked()"), self.generateAtomsButtonPress)
@@ -172,7 +170,6 @@ class Pathwalker(BaseDockWidget):
     atomFile = currentDir + "pseudoatoms.pdb"
     command = "python " + segmentFile + " " + mapFile + " --pdbout=" + atomFile + " " + paramStrings
     os.system(command)
-    #subprocess.call(['python','EMAN2/bin/e2segment3d.py','EMAN2/bin/map.mrc','--pdbout=pseudoatoms.pdb',paramStrings])
     self.generateAtoms(atomFile)
 
   def pathwalkButtonPress(self):
@@ -229,8 +226,6 @@ class Pathwalker(BaseDockWidget):
             self.app.viewers['calpha'].main_chain = mychain
             self.app.viewers['calpha'].loadedChains.append(mychain)
             mychain.setViewer(self.app.viewers['calpha'])
-            #mychain.addCalphaBondsPathwalker()
-            #mychain.addSideChainBonds()
             renderer = self.app.viewers['calpha'].renderer
             for i in mychain.unsortedResidueRange():
                 for atomName in mychain[i].getAtomNames():
@@ -247,7 +242,6 @@ class Pathwalker(BaseDockWidget):
           dlg = CAlphaChooseChainToLoadForm(unicode(self.atomFileName))
           if dlg.exec_():
               self.app.viewers['calpha'].whichChainID = dlg.whichChainID
-              #if not self.atomFileName.isEmpty():
               if(self.app.viewers['calpha'].loaded):
                   self.app.viewers['calpha'].unloadData()
               
@@ -259,20 +253,13 @@ class Pathwalker(BaseDockWidget):
                     setupChain(Chain.getChain(chainKey))
               else:
                   mychain = Chain.__loadFromPDBPathwalker(str(self.atomFileName), qparent=self.app, whichChainID = self.app.viewers['calpha'].whichChainID)
-                  #mychain = Chain.load(str(self.atomFileName), qparent=self.app, whichChainID = self.app.viewers['calpha'].whichChainID)
                   setupChain(mychain)
         
               if not self.app.viewers['calpha'].loaded:
-                  #self.app.viewers['calpha'].setDisplayStyle(6)
-                  #self.app.viewers['calpha'].displayStyle = 6
-                  #self.app.viewers['calpha'].renderer.setDisplayStyle(6)
-                  #self.app.viewers['calpha'].setAtomColorsAndVisibility(6)
-                  #self.app.viewers['calpha'].modelChangedPathwalker()
                   self.app.viewers['calpha'].dirty = False
                   self.app.viewers['calpha'].loaded = True
                   self.app.viewers['calpha'].setAtomColorsAndVisibility(self.app.viewers['calpha'].displayStyle)                        
                   self.app.viewers['calpha'].emitModelLoadedPreDraw()
-                  #self.app.viewers['calpha'].emitModelPathwalker()
                   self.app.viewers['calpha'].emitModelLoaded()
                   self.app.viewers['calpha'].emitViewerSetCenter()
 
@@ -419,10 +406,14 @@ class Pathwalker(BaseDockWidget):
   def loadVolume(self, temp):
     self.volumeName = str(QtGui.QFileDialog.getOpenFileName(self.app.viewers["volume"], self.app.viewers["volume"].tr("Open Volume"), "", self.app.viewers["volume"].tr(self.app.viewers["volume"].renderer.getSupportedLoadFileFormats())))
     self.ui.lineEditAtomScore.setText(self.volumeName)
-    self.bringToFront()
  
 
   def preprocess(self):
+      if self.volumeName == "":
+        self.volumeName = str(self.app.viewers["volume"].fileName)
+      self.ui.lineEditAtomScore.setText(self.volumeName)
+      if self.volumeName == "":
+        return
       preprocessors = ""
       for i in range(self.ui.listWidget_2.count()):
         currentProcessor = "--process "+str(self.ui.listWidget_2.item(i).text())

@@ -9,7 +9,7 @@ To use Pathwalker:
 4. The Pathwalker UI generally implements the steps from page 2 of the Gorgon Pathwalking tutorial: 
   http://blake.bcm.edu/emanwiki/Ws2015?action=AttachFile&do=get&target=PathwalkerGorgonTutorial.pdf
   The UI's default parameters follow those in the tutorial. To perform the first step (preprocessing), click Volume and navigate to
-  your density map. For this instruction's purpose, sub-A.mrc, the test data from the tutorial, will be used. This file can be fownloaded from Data-Sets.zip at https://github.com/GorgonCryoEM/Gorgon/releases/tag/workshop-2015
+  your density map. For this instruction's purpose, sub-A.mrc, the test data from the tutorial, will be used. This file can be downloaded from Data-Sets.zip at https://github.com/GorgonCryoEM/Gorgon/releases/tag/workshop-2015
 
   "Remove" moves a current processor to apply from the "Current Processors" list to the end of the "Available Processors" list. For now, this list includes all threshold and normalize processors from the EMAN2 processor manual: http://blake.bcm.edu/eman2/processors.html
   "Add" moves a processor from the "Available Processors" list to the end of the "Current Processors" list. "Clear" moves all current processors to the "Available Processors" list.

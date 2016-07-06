@@ -65,10 +65,6 @@ class Pathwalker(BaseDockWidget):
     self.connect(self.ui.pushButton_20, QtCore.SIGNAL("clicked()"), self.removePreprocessorGenerate)
     self.connect(self.ui.pushButton_22, QtCore.SIGNAL("clicked()"), self.clearPreprocessorsGenerate)
 
-    #self.connect(self.ui.pushButton_5, QtCore.SIGNAL("clicked()"), self.deleteBonds)      
-    #self.connect(self.ui.pushButton_6, QtCore.SIGNAL("clicked()"), self.createBonds)
-    #self.connect(self.ui.pushButton_7, QtCore.SIGNAL("clicked()"), self.setCTermini)
-    #self.connect(self.ui.pushButton_8, QtCore.SIGNAL("clicked()"), self.setNTermini)   
   def addProcessorGenerate(self):
     currentRow = self.ui.listWidget_4.currentRow()
     item = self.ui.listWidget_4.takeItem(currentRow)
@@ -409,7 +405,6 @@ class Pathwalker(BaseDockWidget):
       selectedCreated = self.app.viewers['calpha'].main_chain.getSelectionSerial()
       selectedCreated = str(selectedCreated)
       selectedCreated = selectedCreated.translate(None, '![@#]$,')
-      #self.ui.lineEdit_14.setText(str(selectedCreated))
       self.newBonds = selectedCreated
       if self.newBonds:
         self.app.viewers['calpha'].renderer.addSelectedBonds(self.newBonds)
@@ -428,24 +423,17 @@ class Pathwalker(BaseDockWidget):
  
 
   def preprocess(self):
-      #self.app.viewers["volume"].loadDataFromFile(str(self.volumeName))
-      #param_dict = {}
-      #data = EMData(str(self.volumeName))
-      
       preprocessors = ""
       for i in range(self.ui.listWidget_2.count()):
-        #data.process_inplace(str(self.ui.listWidget_2.item(i).text()), param_dict)
         currentProcessor = "--process "+str(self.ui.listWidget_2.item(i).text())
         if i != self.ui.listWidget_2.count()-1:
           currentProcessor += " "
         preprocessors += currentProcessor
       currentDir = os.path.dirname(os.path.abspath(__file__))+"/"
       command = "python " + '"' + currentDir + "EMAN2/bin/e2proc3d.py" + '"' + " " + '"' + self.volumeName + '"' + " " + currentDir + "EMAN2/bin/map.mrc " + preprocessors
-      #data.write_image("EMAN2/bin/map.mrc", img_index, EMUtil.get_image_ext_type("unknown"), False, None, file_mode_map[options.outmode], not(options.swap))
       print command
       os.system(command)
       outputMap = currentDir + "EMAN2/bin/map.mrc"
-      #subprocess.call(['python','EMAN2/bin/e2proc3d.py',self.volumeName, 'EMAN2/bin/map.mrc',preprocessors])
       self.app.viewers["volume"].loadDataFromFile(outputMap)
 
 

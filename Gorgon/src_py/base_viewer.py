@@ -373,38 +373,6 @@ class BaseViewer(QtOpenGL.QGLWidget):
     
     def getDrawVisibility(self):
         return [self.modelVisible, self.model2Visible, self.model3Visible]
-        
-    def modelChangedPathwalker(self):
-        self.updateActionsAndMenus()
-        for list in self.glLists:
-            glDeleteLists(list,1)
-        self.glLists = []
-            
-        visibility = self.getDrawVisibility()
-        colors = self.getDrawColors()
-        
-        glPushAttrib(GL_LIGHTING_BIT | GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
-                         
-        self.extraDrawingRoutines()
-        
-        if(self.loaded):
-            for i in range(3):
-                list = glGenLists(1)
-                glNewList(list, GL_COMPILE)
-                self.glLists.append(list)
-
-                if(colors[i].alpha() < 255):
-                    glDepthFunc(GL_LESS)        
-                    glColorMask(False, False, False, False)
-                    self.renderer.drawBackboneModelPathwalker(i, False)
-                    glDepthFunc(GL_LEQUAL)
-                    glColorMask(True, True, True, True) 
-                    self.renderer.drawBackboneModelPathwalker(i, self.selectEnabled or self.mouseMoveEnabled)
-                else:
-                    self.renderer.drawBackboneModelPathwalker(i, self.selectEnabled or self.mouseMoveEnabled)                    
-                glEndList()         
-                                    
-        glPopAttrib()
 
     def modelChanged(self):
         self.updateActionsAndMenus()

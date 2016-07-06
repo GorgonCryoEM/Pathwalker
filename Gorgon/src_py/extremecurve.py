@@ -21,12 +21,9 @@ class ExtremeCurveForm(BaseDialogWidget):
                                   False, parent)
         self.app = main
         self.viewer = volumeViewer
-        #self.connect(self.viewer, QtCore.SIGNAL("modelLoaded()"), self.modelLoaded)
-        #self.connect(self.viewer, QtCore.SIGNAL("modelUnloaded()"), self.modelUnloaded)
         self.createUI()
         self.connect(self.ui.pushButton, QtCore.SIGNAL("clicked()"), self.findExtremalCurve)
 
-        #self.createActions()
 
     def createUI(self):
       self.ui = Ui_Extremal_Curve()
@@ -55,7 +52,6 @@ class ExtremeCurveForm(BaseDialogWidget):
           dlg = CAlphaChooseChainToLoadForm(unicode(self.atomFileName))
           if dlg.exec_():
               self.app.viewers['calpha'].whichChainID = dlg.whichChainID
-              #if not self.atomFileName.isEmpty():
               if(self.app.viewers['calpha'].loaded):
                   self.app.viewers['calpha'].unloadData()
               
@@ -67,20 +63,13 @@ class ExtremeCurveForm(BaseDialogWidget):
                     setupChain(Chain.getChain(chainKey))
               else:
                   mychain = Chain.__loadFromPDBPathwalker(str(self.atomFileName), qparent=self.app, whichChainID = self.app.viewers['calpha'].whichChainID)
-                  #mychain = Chain.load(str(self.atomFileName), qparent=self.app, whichChainID = self.app.viewers['calpha'].whichChainID)
                   setupChain(mychain)
         
               if not self.app.viewers['calpha'].loaded:
-                  #self.app.viewers['calpha'].setDisplayStyle(6)
-                  #self.app.viewers['calpha'].displayStyle = 6
-                  #self.app.viewers['calpha'].renderer.setDisplayStyle(6)
-                  #self.app.viewers['calpha'].setAtomColorsAndVisibility(6)
-                  #self.app.viewers['calpha'].modelChangedPathwalker()
                   self.app.viewers['calpha'].dirty = False
                   self.app.viewers['calpha'].loaded = True
                   self.app.viewers['calpha'].setAtomColorsAndVisibility(self.app.viewers['calpha'].displayStyle)                        
                   self.app.viewers['calpha'].emitModelLoadedPreDraw()
-                  #self.app.viewers['calpha'].emitModelPathwalker()
                   self.app.viewers['calpha'].emitModelLoaded()
                   self.app.viewers['calpha'].emitViewerSetCenter()
 
@@ -90,8 +79,6 @@ class ExtremeCurveForm(BaseDialogWidget):
       self.generateAtoms("extremal.pdb")
       bonds1 = skeleton.getExtremalBonds1()
       bonds2 = skeleton.getExtremalBonds2()
-      #print len(bonds1)
       for i in range(len(bonds1)):
-                    #print str(bonds1[i]) + " " + str(bonds2[i])
         self.app.viewers['calpha'].renderer.drawAddedBond(bonds1[i], bonds2[i])
       self.app.viewers['calpha'].emitModelChanged()

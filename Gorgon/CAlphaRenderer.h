@@ -192,7 +192,6 @@ namespace wustl_mm {
 			// Vector3DFloats
 			vector<Vector3DFloat> CreateStrandNormals(vector<Vector3DFloat> points, Vector3DFloat previous, Vector3DFloat next); // create line segment normals to be used in drawing Beta
 			// strands
-			vector<PDBBond> getDeletedBonds();
 
 			void CreateHelixAxesTangentsAndPoints(vector<Vector3DFloat>& axes, vector<Vector3DFloat>& tangents, vector<Vector3DFloat>& interpPoints, vector<Vector3DFloat> points, 
 				Vector3DFloat previous, Vector3DFloat next, double HELIX_ALPHA, double HELIX_BETA, double HELIX_HERMITE_FACTOR);
@@ -219,10 +218,8 @@ namespace wustl_mm {
 			void SetHelixColor(int helixNum, float r, float g, float b);
 
 			string getDeletedBondAtoms();
-			vector<unsigned long long> getDeletedBonds1Ix();
 			void RemoveSelectedBonds(string nobonds);
 			void addSelectedBonds(string newBonds);
-			void DrawBackboneModelPathwalker(int subSceneIndex, bool selectEnabled);
 			void DeleteAtomFromVisualization(unsigned long long deletedAtom);
 		private:
 			void DrawBackboneModel(int subSceneIndex, bool selectEnabled);
@@ -614,87 +611,7 @@ namespace wustl_mm {
 
 		}
 
-		void CAlphaRenderer::DrawBackboneModelPathwalker(int subSceneIndex, bool selectEnabled) {
-			GLfloat emissionColor[4] = {1.0, 1.0, 1.0, 1.0};
-
-			if(subSceneIndex == 0) { // Drawing Atoms
-				if(selectEnabled) {
-					atomHashKeys.clear();
-					glPushName(0);
-					glPushName(0);
-				}
-				for (AtomMapType::iterator it = atoms.begin(); it != atoms.end(); it++) {
-					if(it->second.GetName() == "CA") {
-						glPushAttrib(GL_LIGHTING_BIT);
-						if(it->second.GetSelected()) {
-							glMaterialfv(GL_FRONT, GL_EMISSION, emissionColor);
-							glMaterialfv(GL_BACK, GL_EMISSION, emissionColor);
-						} else {
-							OpenGLUtils::SetColor(it->second.GetColorR(), it->second.GetColorG(), it->second.GetColorB(), it->second.GetColorA());
-						}
-
-						if(selectEnabled){
-							//TODO: possibly implement mouse picking using ray intersection
-							atomHashKeys.push_back(it->first); // adding the atom hash key as an element
-							glLoadName(static_cast<GLuint>( atomHashKeys.size() - 1)); // the index of the element just added
-						}
-						if(it->second.GetVisible()) {
-							Vector3DFloat currentPosition = it->second.GetPosition();
-							DrawSphere(currentPosition, it->second.GetAtomRadius() * 0.3);
-						}
-
-						glPopAttrib();
-					}
-
-				}
-				if(selectEnabled) {
-					glPopName();
-					glPopName();
-				}
-			} else if(subSceneIndex == 1) { // Drawing Bonds
-				if(selectEnabled) {
-					glPushName(1);
-					glPushName(0);
-				}
-				for(int i=0; i < (int)bonds.size(); i++) {
-					glPushAttrib(GL_LIGHTING_BIT);
-					if(bonds[i].GetSelected()) {
-						glMaterialfv(GL_FRONT, GL_EMISSION, emissionColor);
-						glMaterialfv(GL_BACK, GL_EMISSION, emissionColor);
-					}
-
-					if(selectEnabled){
-						glLoadName(i);
-					}
-					float length = (atoms[bonds[i].GetAtom0Ix()].GetPosition() - atoms[bonds[i].GetAtom1Ix()].GetPosition()).Length();
-					if(length > 4.2) {
-						OpenGLUtils::SetColor(1.0, 0, 0, 1.0);
-					}
-
-					if(length < 3.3) {
-						OpenGLUtils::SetColor(0, 0, 1.0, 1.0);
-					}
-
-					if(atoms[bonds[i].GetAtom0Ix()].GetVisible() && atoms[bonds[i].GetAtom1Ix()].GetVisible()) {
-						Vector3DFloat currentPosition1 = atoms[bonds[i].GetAtom0Ix()].GetPosition();
-						Vector3DFloat currentPosition2 = atoms[bonds[i].GetAtom1Ix()].GetPosition();
-						DrawCylinder(currentPosition1, currentPosition2, 0.1, 10, 2);
-					}
-					glPopAttrib();
-				}
-				if(selectEnabled) {
-					glPopName();
-					glPopName();
-				}
-			} else if(subSceneIndex == 2) { // Drawing spheres to cover up the cylinder edges				
-				for(AtomMapType::iterator i = atoms.begin(); i != atoms.end(); i++) {
-					if(i->second.GetName() == "CA") {
-						Vector3DFloat currentPosition = i->second.GetPosition();
-						DrawSphere(currentPosition, 0.1);
-					}
-				}
-			}
-		}
+		
 
 		void CAlphaRenderer::DrawRibbonModel(int subSceneIndex, bool selectEnabled) {
 			if(selectEnabled) {
@@ -1860,19 +1777,6 @@ namespace wustl_mm {
 		}
 
 		void CAlphaRenderer::DeleteAtom(unsigned long long index) {
-			/**
-			for(auto it = begin(atoms); it != end(atoms);)
-			{
-				if (it->first == index)
-				{
-					it = atoms.erase(it);
-				}
-				else 
-				{
-					++it;
-				}
-			}
-			**/
 			atoms.erase(atoms.find(index));
 		}
 
@@ -2216,14 +2120,10 @@ namespace wustl_mm {
 		}
 		
 
-		vector<PDBBond> CAlphaRenderer::getDeletedBonds() {
-			return bondsToDelete;
-		}
 
 
-		vector<unsigned long long> CAlphaRenderer::getDeletedBonds1Ix() {
-			return ix1s;
-		}
+
+
 		
 
 		

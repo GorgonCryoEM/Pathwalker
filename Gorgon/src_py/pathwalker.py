@@ -105,9 +105,6 @@ class Pathwalker(BaseDockWidget):
       self.preprocess()
       print 'Finished Preprocessing'
 
-  def mouseDrag(self):
-    print "hi"
-
 
   def findHelices(self):
       print 'Finding Helices'

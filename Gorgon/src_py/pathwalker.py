@@ -119,6 +119,9 @@ class Pathwalker(BaseDockWidget):
       whelixScript = currentDir+"EMAN2/bin/e2pwhelixfit.py"
       mapIn = "--mapin="+currentDir+"EMAN2/bin/map.mrc"
       pdbIn = "--pdbin="+currentDir+"path0.pdb"
+      if not os.path.isfile(currentDir+"path0.pdb"):
+        print "Need to pathwalk first"
+        return
       pdbOut = "--output="+currentDir+"path0.pdb"
       subprocess.call(['python',whelixScript,mapIn,pdbIn,pdbOut,densityThreshold,'--mapwohelix map_nohlx.mrc',minLength,lengthThreshold,angleThreshold])
       self.app.viewers['calpha'].unloadData()
@@ -133,6 +136,9 @@ class Pathwalker(BaseDockWidget):
       currentDir = os.path.dirname(os.path.abspath(__file__))+"/"
       sheetScript = currentDir + 'EMAN2/bin/e2pwsheetfit.py'
       pdbIn = "--pdbin="+currentDir+"path0.pdb"
+      if not os.path.isfile(currentDir+"path0.pdb"):
+        print "Need to pathwalk first"
+        return
       pdbOut = "--output="+currentDir+"path0.pdb"
       subprocess.call(['python',sheetScript,pdbIn,pdbOut,nsheets,minLength,scoreThreshold])
       self.app.viewers['calpha'].unloadData()
@@ -167,6 +173,9 @@ class Pathwalker(BaseDockWidget):
     currentDir = os.path.dirname(os.path.abspath(__file__))+"/"
     segmentFile = currentDir + "EMAN2/bin/e2segment3d.py"
     mapFile = currentDir + "EMAN2/bin/map.mrc"
+    if not os.path.isfile(mapFile):
+      print "Need to preprocess first"
+      return 
     atomFile = currentDir + "pseudoatoms.pdb"
     command = "python " + segmentFile + " " + mapFile + " --pdbout=" + atomFile + " " + paramStrings
     os.system(command)
@@ -179,6 +188,9 @@ class Pathwalker(BaseDockWidget):
 
   def pathWalk(self):
       selectedChain = self.app.viewers['calpha'].main_chain
+      if len(selectedChain.atoms) == 0:
+        print "No pseudoatoms to pathwalk. Generate or load pseudoatoms first."
+        return
       selectedChain.saveToPDBPathwalker("pseudoatoms.pdb")
       deletedAtoms = "--deletedatoms=" + str(self.app.viewers['calpha'].deletedAtoms).translate(None, '[],\'')
       dmin = "--dmin="+str(self.ui.lineEdit_9.text())

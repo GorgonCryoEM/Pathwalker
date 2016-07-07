@@ -14,9 +14,9 @@ include(cmake/Windows.cmake)
 # Number of processors/cores
 include(cmake/ParallelJobs.cmake)
 
-# --------------------------------------------------------------------
+# -------------------------------------------------------------------
 # Set some variables and options
-# --------------------------------------------------------------------
+# -------------------------------------------------------------------
 option(ENABLE_CMAKE_DEBUG_OUTPUT "Print output of some variables for debugging purposes" OFF)
 
 set(GORGON_EXTERNAL_LIBRARIES_DIR ${CMAKE_SOURCE_DIR}/ExternalLibraries CACHE INTERNAL "External Libraries directory")

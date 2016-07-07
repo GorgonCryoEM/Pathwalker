@@ -102,7 +102,7 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR}/Gorgon/src_py/
         DESTINATION ${run_dir}
         COMPONENT "Gorgon"
         FILES_MATCHING
-        PATTERN "*.py"
+        PATTERN "*"
         )
 
 add_custom_target(Gorgon

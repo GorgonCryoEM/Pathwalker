@@ -217,7 +217,6 @@ namespace wustl_mm {
 			void SetFeatureVecs(vector<Vector3DFloat> flatFeatureVecs);
 			void SetHelixColor(int helixNum, float r, float g, float b);
 
-			string getDeletedBondAtoms();
 			void RemoveSelectedBonds(string nobonds);
 			void addSelectedBonds(string newBonds);
 			void DeleteAtomFromVisualization(unsigned long long deletedAtom);

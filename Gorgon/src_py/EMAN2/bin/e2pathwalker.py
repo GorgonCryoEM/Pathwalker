@@ -245,7 +245,7 @@ def write_pdbs(filename, paths, points=None, bfactors=None, tree=None):
 
 
 class PathWalker(object):
-	def __init__(self, filename=None, outfile=None, start=None, end=None, edgefile=None, edges=None, dmin=2.0, dmax=5.0, average=3.78, atomtype='CA', chain=None, noise=0, solver=False, json=True, overwrite=False, mrcfile=None,  mrcweight=1000, mapthresh=0, subunit=1, nobonds=None, newbonds=None, deletedatoms=None):
+	def __init__(self, filename=None, outfile=None, start=None, end=None, edgefile=None, edges=None, dmin=2.0, dmax=5.0, average=3.78, atomtype='CA', chain=None, noise=0, solver=False, json=True, overwrite=False, mrcfile=None,  mrcweight=1000, mapthresh=0, subunit=1, nobonds=None, newbonds=None, deletedatoms=None, runs=10):
 
 		# Run parameters
 		#self.renderer = CAlphaRenderer()
@@ -265,6 +265,7 @@ class PathWalker(object):
 		self.nobonds = nobonds
 		self.newbonds = newbonds
 		self.deletedatoms = deletedatoms
+		self.runs = runs
 		print self.nobonds
 		if self.mrcfile:
 			self.mrc=EMData(mrcfile)
@@ -652,8 +653,9 @@ class PathWalker(object):
 		tspfile = tempfile.mkstemp(suffix='.tsp')[1]
 		lkhfile = tempfile.mkstemp(suffix='.lkh')[1]
 		outfile = tempfile.mkstemp(suffix='.out')[1]
+		tspruns = self.runs
 
-		lkh = """PROBLEM_FILE = %s\nOUTPUT_TOUR_FILE = %s\nPRECISION = 100\n"""%(tspfile,outfile)
+		lkh = """PROBLEM_FILE = %s\nOUTPUT_TOUR_FILE = %s\nPRECISION = 100\nRUNS = %s\n"""%(tspfile,outfile,tspruns)
 		f = open(lkhfile, "w")
 		f.write(lkh)
 		f.close()
@@ -1087,6 +1089,7 @@ def main():
 	parser.add_argument("--nobonds", type=str,help="Space separated list of bonds to prevent", default=None)
 	parser.add_argument("--newbonds", type=str,help="Space separated list of bonds to create", default=None)
 	parser.add_argument("--deletedatoms", type=str,help="Space separated list of deleted atoms", default=None)
+	parser.add_argument("--runs", type=str,help="Number of iterations of TSP solver", default=None)
 	(options, args) = parser.parse_args()
 
 	if len(args) == 1:
@@ -1118,6 +1121,7 @@ def main():
 			nobonds=options.nobonds,
 			newbonds=options.newbonds,
 			deletedatoms=options.deletedatoms,
+			runs=options.runs,
 		)
 		pw.run()
 

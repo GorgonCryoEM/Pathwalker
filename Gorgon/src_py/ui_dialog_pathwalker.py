@@ -262,6 +262,11 @@ class Ui_DialogPathwalker(object):
         self.line_2.setFrameShadow(QtGui.QFrame.Sunken)
         self.line_2.setObjectName(_fromUtf8("line_2"))
         self.gridLayout.addWidget(self.line_2, 6, 0, 1, 2)
+        self.spinBox_6 = QtGui.QSpinBox(self.tab_3)
+        self.spinBox_6.setMinimum(1)
+        self.spinBox_6.setProperty("value", 10)
+        self.spinBox_6.setObjectName(_fromUtf8("spinBox_6"))
+        self.gridLayout.addWidget(self.spinBox_6, 3, 3, 1, 1)
         self.line = QtGui.QFrame(self.tab_3)
         self.line.setFrameShape(QtGui.QFrame.HLine)
         self.line.setFrameShadow(QtGui.QFrame.Sunken)
@@ -279,6 +284,9 @@ class Ui_DialogPathwalker(object):
         self.label_11 = QtGui.QLabel(self.tab_3)
         self.label_11.setObjectName(_fromUtf8("label_11"))
         self.gridLayout.addWidget(self.label_11, 2, 1, 1, 1)
+        self.label_5 = QtGui.QLabel(self.tab_3)
+        self.label_5.setObjectName(_fromUtf8("label_5"))
+        self.gridLayout.addWidget(self.label_5, 2, 3, 1, 1)
         self.lineEdit_11 = QtGui.QLineEdit(self.tab_3)
         self.lineEdit_11.setObjectName(_fromUtf8("lineEdit_11"))
         self.gridLayout.addWidget(self.lineEdit_11, 3, 0, 1, 1)
@@ -627,20 +635,6 @@ class Ui_DialogPathwalker(object):
         self.pushButton_20.setText(_translate("DockWidget", "Remove", None))
         self.pushButton_21.setText(_translate("DockWidget", "Add", None))
 
-
-        #self.label_10.setText(_translate("DialogModelVisualization", "Map Threshold", None))
-        #self.label_2.setText(_translate("DialogModelVisualization", "Maximum Distance", None))
-        #self.lineEdit_12.setText(_translate("DialogModelVisualization", "200", None))
-        #self.label_11.setText(_translate("DialogModelVisualization", "Map Weight", None))
-        #self.lineEdit_11.setText(_translate("DialogModelVisualization", "12", None))
-        #self.lineEdit_10.setText(_translate("DialogModelVisualization", "10", None))
-        #self.label.setText(_translate("DialogModelVisualization", "Minimum Distance", None))
-        #self.pushButton_4.setText(_translate("DialogModelVisualization", "Pathwalk", None))
-        #self.normalizeLine.setText(_translate("DialogModelVisualization", "normalize.edgemean", None))
-        #self.zeroThresholdLine.setText(_translate("DialogModelVisualization", "threshold.belowtozero", None))
-        #self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QtGui.QApplication.translate("DialogModelVisualization", "Pathwalk", None, QtGui.QApplication.UnicodeUTF8))
-        #self.label_4.setText(_translate("DialogModelVisualization", "Processor 2", None))
-        #self.label_3.setText(_translate("DialogModelVisualization", "Processor 1", None))
         self.label.setText(_translate("DialogModelVisualization", "Minimum Distance", None))
         self.label_2.setText(_translate("DialogModelVisualization", "Maximum Distance", None))
         self.lineEdit_9.setText(_translate("DialogModelVisualization", "1", None))
@@ -699,7 +693,7 @@ class Ui_DialogPathwalker(object):
         self.label_24.setText(_translate("DialogModelVisualization", "Sheet Score Threshold", None))
         self.pushButton_16.setText(_translate("DialogModelVisualization", "Find and regularize Sheets", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_7), _translate("DialogModelVisualization", "Helices and Sheets", None))
-
+        self.label_5.setText(_translate("DialogModelVisualization", "Runs", None))
 
 
 from colored_push_button import ColoredPushButton

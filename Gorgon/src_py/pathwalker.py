@@ -194,6 +194,7 @@ class Pathwalker(BaseDockWidget):
       dmax = "--dmax="+str(self.ui.lineEdit_10.text())
       threshold = "--mapthresh="+str(self.ui.lineEdit_11.text())
       mapweight = "--mapweight="+str(self.ui.lineEdit_12.text())
+      runs = "--runs="+str(self.ui.spinBox_6.value())
 
       bondsToPrevent = "--nobonds="
       allRows = self.ui.tableWidget.rowCount()
@@ -216,14 +217,14 @@ class Pathwalker(BaseDockWidget):
       outfile = "--output="+currentDir+"path0.pdb"
       if cTerminus == "--start=":
         if nTerminus == "--end=":
-          subprocess.call(['python',pathwalkerfile,atomfile, mapfile,outfile,deletedAtoms,'--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,bondsToPrevent,newBonds])
+          subprocess.call(['python',pathwalkerfile,atomfile, mapfile,outfile,deletedAtoms,runs,'--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,bondsToPrevent,newBonds])
         else:
-          subprocess.call(['python',pathwalkerfile,atomfile, mapfile,outfile,deletedAtoms,'--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,nTerminus,bondsToPrevent,newBonds])
+          subprocess.call(['python',pathwalkerfile,atomfile, mapfile,outfile,deletedAtoms,runs,'--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,nTerminus,bondsToPrevent,newBonds])
       else:
         if nTerminus == "--end=":
-          subprocess.call(['python',pathwalkerfile,atomfile, mapfile,outfile,deletedAtoms,'--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,cTerminus,bondsToPrevent,newBonds])
+          subprocess.call(['python',pathwalkerfile,atomfile, mapfile,outfile,deletedAtoms,runs,'--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,cTerminus,bondsToPrevent,newBonds])
         else:
-          subprocess.call(['python',pathwalkerfile,atomfile, mapfile,outfile,deletedAtoms,'--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,nTerminus,cTerminus,bondsToPrevent,newBonds])
+          subprocess.call(['python',pathwalkerfile,atomfile, mapfile,outfile,deletedAtoms,runs,'--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,nTerminus,cTerminus,bondsToPrevent,newBonds])
       self.app.viewers['calpha'].unloadData()
       pathfile = currentDir + "path0.pdb"
       self.generatePathwalkedAtoms(pathfile)

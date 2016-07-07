@@ -273,9 +273,6 @@ class Pathwalker(BaseDockWidget):
                   self.app.viewers['calpha'].emitModelLoaded()
                   self.app.viewers['calpha'].emitViewerSetCenter()
 
-  def printDeleted(self):
-       self.app.viewers['calpha'].main_chain.printDeletedBonds()
-
   def generatePathwalkedAtoms(self, fileName):
       def setupChain(mychain):            
             self.app.viewers['calpha'].main_chain = mychain

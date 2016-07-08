@@ -1,7 +1,0 @@
-#!/usr/bin/python
-"""Terminal-based IPython entry point.
-"""
-
-
-from IPython import start_ipython
-start_ipython()

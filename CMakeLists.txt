@@ -100,6 +100,7 @@ install(TARGETS pyGORGON
 
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/Gorgon/src_py/
         DESTINATION ${run_dir}
+        USE_SOURCE_PERMISSIONS
         COMPONENT "Gorgon"
         FILES_MATCHING
         PATTERN "*"

@@ -14,13 +14,13 @@ from volume_viewer import *
 from calpha_choose_chain_to_load_form import CAlphaChooseChainToLoadForm
 from seq_model.Chain import Chain
 
-from EMAN2 import *
-from optparse import OptionParser
+#from EMAN2 import *
+#from optparse import OptionParser
 from math import *
 import os.path
-import pyemtbx.options
-from pyemtbx.options import intvararg_callback
-from pyemtbx.options import floatvararg_callback
+#import pyemtbx.options
+#from pyemtbx.options import intvararg_callback
+#from pyemtbx.options import floatvararg_callback
 from time import time
 from numpy import arange
 
@@ -279,7 +279,6 @@ class Pathwalker(BaseDockWidget):
             self.app.viewers['calpha'].loadedChains.append(mychain)
             mychain.setViewer(self.app.viewers['calpha'])
             mychain.addCalphaBondsPathwalker()
-            #mychain.addSideChainBonds()
             renderer = self.app.viewers['calpha'].renderer
             for i in mychain.unsortedResidueRange():
                 for atomName in mychain[i].getAtomNames():
@@ -296,7 +295,6 @@ class Pathwalker(BaseDockWidget):
           dlg = CAlphaChooseChainToLoadForm(unicode(self.atomFileName))
           if dlg.exec_():
               self.app.viewers['calpha'].whichChainID = dlg.whichChainID
-              #if not self.atomFileName.isEmpty():
               if(self.app.viewers['calpha'].loaded):
                   self.app.viewers['calpha'].unloadData()
               

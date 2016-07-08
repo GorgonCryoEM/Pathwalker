@@ -31,12 +31,14 @@
 #
 #
 
-from EMAN2 import *
+#from EMAN2 import *
+from emanpathwalker.lib import *
 import random
 from math import *
 import os
 import sys
-from e2simmx import cmponetomany
+#from emanpathwalker.bin.e2simmx import cmponetomany
+from emanpathwalker.bin import e2version
 import traceback
 
 def main():
@@ -47,7 +49,7 @@ def main():
 	may require more. The actual segmentation is performed using one of the segment.* processors. 'e2help.py processors |grep segment'
 	for more information (-v 1 will give even more)."""
 	
-	parser = EMArgumentParser(usage=usage,version=EMANVERSION)
+	parser = EMAN2.EMArgumentParser(usage=usage,version=e2version.EMANVERSION)
 
 	parser.add_argument("--verbose", "-v", dest="verbose", action="store", metavar="n", type=int, default=0, help="verbose level [0-9], higner number means higher level of verboseness")
 	parser.add_argument("--process", metavar="processor_name:param1=value1:param2=value2", type=str,default="segment.kmeans:ampweight=1:nseg=50:thr=0.8",
@@ -72,7 +74,7 @@ def main():
 		print "You must specify a segment.* processor with any necessary parameters in the form segment.xxxx:parm=value:parm=value"
 		sys.exit(1)
 
-	E2n=E2init(sys.argv,options.ppid)
+	E2n=EMAN2.E2init(sys.argv,options.ppid)
 
 	if options.verbose>0: print "Reading volume"
 	volume=EMData(args[0],0)
@@ -113,7 +115,7 @@ def main():
 		
 	
 	if options.verbose>0: print "Executing segmentation"
-	(processorname, param_dict) = parsemodopt(options.process)
+	(processorname, param_dict) = EMAN2.parsemodopt(options.process)
 	seg=volume.process(processorname,param_dict)
 	seg["apix_x"]=volume["apix_x"]
 	seg["apix_y"]=volume["apix_y"]
@@ -170,7 +172,7 @@ def main():
 		out=file(options.txtout,"w")
 		for n,i in enumerate(centers): out.write("%d\t%1.3f\t%1.3f\t%1.3f\n"%(n,i[0],i[1],i[2]))
 		out.close()
-	E2end(E2n)
+	EMAN2.E2end(E2n)
 		
 def write_chimera_markers(filename,centers,apix_x,apix_y,apix_z,marker_size=3.0) :
 	"""Writes a set of coordinates (without connectors) in Chimera marker XML format"""

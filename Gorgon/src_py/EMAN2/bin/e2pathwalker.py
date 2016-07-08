@@ -29,8 +29,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  2111-1307 USA
 
-import EMAN2
-from EMAN2 import *
+#import EMAN2
+#from EMAN2 import *
+import emanpathwalker.lib.EMAN2
+from emanpathwalker.lib.EMAN2 import *
+from emanpathwalker.bin import e2version
 import collections
 import math
 import random
@@ -694,7 +697,8 @@ class PathWalker(object):
 		f = open(tourfile)
 		r = [i.strip() for i in f.readlines()]
 		f.close()
-
+		
+		#score_tsp = EMAN2.re_filter_list(lambda i:i.startswith('COMMENT : Length'), r)
 		score_tsp = filter(lambda i:i.startswith('COMMENT : Length'), r)
 		if score_tsp:
 			score_tsp = score_tsp[0].partition('=')[2].strip()
@@ -1051,19 +1055,17 @@ class CaRMSD(object):
 
 def main():
 	usage = """e2pathwalker.py [options] <pdb file>
-
 	Find paths between two atoms in a PDB model. You can also specify two PDB files to calculate an RMSD.
 	
 	Use "--solve=<solver>" to run the TSP solver and save the output.
 	Use "--output" to save the output to a PDB file.
 	Use "--mapfile" to input the density map.
-
 	Pathwalker wiki:
 		http://blake.bcm.edu/emanwiki/Pathwalker
 	
-
 	"""
-	parser = EMAN2.EMArgumentParser(usage=usage,version=EMAN2.EMANVERSION)
+	#EMAN2.
+	parser = EMArgumentParser(usage=usage,version=e2version.EMANVERSION)
 	parser.add_argument("--output", type=str,help="Output file")
 	parser.add_argument("--mapfile", type=str,help="Density map file", default=None)
 	parser.add_argument("--start", type=int,help="Start ATOM")
@@ -1139,4 +1141,3 @@ def main():
 # If executed as a program
 if __name__ == '__main__':
 	main()
-

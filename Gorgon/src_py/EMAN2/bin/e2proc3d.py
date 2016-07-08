@@ -38,16 +38,21 @@
 #
 # todo: lp, hp, tlp vs apix
 
-from EMAN2 import *
+import emanpathwalker.lib
+from emanpathwalker.bin import e2version
+#from emanpathwalker.lib import *
+#from EMAN2 import *
 from optparse import OptionParser
 import sys
 from math import *
 import os.path
-import pyemtbx.options
-from pyemtbx.options import intvararg_callback
-from pyemtbx.options import floatvararg_callback
+import emanpathwalker.lib.pyemtbx.options
+from emanpathwalker.lib.pyemtbx.options import intvararg_callback
+from emanpathwalker.lib.pyemtbx.options import floatvararg_callback
 from time import time
 from numpy import arange
+
+
 
 def print_iminfo(data, label):
 	print "%s image : %dx%dx%d Mean=%1.3g Sigma=%1.3g Min=%1.3g Max=%1.3g" % \
@@ -102,15 +107,15 @@ def main():
 								help="Rescales the image by 'n', generally used with clip option.")
 	parser.add_option("--sym", dest = "sym", action="append",
 								help = "Symmetry to impose - choices are: c<n>, d<n>, h<n>, tet, oct, icos")
-	parser.add_option("--clip", metavar="x[,y,z[,xc,yc,zc]]", type='string', action="callback", callback=intvararg_callback,
-								help="Make the output have this size by padding/clipping. 1, 3 or 6 arguments. ")
-	parser.add_option("--fftclip", metavar="x, y, z", type="string", action="callback", callback=floatvararg_callback,
-								help="Make the output have this size, rescaling by padding FFT.")
+	#parser.add_option("--clip", metavar="x[,y,z[,xc,yc,zc]]", type='string', action="callback", callback=intvararg_callback,
+	#							help="Make the output have this size by padding/clipping. 1, 3 or 6 arguments. ")
+	#parser.add_option("--fftclip", metavar="x, y, z", type="string", action="callback", callback=floatvararg_callback,
+	#							help="Make the output have this size, rescaling by padding FFT.")
 	parser.add_option("--process", metavar="processor_name:param1=value1:param2=value2", type="string",
 								action="append", help="apply a processor named 'processorname' with all its parameters/values.")
 	parser.add_option("--apix", type="float", help="A/pixel for S scaling")
-	parser.add_option("--origin", metavar="x, y, z", type="string", action="callback", callback=floatvararg_callback,
-								help="Set the coordinates for the pixel (0,0,0) for Chimera. THIS HAS NO IMPACT ON IMAGE PROCESSING !")
+	#parser.add_option("--origin", metavar="x, y, z", type="string", action="callback", callback=floatvararg_callback,
+	#							help="Set the coordinates for the pixel (0,0,0) for Chimera. THIS HAS NO IMPACT ON IMAGE PROCESSING !")
 	parser.add_option("--mult", metavar="f", type="float",
 								help="Scales the densities by a fixed number in the output")
 	parser.add_option("--multfile", type="string", action="append",
@@ -169,7 +174,7 @@ def main():
 
 	append_options = ["clip", "fftclip", "process", "filter", "meanshrink", "medianshrink", "scale", "sym", "multfile", "addfile", "trans", "rot", "align","ralignzphi","alignctod"]
 
-	optionlist = pyemtbx.options.get_optionlist(sys.argv[1:])
+	optionlist = emanpathwalker.lib.pyemtbx.options.get_optionlist(sys.argv[1:])
 
 	(options, args) = parser.parse_args()
 
@@ -190,7 +195,7 @@ def main():
 		print "Deprecated option mrc8bit, please use outmode=int8"
 		options.outmode="int8"
 
-	if not file_mode_map.has_key(options.outmode) :
+	if not emanpathwalker.lib.EMAN2.file_mode_map.has_key(options.outmode) :
 		print "Invalid output mode, please specify one of :\n",str(file_mode_map.keys()).translate(None,'"[]')
 		sys.exit(1)
 
@@ -289,7 +294,7 @@ def main():
 	n0 = options.first
 	n1 = options.last
 	if infile[0]==":" : nimg=1
-	else : nimg = EMUtil.get_image_count(infile)
+	else : nimg = emanpathwalker.lib.EMUtil.get_image_count(infile)
 	if n1 > nimg or n1<0: n1=nimg-1
 
 	if options.step != None:
@@ -368,7 +373,7 @@ def main():
 	# modified so for multiple volumes, returns header-only
 	datlst = parse_infile(infile, n0, n1,n2)
 
-	logid=E2init(sys.argv,options.ppid)
+	logid=emanpathwalker.lib.EMAN2.E2init(sys.argv,options.ppid)
 
 	x = datlst[0].get_xsize()
 	y = datlst[0].get_ysize()
@@ -469,7 +474,7 @@ def main():
 			elif option1 == "process":
 				fi = index_d[option1]
 				if options.verbose>1 : print "process -> ",options.process[fi]
-				(filtername, param_dict) = parsemodopt(options.process[fi])
+				(filtername, param_dict) = emanpathwalker.lib.EMAN2.parsemodopt(options.process[fi])
 				if not param_dict :
 					print "empty param dict"
 					param_dict={}
@@ -739,7 +744,7 @@ def main():
 		if options.outmode!="float":
 			if options.outnorescale :
 				# This sets the minimum and maximum values to the range for the specified type, which should result in no rescaling
-				outmode=file_mode_map[options.outmode]
+				outmode=emanpathwalker.lib.EMAN2.file_mode_map[options.outmode]
 				data["render_min"]=file_mode_range[outmode][0]
 				data["render_max"]=file_mode_range[outmode][1]
 			else:
@@ -747,18 +752,18 @@ def main():
 				data["render_max"]=data["maximum"]
 
 		if options.unstacking:	#output a series numbered single image files
-			data.write_image(outfile.split('.')[0]+'-'+str(img_index+1).zfill(len(str(nimg)))+ '.' + outfile.split('.')[-1], -1, EMUtil.ImageType.IMAGE_UNKNOWN, False, None, file_mode_map[options.outmode], not(options.swap))
+			data.write_image(outfile.split('.')[0]+'-'+str(img_index+1).zfill(len(str(nimg)))+ '.' + outfile.split('.')[-1], -1, EMUtil.ImageType.IMAGE_UNKNOWN, False, None, emanpathwalker.lib.EMAN2.file_mode_map[options.outmode], not(options.swap))
 		else:   #output a single 2D image or a 2D stack
 			if options.append:
-				data.write_image(outfile, -1, EMUtil.get_image_ext_type(options.outtype), False, None, file_mode_map[options.outmode], not(options.swap))
+				data.write_image(outfile, -1, emanpathwalker.lib.EMUtil.get_image_ext_type(options.outtype), False, None, emanpathwalker.lib.EMAN2.file_mode_map[options.outmode], not(options.swap))
 			else:
-				data.write_image(outfile, img_index, EMUtil.get_image_ext_type(options.outtype), False, None, file_mode_map[options.outmode], not(options.swap))
+				data.write_image(outfile, img_index, emanpathwalker.lib.EMUtil.get_image_ext_type(options.outtype), False, None, emanpathwalker.lib.EMAN2.file_mode_map[options.outmode], not(options.swap))
 
 		img_index += 1
 		for append_option in append_options:	#clean up the multi-option counter for next image
 			index_d[append_option] = 0
 
-	E2end(logid)
+	emanpathwalker.lib.EMAN2.E2end(logid)
 
 
 #parse_file() wil read the input image file and return a list of EMData() object
@@ -774,7 +779,7 @@ def parse_infile(infile, first, last, step):
 		ret.to_value(float(parm[4]))
 		return [ret]
 
-	nimg = EMUtil.get_image_count(infile)
+	nimg = emanpathwalker.lib.EMUtil.get_image_count(infile)
 
 	if (nimg > 1):
 		#print "it appears %s contains %d image" % (infile, nimg)
@@ -804,7 +809,7 @@ def parse_infile(infile, first, last, step):
 
 				data.append(d)
 			return data
-	else: return [EMData(infile,0)]
+	else: return [emanpathwalker.lib.EMData(infile,0)]
 
 
 if __name__ == "__main__":

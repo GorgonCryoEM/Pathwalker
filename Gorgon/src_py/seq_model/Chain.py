@@ -753,7 +753,6 @@ residue.
     for i in residueRange:
         indexes.append(i)
     for i in range(len(indexes)-1):
-        print str(indexes[i])+","+str(indexes[i+1])
         atom0 = self[indexes[i]].getAtom('CA')
         if not atom0:
             continue

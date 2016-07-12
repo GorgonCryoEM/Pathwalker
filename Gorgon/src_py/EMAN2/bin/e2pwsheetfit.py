@@ -4,9 +4,13 @@
 
 #import EMAN2
 #from EMAN2 import *
-import emanpathwalker.lib.EMAN2
-from emanpathwalker.lib.EMAN2 import *
-from emanpathwalker.bin import e2version
+#import emanpathwalker.lib.EMAN2
+#from emanpathwalker.lib.EMAN2 import *
+#from emanpathwalker.bin import e2version
+
+import EMAN2.libpyEM.EMAN2
+from EMAN2.libpyEM.EMAN2 import *
+from EMAN2.programs import e2version
 import random
 import math
 import numpy as np

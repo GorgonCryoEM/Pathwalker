@@ -32,13 +32,15 @@
 #
 
 #from EMAN2 import *
-from emanpathwalker.lib import *
+#from emanpathwalker.lib import *
+from EMAN2.libpyEM.EMAN2 import *
 import random
 from math import *
 import os
 import sys
 #from emanpathwalker.bin.e2simmx import cmponetomany
-from emanpathwalker.bin import e2version
+#from emanpathwalker.bin import e2version
+from EMAN2.programs import e2version
 import traceback
 
 def main():
@@ -48,8 +50,9 @@ def main():
 	Note that you MUST have sufficient RAM to hold at least two copies of the volume in memory. Some segmentation algorithms
 	may require more. The actual segmentation is performed using one of the segment.* processors. 'e2help.py processors |grep segment'
 	for more information (-v 1 will give even more)."""
-	
-	parser = EMAN2.EMArgumentParser(usage=usage,version=e2version.EMANVERSION)
+	#EMAN2.EMArgumentParser(usage=usage,version=e2version.EMANVERSION)
+
+	parser = EMArgumentParser(usage=usage,version=e2version.EMANVERSION)
 
 	parser.add_argument("--verbose", "-v", dest="verbose", action="store", metavar="n", type=int, default=0, help="verbose level [0-9], higner number means higher level of verboseness")
 	parser.add_argument("--process", metavar="processor_name:param1=value1:param2=value2", type=str,default="segment.kmeans:ampweight=1:nseg=50:thr=0.8",
@@ -73,8 +76,8 @@ def main():
 	if options.process[:8]!="segment." :
 		print "You must specify a segment.* processor with any necessary parameters in the form segment.xxxx:parm=value:parm=value"
 		sys.exit(1)
-
-	E2n=EMAN2.E2init(sys.argv,options.ppid)
+	E2n=E2init(sys.argv,options.ppid)
+	#E2n=EMAN2.E2init(sys.argv,options.ppid)
 
 	if options.verbose>0: print "Reading volume"
 	volume=EMData(args[0],0)
@@ -115,8 +118,8 @@ def main():
 		
 	
 	if options.verbose>0: print "Executing segmentation"
-	(processorname, param_dict) = EMAN2.parsemodopt(options.process)
-	seg=volume.process(processorname,param_dict)
+	(processorname, param_dict) = parsemodopt(options.process)
+	seg=volume.process(processorname,param_dict)	
 	seg["apix_x"]=volume["apix_x"]
 	seg["apix_y"]=volume["apix_y"]
 	seg["apix_z"]=volume["apix_z"]
@@ -172,7 +175,7 @@ def main():
 		out=file(options.txtout,"w")
 		for n,i in enumerate(centers): out.write("%d\t%1.3f\t%1.3f\t%1.3f\n"%(n,i[0],i[1],i[2]))
 		out.close()
-	EMAN2.E2end(E2n)
+	E2end(E2n)
 		
 def write_chimera_markers(filename,centers,apix_x,apix_y,apix_z,marker_size=3.0) :
 	"""Writes a set of coordinates (without connectors) in Chimera marker XML format"""

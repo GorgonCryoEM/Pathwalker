@@ -12,8 +12,8 @@ SET(LIB_EM_SOURCE byteorder.cpp
     imageio.cpp
     util.cpp
     emutil.cpp
-    interp.cpp
-    quaternion.cpp
+    ##interp.cpp
+    ##quaternion.cpp
     transform.cpp
     symmetry.cpp
     geometry.cpp
@@ -23,8 +23,8 @@ SET(LIB_EM_SOURCE byteorder.cpp
     #dm3io.cpp
     #dm4io.cpp
     #tifio.cpp
-    hdfio.cpp
-    hdfio2.cpp
+    ##hdfio.cpp
+    ##hdfio2.cpp
     #jpegio.cpp
     emdata.cpp
     emdata_io.cpp
@@ -35,7 +35,7 @@ SET(LIB_EM_SOURCE byteorder.cpp
     emdata_transform.cpp
     sparx/emdata_sparx.cpp
     #pifio.cpp
-    v4l2io.cpp
+    ##v4l2io.cpp
     #vtkio.cpp
     #spiderio.cpp
     #sspiderio.cpp
@@ -56,7 +56,7 @@ SET(LIB_EM_SOURCE byteorder.cpp
     #omapio.cpp
     #situsio.cpp
     #serio.cpp
-    emcache.cpp
+    ##emcache.cpp
     ctf.cpp
     xydata.cpp
     processor.cpp
@@ -70,18 +70,18 @@ SET(LIB_EM_SOURCE byteorder.cpp
     #testutil.cpp
     #analyzer.cpp
     randnum.cpp
-    hdf_filecache.cpp
+    ##hdf_filecache.cpp
     #sparx/fundamentals.cpp
     #sparx/fourierfilter.cpp
     #sparx/rsconvolution.cpp
     #polardata.cpp
-    sparx/native_fft.cpp
+    ##sparx/native_fft.cpp
     sparx/util_sparx.cpp
     sparx/lapackblas.cpp
     #sparx/pca.cpp
-    sparx/varimax.cpp
-    sparx/lbfgsb.cpp
-    sparx/steepest.cpp
+    ##sparx/varimax.cpp
+    ##sparx/lbfgsb.cpp
+    ##sparx/steepest.cpp
     #gorgon/grid_queue.cpp
     #gorgon/grid_queue2.cpp
     #gorgon/volume_data.cpp

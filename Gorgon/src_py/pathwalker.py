@@ -122,7 +122,7 @@ class Pathwalker(BaseDockWidget):
       pdbOut = "--output="+currentDir+"path0.pdb"
       subprocess.call(['python',whelixScript,mapIn,pdbIn,pdbOut,densityThreshold,'--mapwohelix map_nohlx.mrc',minLength,lengthThreshold,angleThreshold])
       self.app.viewers['calpha'].unloadData()
-      self.generatePathwalkedAtoms("path0.pdb")
+      self.generatePathwalkedAtoms(currentDir+"path0.pdb")
       print 'Finished finding helices'
 
   def findSheets(self):
@@ -139,7 +139,7 @@ class Pathwalker(BaseDockWidget):
       pdbOut = "--output="+currentDir+"path0.pdb"
       subprocess.call(['python',sheetScript,pdbIn,pdbOut,nsheets,minLength,scoreThreshold])
       self.app.viewers['calpha'].unloadData()
-      self.generatePathwalkedAtoms("path0.pdb")
+      self.generatePathwalkedAtoms(currentDir+"path0.pdb")
       print 'Finished finding sheets'
 
   def clearCTermini(self):

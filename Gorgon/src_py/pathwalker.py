@@ -116,7 +116,7 @@ class Pathwalker(BaseDockWidget):
       whelixScript = currentDir+"EMAN2/bin/e2pwhelixfit.py"
       mapIn = "--mapin="+currentDir+"EMAN2/bin/map.mrc"
       pdbIn = "--pdbin="+currentDir+"path0.pdb"
-      if not os.path.isfile(currentDir+"path0.pdb"):
+      if not os.path.isfile(currentDir+"path0.pdb") or len(self.app.viewers['calpha'].main_chain.atoms) == 0:
         print "Need to pathwalk first"
         return
       pdbOut = "--output="+currentDir+"path0.pdb"

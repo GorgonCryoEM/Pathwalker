@@ -4,8 +4,8 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${EMAN_SOURCE_DIR}/libpyEM)
 
 INCLUDE_DIRECTORIES(
 			${EMAN_SOURCE_DIR}/libEM
-			${EMAN_SOURCE_DIR}/libpyEM 
-			${BOOST_INCLUDE_PATH} 
+			${EMAN_SOURCE_DIR}/libpyEM
+			${GORGON_INCLUDE_DIRS}  
 			${PYTHON_INCLUDE_PATH}
 			)
 
@@ -23,14 +23,14 @@ MACRO(ADD_PYSTE_LIB_WITH_SRC libname srcfile)
 	ELSE(WIN32)
 		IF(APPLE)
 			ADD_LIBRARY(${libname} SHARED lib${libname}.cpp ${srcfile})
-			TARGET_LINK_LIBRARIES(${libname} EM2 ${BOOST_LIBRARY} ${PYTHON_LIBRARY})
+			TARGET_LINK_LIBRARIES(${libname} EM2 ${GORGON_LIBRARIES})
 			set_target_properties(${libname} PROPERTIES SUFFIX ".so")
 			INSTALL(FILES ${LIBRARY_OUTPUT_PATH}/lib${libname}.so
 				DESTINATION	${LIBRARY_OUTPUT_PATH}
 				RENAME lib${libname}.so)	
 		ELSE(APPLE)
 			ADD_LIBRARY(${libname} SHARED lib${libname}.cpp ${srcfile})
-			TARGET_LINK_LIBRARIES(${libname} EM2 ${BOOST_LIBRARY})
+			TARGET_LINK_LIBRARIES(${libname} EM2 ${GORGON_LIBRARIES})
 			set_target_properties(${libname} PROPERTIES SUFFIX ".so")
 			INSTALL(FILES ${LIBRARY_OUTPUT_PATH}/lib${libname}.so
 				DESTINATION	${LIBRARY_OUTPUT_PATH}

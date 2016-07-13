@@ -171,6 +171,9 @@ def main():
 				nl=0
 			else:
 				nl+=1
+		if maxstart == -1:
+			print "No chains in current sheet"
+			continue
 		shtstart=topi[maxstart]+1
 		shtend=topi[maxstart]+maxnl
 

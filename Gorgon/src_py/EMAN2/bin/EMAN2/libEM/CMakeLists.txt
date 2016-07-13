@@ -8,7 +8,7 @@ SET(LIB_EM_SOURCE byteorder.cpp
     #boxingtools.cpp
     emobject.cpp
     emfft.cpp
-    log.cpp
+    #log.cpp
     imageio.cpp
     util.cpp
     emutil.cpp
@@ -22,10 +22,10 @@ SET(LIB_EM_SOURCE byteorder.cpp
     mrcio.cpp
     #dm3io.cpp
     #dm4io.cpp
-    tifio.cpp
+    #tifio.cpp
     hdfio.cpp
     hdfio2.cpp
-    jpegio.cpp
+    #jpegio.cpp
     emdata.cpp
     emdata_io.cpp
     emdata_core.cpp

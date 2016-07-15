@@ -21,8 +21,7 @@ namespace wustl_mm {
 			bool GetSelected();
 			void SetAtom0Ix(unsigned long long ix);
 			void SetAtom1Ix(unsigned long long ix);
-			void SetSelected(bool selected);
-
+			void SetSelected(bool selected);		
 			bool tempDeleted;
 			bool original;
 			bool tempNew;
@@ -30,7 +29,6 @@ namespace wustl_mm {
 			unsigned long long atom0Ix;
 			unsigned long long atom1Ix;
 			bool selected;
-			
 		};
 
 		PDBBond::PDBBond() {

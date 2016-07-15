@@ -188,7 +188,8 @@ class Pathwalker(BaseDockWidget):
       if len(selectedChain.atoms) == 0:
         print "No pseudoatoms to pathwalk. Generate or load pseudoatoms first."
         return
-      selectedChain.saveToPDBPathwalker("pseudoatoms.pdb")
+      currentDir = os.path.dirname(os.path.abspath(__file__))+"/"
+      selectedChain.saveToPDBPathwalker(currentDir+"pseudoatoms.pdb")
       deletedAtoms = "--deletedatoms=" + str(self.app.viewers['calpha'].deletedAtoms).translate(None, '[],\'')
       dmin = "--dmin="+str(self.ui.lineEdit_9.text())
       dmax = "--dmax="+str(self.ui.lineEdit_10.text())
@@ -210,7 +211,7 @@ class Pathwalker(BaseDockWidget):
 
       cTerminus = "--start="+str(self.ui.lineEdit_13.text())
       nTerminus = "--end="+str(self.ui.lineEdit_14.text())
-      currentDir = os.path.dirname(os.path.abspath(__file__))+"/"
+      
       pathwalkerfile = currentDir + 'EMAN2/bin/e2pathwalker.py'
       atomfile = currentDir + 'pseudoatoms.pdb'
       mapfile = "--mapfile="+currentDir+"EMAN2/bin/map.mrc"

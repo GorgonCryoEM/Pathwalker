@@ -38,7 +38,7 @@ import time
 import shelve
 import re
 import cPickle
-import zlib
+#import zlib
 import socket
 import subprocess
 from EMAN2_cppwrap import *

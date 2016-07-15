@@ -125,7 +125,8 @@ def js_list_dicts(url):
 from ..libpyEMData2 import *
 from ..libpyAligner2 import *
 from ..libpyTransform2 import *
-import base64,zlib
+import base64
+#import zlib
 
 def emdata_to_jsondict(obj):
 	"""This is tacked on to EMData objects to give them non-pickle JSON support"""

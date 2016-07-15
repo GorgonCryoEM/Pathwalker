@@ -4952,7 +4952,7 @@ class iterImagesStack:
 
 
 from cPickle import dumps,loads
-from zlib import compress,decompress
+#from zlib import compress,decompress
 from struct import pack,unpack
 
 def pack_message(data):

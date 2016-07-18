@@ -113,16 +113,16 @@ class Pathwalker(BaseDockWidget):
       lengthThreshold = "--lenthr="+str(self.ui.spinBox_3.value())
       angleThreshold = "--angthr="+str(self.ui.doubleSpinBox.value())
       currentDir = os.path.dirname(os.path.abspath(__file__))+"/"
-      whelixScript = currentDir+"EMAN2/bin/e2pwhelixfit.py"
-      mapIn = "--mapin="+currentDir+"EMAN2/bin/map.mrc"
-      pdbIn = "--pdbin="+currentDir+"path0.pdb"
-      if not os.path.isfile(currentDir+"path0.pdb") or len(self.app.viewers['calpha'].main_chain.atoms) == 0:
+      whelixScript = currentDir+"e2pwhelixfit.py"
+      mapIn = "--mapin="+"/tmp/"+"map.mrc"
+      pdbIn = "--pdbin="+"/tmp/"+"path0.pdb"
+      if not os.path.isfile("/tmp/"+"path0.pdb") or len(self.app.viewers['calpha'].main_chain.atoms) == 0:
         print "Need to pathwalk first"
         return
-      pdbOut = "--output="+currentDir+"path0.pdb"
+      pdbOut = "--output="+"/tmp/"+"path0.pdb"
       subprocess.call(['python',whelixScript,mapIn,pdbIn,pdbOut,densityThreshold,'--mapwohelix map_nohlx.mrc',minLength,lengthThreshold,angleThreshold])
       self.app.viewers['calpha'].unloadData()
-      self.generatePathwalkedAtoms(currentDir+"path0.pdb")
+      self.generatePathwalkedAtoms("/tmp/"+"path0.pdb")
       print 'Finished finding helices'
 
   def findSheets(self):
@@ -131,15 +131,15 @@ class Pathwalker(BaseDockWidget):
       minLength = "--minlen="+str(self.ui.spinBox_5.value())
       scoreThreshold = "--cutoff="+str(self.ui.doubleSpinBox_2.value())
       currentDir = os.path.dirname(os.path.abspath(__file__))+"/"
-      sheetScript = currentDir + 'EMAN2/bin/e2pwsheetfit.py'
-      pdbIn = "--pdbin="+currentDir+"path0.pdb"
-      if not os.path.isfile(currentDir+"path0.pdb"):
+      sheetScript = currentDir + 'e2pwsheetfit.py'
+      pdbIn = "--pdbin="+"/tmp/"+"path0.pdb"
+      if not os.path.isfile("/tmp/"+"path0.pdb"):
         print "Need to pathwalk first"
         return
-      pdbOut = "--output="+currentDir+"path0.pdb"
+      pdbOut = "--output="+"/tmp/"+"path0.pdb"
       subprocess.call(['python',sheetScript,pdbIn,pdbOut,nsheets,minLength,scoreThreshold])
       self.app.viewers['calpha'].unloadData()
-      self.generatePathwalkedAtoms(currentDir+"path0.pdb")
+      self.generatePathwalkedAtoms("/tmp/"+"path0.pdb")
       print 'Finished finding sheets'
 
   def clearCTermini(self):
@@ -168,12 +168,12 @@ class Pathwalker(BaseDockWidget):
       processors += currentProcessor
     paramStrings = processors+":ampweight="+str(self.ui.lineEdit_6.text())+":nseg="+str(self.ui.lineEdit_5.text())+":verbose=1:minsegsep="+str(self.ui.lineEdit_8.text())+":pseudoatom=1:thr="+str(self.ui.lineEdit_7.text())
     currentDir = os.path.dirname(os.path.abspath(__file__))+"/"
-    segmentFile = currentDir + "EMAN2/bin/e2segment3d.py"
-    mapFile = currentDir + "EMAN2/bin/map.mrc"
+    segmentFile = currentDir + "e2segment3d.py"
+    mapFile = "/tmp/" + "map.mrc"
     if not os.path.isfile(mapFile):
       print "Need to preprocess first"
       return 
-    atomFile = currentDir + "pseudoatoms.pdb"
+    atomFile = "/tmp/" + "pseudoatoms.pdb"
     command = "python " + segmentFile + " " + mapFile + " --pdbout=" + atomFile + " " + paramStrings
     os.system(command)
     self.generateAtoms(atomFile)
@@ -189,7 +189,7 @@ class Pathwalker(BaseDockWidget):
         print "No pseudoatoms to pathwalk. Generate or load pseudoatoms first."
         return
       currentDir = os.path.dirname(os.path.abspath(__file__))+"/"
-      selectedChain.saveToPDBPathwalker(currentDir+"pseudoatoms.pdb")
+      selectedChain.saveToPDBPathwalker("/tmp/"+"pseudoatoms.pdb")
       deletedAtoms = "--deletedatoms=" + str(self.app.viewers['calpha'].deletedAtoms).translate(None, '[],\'')
       dmin = "--dmin="+str(self.ui.lineEdit_9.text())
       dmax = "--dmax="+str(self.ui.lineEdit_10.text())
@@ -212,10 +212,10 @@ class Pathwalker(BaseDockWidget):
       cTerminus = "--start="+str(self.ui.lineEdit_13.text())
       nTerminus = "--end="+str(self.ui.lineEdit_14.text())
       
-      pathwalkerfile = currentDir + 'EMAN2/bin/e2pathwalker.py'
-      atomfile = currentDir + 'pseudoatoms.pdb'
-      mapfile = "--mapfile="+currentDir+"EMAN2/bin/map.mrc"
-      outfile = "--output="+currentDir+"path0.pdb"
+      pathwalkerfile = currentDir + 'e2pathwalker.py'
+      atomfile = "/tmp/" + 'pseudoatoms.pdb'
+      mapfile = "--mapfile="+"/tmp/"+"map.mrc"
+      outfile = "--output="+"/tmp/"+"path0.pdb"
       if cTerminus == "--start=":
         if nTerminus == "--end=":
           subprocess.call(['python',pathwalkerfile,atomfile, mapfile,outfile,deletedAtoms,runs,'--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,bondsToPrevent,newBonds])
@@ -227,7 +227,7 @@ class Pathwalker(BaseDockWidget):
         else:
           subprocess.call(['python',pathwalkerfile,atomfile, mapfile,outfile,deletedAtoms,runs,'--solver=lkh','--overwrite',dmin,dmax,threshold,mapweight,nTerminus,cTerminus,bondsToPrevent,newBonds])
       self.app.viewers['calpha'].unloadData()
-      pathfile = currentDir + "path0.pdb"
+      pathfile = "/tmp/" + "path0.pdb"
       self.generatePathwalkedAtoms(pathfile)
       self.app.viewers['calpha'].emitModelChanged()
       self.app.viewers['calpha'].deletedatoms = []
@@ -427,10 +427,10 @@ class Pathwalker(BaseDockWidget):
           currentProcessor += " "
         preprocessors += currentProcessor
       currentDir = os.path.dirname(os.path.abspath(__file__))+"/"
-      command = "python " + '"' + currentDir + "EMAN2/bin/e2proc3d.py" + '"' + " " + '"' + self.volumeName + '"' + " " + currentDir + "EMAN2/bin/map.mrc " + preprocessors
+      command = "python " + '"' + currentDir + "e2proc3d.py" + '"' + " " + '"' + self.volumeName + '"' + " " + "/tmp/" + "map.mrc " + preprocessors
       print command
       os.system(command)
-      outputMap = currentDir + "EMAN2/bin/map.mrc"
+      outputMap = "/tmp/" + "map.mrc"
       self.app.viewers["volume"].loadDataFromFile(outputMap)
 
 

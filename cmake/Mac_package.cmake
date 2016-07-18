@@ -5,13 +5,6 @@ install(CODE "execute_process(COMMAND ${PYTHON_EXECUTABLE} ${run_dir}/setup.py p
     COMPONENT "Package"
     )
 
-
-install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E rename
-                                        ${run_dir}/libpyGORGON.so
-                                        ${package_dir}/Gorgon.app/Contents/Frameworks/libpyGORGON.so
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR})"
-    COMPONENT "Package"
-    )
     
 install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E rename
                                         ${package_dir}/Gorgon.app/Contents/Frameworks/libpyGORGON.so

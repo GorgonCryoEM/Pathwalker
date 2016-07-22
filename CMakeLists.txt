@@ -63,8 +63,8 @@ list(APPEND GORGON_INCLUDE_DIRS
 set(Gorgon_source ${CMAKE_CURRENT_SOURCE_DIR}/Gorgon/src_py)
 link_directories(${Boost_LIBRARY_DIR})
 include_directories(${GORGON_INCLUDE_DIRS})
-include_directories(ExternalLibraries/EMAN2)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ExternalLibraries/EMAN2/)
+include_directories(bin/EMAN2)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/bin/EMAN2/)
 ADD_LIBRARY(pyGORGON MODULE Gorgon/src_cpp/LibPyGorgon.cpp)
 target_link_libraries(pyGORGON ${GORGON_LIBRARIES})
 

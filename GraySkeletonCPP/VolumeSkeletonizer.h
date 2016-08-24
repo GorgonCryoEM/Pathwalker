@@ -1600,7 +1600,7 @@ namespace wustl_mm {
 					thinnedVolume->skeleton(threshold, preserve, preserve);
 					break;
 				case EXTREMAL_CURVE :
-					thinnedVolume->extremalCurveSkeleton(threshold, preserve);
+					//thinnedVolume->extremalCurveSkeleton(threshold, preserve);
 					break;
 			}
 
@@ -1929,7 +1929,7 @@ namespace wustl_mm {
 		Volume * VolumeSkeletonizer::ExtremalCurveSkeleton(Volume * imageVol) {
 			//cout << "imageVol " << imageVol->getSizeX() << endl;
 			//Volume * newVol = new Volume(imageVol->getSizeX(), imageVol->getSizeY(), imageVol->getSizeZ());
-			imageVol -> extremalCurveSkeleton(0.5, imageVol);
+			imageVol -> extremalCurveSkeleton(2, imageVol, 256, 256, 50, 50, 0.5, 0.5, 3);
 			return imageVol;
 		}
 

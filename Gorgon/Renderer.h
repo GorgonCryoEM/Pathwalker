@@ -213,7 +213,8 @@ namespace wustl_mm {
 		}
 
 		void Renderer::DrawLine(Vector3DFloat pt1, Vector3DFloat pt2) {
-			glBegin(GL_LINES);			
+			glBegin(GL_LINES);
+			glColor3f(1.0f,0.0,0.0);
 			glVertex3f(pt1.X(), pt1.Y(), pt1.Z());
 			glVertex3f(pt2.X(), pt2.Y(), pt2.Z());
 			glEnd();

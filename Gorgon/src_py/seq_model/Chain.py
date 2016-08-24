@@ -753,6 +753,7 @@ residue.
     for i in residueRange:
         indexes.append(i)
     for i in range(len(indexes)-1):
+        print str(indexes[i])+","+str(indexes[i+1])
         atom0 = self[indexes[i]].getAtom('CA')
         if not atom0:
             continue
@@ -989,8 +990,8 @@ This changes the pdbID and chainID attributes of a Chain instance.
   def printDeletedBonds(self):
     for i in self.residueRange():
         atom = self[i].getAtom('CA')
-        if atom.getDeletedBondAtom() != 18446744073709551615 :
-            print atom.getDeletedBondAtom()
+        #if atom.getDeletedBondAtom() != 18446744073709551615 :
+            #print atom.getDeletedBondAtom()
         #if atom.getDeletedBondAtom() != -1:
          #   print "current deleted bonds" + str(atom.getResSeq())
 

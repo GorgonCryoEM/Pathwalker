@@ -37,6 +37,7 @@ class BaseViewer(QtOpenGL.QGLWidget):
         self.connect(self, QtCore.SIGNAL("modelChanged()"), self.modelChanged) 
         self.connect(self, QtCore.SIGNAL("modelLoaded()"), self.modelChanged) 
         self.connect(self, QtCore.SIGNAL("modelUnloaded()"), self.modelChanged)
+        self.connect(self, QtCore.SIGNAL("modelPathwalker()"), self.modelChangedPathwalker) 
         self.connect(self.app.themes, QtCore.SIGNAL("themeChanged()"), self.themeChanged)           
         self.glLists = []
         self.showBox = False
@@ -293,12 +294,27 @@ class BaseViewer(QtOpenGL.QGLWidget):
 
     def draw(self):
         glPushMatrix()
-        #location = [self.renderer.getOriginX(), self.renderer.getOriginY(), self.renderer.getOriginZ()]
+        location = [self.renderer.getOriginX(), self.renderer.getOriginY(), self.renderer.getOriginZ()]
+        minX = self.renderer.getMin(0)
+        minY = self.renderer.getMin(1)
+        minZ = self.renderer.getMin(2)
+        maxX = self.renderer.getMax(0)
+        maxY = self.renderer.getMax(1)
+        maxZ = self.renderer.getMin(2)
+        spacingTransX = (self.renderer.getSpacingX() - 1.0)*(maxX - minX)
+        spacingTransY = (self.renderer.getSpacingY() - 1.0)*(maxY - minY)
+        spacingTransZ = (self.renderer.getSpacingZ() - 1.0)*(maxZ - minZ)
+        centerX = (maxX - minX)/2.0
+        centerY = (maxY - minY)/2.0
+        centerZ = (maxZ - minZ)/2.0
+        #glTranslated(originsX, originsY, originsZ)
         #glTranslated(location[0], location[1], location[2])
+        #glTranslated(-centerX, -centerY, -centerZ)
+
         glMultMatrixf(self.rotation)
         scale = [self.renderer.getSpacingX(), self.renderer.getSpacingY(), self.renderer.getSpacingZ()]
-        glScaled(scale[0], scale[1], scale[2])   
-                
+        
+        glScaled(scale[0], scale[1], scale[2])        
         glPushAttrib(GL_DEPTH_BUFFER_BIT | GL_LIGHTING_BIT | GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT)
         glEnable(GL_DEPTH_TEST);        
         glDepthMask(GL_TRUE);
@@ -372,6 +388,38 @@ class BaseViewer(QtOpenGL.QGLWidget):
     
     def getDrawVisibility(self):
         return [self.modelVisible, self.model2Visible, self.model3Visible]
+        
+    def modelChangedPathwalker(self):
+        self.updateActionsAndMenus()
+        for list in self.glLists:
+            glDeleteLists(list,1)
+        self.glLists = []
+            
+        visibility = self.getDrawVisibility()
+        colors = self.getDrawColors()
+        
+        glPushAttrib(GL_LIGHTING_BIT | GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
+                         
+        self.extraDrawingRoutines()
+        
+        if(self.loaded):
+            for i in range(3):
+                list = glGenLists(1)
+                glNewList(list, GL_COMPILE)
+                self.glLists.append(list)
+
+                if(colors[i].alpha() < 255):
+                    glDepthFunc(GL_LESS)        
+                    glColorMask(False, False, False, False)
+                    self.renderer.drawBackboneModelPathwalker(i, False)
+                    glDepthFunc(GL_LEQUAL)
+                    glColorMask(True, True, True, True) 
+                    self.renderer.drawBackboneModelPathwalker(i, self.selectEnabled or self.mouseMoveEnabled)
+                else:
+                    self.renderer.drawBackboneModelPathwalker(i, self.selectEnabled or self.mouseMoveEnabled)                    
+                glEndList()         
+                                    
+        glPopAttrib()
 
     def modelChanged(self):
         self.updateActionsAndMenus()

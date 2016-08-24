@@ -11,6 +11,7 @@
 #include <Foundation/StringUtils.h>
 #include <string>
 #include <MathTools/Matrix.h>
+#include <list>
 
 using namespace wustl_mm::MathTools;
 using namespace wustl_mm::Foundation;
@@ -58,7 +59,7 @@ namespace wustl_mm {
 			unsigned long long  GetPrevCAHash(); // getting the Next and Previous hashes added
 			unsigned long long  GetNextCAHash(); // for rendering purposes
 			unsigned long long GetDeletedBondAtom();
-		
+			list<int> bondedAtoms;
 
 			int				GetFlag();		// Purely for implementation purposes
 			float			GetCorrelationScore();
@@ -96,7 +97,16 @@ namespace wustl_mm {
 			void SetPrevCAHash(unsigned long long prevHash);  // previous and next CAs identifiable for rendering purposes
 			void SetNextCAHash(unsigned long long nextHash);  // these are implemented naively rather than using a function
 															  // to generate a hash code	
-			
+			bool isMax;
+			bool isMin;
+			bool isSaddle;
+
+			float saliency[3];
+			float intensity;
+			float eigenvalue;
+			float eigenVector0[3];
+			float eigenVector1[3];
+			float eigenVector2[3];
 		private:
 			static unsigned long long GetCharIndex(char c);
 			static unsigned long long GetPDBIdIndex(string pdbId);
@@ -129,12 +139,14 @@ namespace wustl_mm {
 			unsigned long long nextCAHash;
 			bool			prevWasSet;
 			bool			nextWasSet;
-			//bool			deletedBond;
+
 			unsigned long long deletedBondAtom;
 
 			float			correlationScore;
 			float			skeletonScore;
 			float			geometryScore;
+
+			
 		};
 
 		PDBAtom::PDBAtom() {
@@ -173,6 +185,13 @@ namespace wustl_mm {
 			skeletonScore = 0;
 			geometryScore = 0;
 
+			isMin = false;
+			isMax = false;
+			saliency[0] = -1.0;
+			saliency[1] = -1.0;
+			saliency[2] = -1.0;
+			intensity = -1.0;
+			eigenvalue = -1.0;
 		}
 
 		PDBAtom::PDBAtom(string pdbId, char chainId, unsigned int resSeq, string name) {
@@ -207,6 +226,15 @@ namespace wustl_mm {
 			skeletonScore = 0;
 			geometryScore = 0;
 			deletedBondAtom = -1;
+
+			isMin = false;
+			isMax = false;
+
+			saliency[0] = -1.0;
+			saliency[1] = -1.0;
+			saliency[2] = -1.0;
+			intensity = -1.0;
+			eigenvalue = -1.0;
 		}
 
 		PDBAtom::PDBAtom(string PDBLine, string pdbId) {
@@ -242,6 +270,15 @@ namespace wustl_mm {
 			skeletonScore = 0;
 			geometryScore = 0;
 			deletedBondAtom = -1;
+
+			isMin = false;
+			isMax = false;
+
+			saliency[0] = -1.0;
+			saliency[1] = -1.0;
+			saliency[2] = -1.0;
+			intensity = -1.0;
+			eigenvalue = -1.0;
 		}
 
 		void PDBAtom::Print() {
@@ -365,6 +402,7 @@ namespace wustl_mm {
 			if(ix == ATOM_ROLE_COUNT) {
 				printf("Atom role [%s] not defined.. inaccurate hashing will occur!\n", (char *)atomType.c_str());
 			}
+			//cout << "ix " << ix << endl;
 			return ix;
 		}	
 		unsigned long long PDBAtom::GetHashKey() {
@@ -408,6 +446,7 @@ namespace wustl_mm {
 		}
 
 		unsigned long long PDBAtom::ConstructHashKey(string pdbId, char chainId, unsigned int resSeq, string name) {
+			//cout << pdbId << " " << chainId << " " << resSeq << " " << name << endl;
 			unsigned long long chainIDCount = 37;
 			unsigned long long residueNumCount = 10000;
 			unsigned long long atomTypeCount = ATOM_ROLE_COUNT + 1;

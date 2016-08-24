@@ -80,7 +80,9 @@ namespace wustl_mm {
 			void PerformSmoothLaplacian(double convergenceRate, int iterations);
 			Volume * GetVolume();
 			Volume * PerformBinarySkeletonizationJu2007(double threshold, int minCurveSize, int minSurfaceSize);
-			Volume * PerformExtremalCurve2016();
+
+
+			Volume * PerformExtremalCurve2016(int kernelSize, int width, int height, int slices, int resolution, float thickness, float isovalue, int kernelSizeGone);
 			Volume * PerformGrayscaleSkeletonizationAbeysinghe2008(double startDensity, int stepCount, int minCurveSize, int minSurfaceSize, int curveRadius, int surfaceRadius, int skeletonSmoothenRadius);
 			Volume * PerformPreservingGrayscaleSkeletonizationAbeysinghe2008(NonManifoldMesh_Annotated * preserveMesh, double startDensity, int stepCount, int minCurveSize, int minSurfaceSize, int curveRadius, int surfaceRadius, int skeletonSmoothenRadius);
 			void SetSpacing(float spX, float spY, float spZ);
@@ -374,6 +376,7 @@ namespace wustl_mm {
 		void VolumeRenderer::Draw(int subSceneIndex, bool selectEnabled) {
 			if(subSceneIndex == 0) {
 				if((viewingType == VIEWING_TYPE_ISO_SURFACE) && (surfaceMesh != NULL)) {
+					cout << "surface mesh " << endl;
 					surfaceMesh->Draw(true, selectEnabled, useDisplayRadius, displayRadius, radiusOrigin);
 				} else if((viewingType == VIEWING_TYPE_CROSS_SECTION) || (viewingType == VIEWING_TYPE_SOLID)) {
 					glPushAttrib(GL_LIGHTING_BIT | GL_ENABLE_BIT);
@@ -409,10 +412,11 @@ namespace wustl_mm {
 						double xRatio = (double)dataVolume->getSizeX() / (double)textureSizeX;
 						double yRatio = (double)dataVolume->getSizeY() / (double)textureSizeY;
 						double zRatio = (double)dataVolume->getSizeZ() / (double)textureSizeZ;
-
+						cout << "reached cutting mesh " << endl;
 						for(unsigned int i = 0; i < cuttingMesh->faces.size(); i++) {
 							glBegin(GL_POLYGON);
 							for(unsigned int j = 0; j < cuttingMesh->faces[i].vertexIds.size(); j++) {
+
 								vertex = cuttingMesh->vertices[cuttingMesh->GetVertexIndex(cuttingMesh->faces[i].vertexIds[j])].position;
 								glTexCoord3d(vertex.X() * xRatio, vertex.Y()* yRatio, vertex.Z() * zRatio);
 								glVertex3f(vertex.X() * (float)dataVolume->getSizeX(), vertex.Y() * (float)dataVolume->getSizeY(), vertex.Z() * (float)dataVolume->getSizeZ());
@@ -992,14 +996,54 @@ namespace wustl_mm {
 
 		Volume * VolumeRenderer::PerformBinarySkeletonizationJu2007(double threshold, int minCurveSize, int minSurfaceSize) {
 			VolumeSkeletonizer * skeletonizer = new VolumeSkeletonizer(0,0,0,DEFAULT_SKELETON_DIRECTION_RADIUS);
+			//Volume * extremalVol = skeletonizer->PerformPureJuSkeletonization(dataVolume, "", threshold, minCurveSize, minSurfaceSize);
 			Volume * outputVol = skeletonizer->PerformPureJuSkeletonization(dataVolume, "", threshold, minCurveSize, minSurfaceSize);
 			delete skeletonizer;
 			return outputVol;
 		}
 
-		Volume * VolumeRenderer::PerformExtremalCurve2016() {
+		Volume * VolumeRenderer::PerformExtremalCurve2016(int kernelSize, int width, int height, int slices, int resolution, float thickness, float isovalue, int kernelSizeGone) {
 			//VolumeSkeletonizer * skeletonizer = new VolumeSkeletonizer(0,0,0,DEFAULT_SKELETON_DIRECTION_RADIUS);
-			dataVolume -> extremalCurveSkeleton(0.5, dataVolume);
+						
+			float xMinR = 100000.0, yMinR = 100000.0, zMinR = 100000.0, xMaxR = -100000.0, yMaxR = -100000.0, zMaxR = -100000.0;
+			Vector3DFloat currentVertex;
+			for(unsigned int i = 0; i < surfaceMesh->faces.size(); i++) {
+							
+								for(unsigned int j = 0; j < 3; j++) {
+									int k = surfaceMesh->faces[i].vertexHashes[j];
+									
+								
+								
+									if(surfaceMesh->vertices[k].position.values[0] < xMinR) {
+										xMinR = surfaceMesh->vertices[k].position.values[0];
+									}
+									if(surfaceMesh->vertices[k].position.values[0] > xMaxR) {
+										xMaxR = surfaceMesh->vertices[k].position.values[0];
+									}
+									if(surfaceMesh->vertices[k].position.values[1] < yMinR) {
+										yMinR = surfaceMesh->vertices[k].position.values[1];
+									}
+									if(surfaceMesh->vertices[k].position.values[1] > yMaxR) {
+										yMaxR = surfaceMesh->vertices[k].position.values[1];
+									}
+									if(surfaceMesh->vertices[k].position.values[2] < zMinR) {
+										zMinR = surfaceMesh->vertices[k].position.values[2];
+									}
+									if(surfaceMesh->vertices[k].position.values[2] > zMaxR) {
+										zMaxR = surfaceMesh->vertices[k].position.values[2];
+									}
+								}
+							
+						}
+						cout << "mins and maxes " << std::to_string(xMinR) << " " << std::to_string(yMinR) << " " << std::to_string(zMinR) 
+						<< " "<< std::to_string(xMaxR) << " " << std::to_string(yMaxR) << " " << std::to_string(zMaxR) << endl;
+			dataVolume -> setXMin(xMinR);
+			dataVolume -> setYMin(yMinR);
+			dataVolume -> setZMin(zMinR);
+			dataVolume -> setXMax(xMaxR);
+			dataVolume -> setYMax(yMaxR);
+			dataVolume -> setZMax(zMaxR);
+			dataVolume -> extremalCurveSkeleton(kernelSize, dataVolume, width, height, slices, resolution, thickness, isovalue, kernelSize);
 			//Volume * outputVol = skeletonizer->PerformExtremalCurveSkeletonization(dataVolume);
 			//delete skeletonizer;
 			return dataVolume;

@@ -36,13 +36,17 @@ namespace wustl_mm {
 			Vector3DFloat GetFaceNormal(unsigned long long faceHash);
 			void Draw(bool drawSurfaces, bool annotateSurfaces, bool fadeExtreme, int radius, Vector3DFloat center);
 			void SaveFile(string fileName);
-
-
-		private:
+			//vector<TriangleMeshFace<TFace> > getFaces();
+			//TriangleMeshVertexType getVertices();
 			typedef map< unsigned long long, TriangleMeshVertex< TVertex > > TriangleMeshVertexType;
-			
 			TriangleMeshVertexType vertices;
 			vector<TriangleMeshFace<TFace> > faces;
+
+		private:
+			//typedef map< unsigned long long, TriangleMeshVertex< TVertex > > TriangleMeshVertexType;
+			
+			//TriangleMeshVertexType vertices;
+			//vector<TriangleMeshFace<TFace> > faces;
 		};
 
 		template <class TVertex, class TFace> TriangleMesh<TVertex, TFace>::TriangleMesh() {
@@ -93,6 +97,14 @@ namespace wustl_mm {
 			normal.Normalize();
 			return normal;
 		}
+
+		//vector<TriangleMeshFace<TFace> > getFaces() {
+		//	return faces;
+		//}
+		
+		//TriangleMeshVertexType getVertices() {
+		//	return vertices;
+		//}
 
 		template <class TVertex, class TFace> Vector3DFloat TriangleMesh<TVertex, TFace>::GetFaceNormal(unsigned long long faceHash) {
 			TriangleMeshFace<TFace> face = faces[faceHash];

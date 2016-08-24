@@ -46,6 +46,8 @@ set( EXTERNAL_PROJECTS
         Python
         Boost
         FFTW3F
+        Eigen
+        TBB
         )
 
 foreach(proj ${EXTERNAL_PROJECTS})
@@ -56,18 +58,22 @@ endforeach()
 # Include and link directories, targets, target link libraries
 # --------------------------------------------------------------------
 list(APPEND GORGON_INCLUDE_DIRS 
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${GORGON_EXTERNAL_LIBRARIES_DIR}
-	)
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${GORGON_EXTERNAL_LIBRARIES_DIR}
+    )
 
 set(Gorgon_source ${CMAKE_CURRENT_SOURCE_DIR}/Gorgon/src_py)
 link_directories(${Boost_LIBRARY_DIR})
 include_directories(${GORGON_INCLUDE_DIRS})
-include_directories(ExternalLibraries/EMAN2)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ExternalLibraries/EMAN2/)
+#include_directories(${TBB_INCLUDE_DIR})
+include_directories(bin/EMAN2)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/bin/EMAN2/)
 ADD_LIBRARY(pyGORGON MODULE Gorgon/src_cpp/LibPyGorgon.cpp)
+target_link_libraries(pyGORGON ${TBB_LIBRARIES})
 target_link_libraries(pyGORGON ${GORGON_LIBRARIES})
 
+
+#target_link_libraries(pyGORGON ${TBB_LIBRARIES})
 
 # --------------------------------------------------------------------
 # C++11 flags
@@ -104,7 +110,7 @@ install(TARGETS pyGORGON
 
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/Gorgon/src_py/
         DESTINATION ${run_dir}
-        USE_SOURCE_PERMISSIONS
+        #USE_SOURCE_PERMISSIONS
         COMPONENT "Gorgon"
         FILES_MATCHING
         PATTERN "*"

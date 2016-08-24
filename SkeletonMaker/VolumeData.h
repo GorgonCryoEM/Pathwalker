@@ -67,6 +67,7 @@ namespace wustl_mm {
 		}
 
 		VolumeData::VolumeData(VolumeData& obj) {
+			cout << "volume init 1" << endl;
 			for (int i = 0; i < 3; i++) {
 				size[i] = obj.size[i];
 				spacing[i] = obj.spacing[i];
@@ -80,10 +81,12 @@ namespace wustl_mm {
 		}
 
 		VolumeData::VolumeData(int sizeX, int sizeY, int sizeZ) {
+			cout << "volume init 2" << endl;
 			InitializeVolumeData(sizeX, sizeY, sizeZ, 1, 1, 1, 0, 0, 0, true, 0);
 		}
 
 		VolumeData::VolumeData(int sizeX, int sizeY, int sizeZ, float val) {
+			cout << "volume init 3" << endl;
 			InitializeVolumeData(sizeX, sizeY, sizeZ, 1, 1, 1, 0, 0, 0, true, val);
 		}
 

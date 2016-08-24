@@ -19,12 +19,39 @@ namespace wustl_mm {
 			unsigned long long GetAtom0Ix();
 			unsigned long long GetAtom1Ix();
 			bool GetSelected();
+			bool GetVisible();
 			void SetAtom0Ix(unsigned long long ix);
 			void SetAtom1Ix(unsigned long long ix);
-			void SetSelected(bool selected);		
+			void SetSelected(bool selected);
+			void SetVisible(bool isVisible);			
 			bool tempDeleted;
 			bool original;
 			bool tempNew;
+			bool maxOn;
+			bool minOn;
+			bool saddleOn;
+			bool hideOn;
+			float saliencies[3];
+			float intensity;
+			float eigenvalue;
+			float eigenValue0;
+			float eigenValue1;
+
+			float logEigen0;
+			float logEigen1;
+			float logEigen2;
+			
+			float eigenVector0[3];
+			float eigenVector1[3];
+			float eigenVector2[3];
+
+			float eigenValue0Rank;
+			float eigenValue1Rank;
+			float eigenValue2Rank;
+
+			int helixIndex;
+			vector<unsigned long long> helixIndices;
+			bool isDisplay;
 		private:
 			unsigned long long atom0Ix;
 			unsigned long long atom1Ix;
@@ -38,6 +65,12 @@ namespace wustl_mm {
 			this->tempDeleted = false;
 			this->tempNew = false;
 			this->original = true;
+			this->maxOn=false;
+			this->minOn=false;
+			this->saddleOn=false;
+			this->hideOn=false;
+			this->helixIndex = -1;
+			this->isDisplay = false;
 		}
 
 		PDBBond::PDBBond(unsigned long long atom0Index, unsigned long long atom1Index, bool selected) {
@@ -47,7 +80,14 @@ namespace wustl_mm {
 			this->tempDeleted = false;
 			this->tempNew = false;
 			this->original = true;
+			this->maxOn=false;
+			this->minOn=false;
+			this->saddleOn=false;
+			this->hideOn=false;
+			this->helixIndex = -1;
+			this->isDisplay = false;
 		}
+		
 
 		unsigned long long PDBBond::GetAtom0Ix() {
 			return atom0Ix;
@@ -60,6 +100,7 @@ namespace wustl_mm {
 		bool PDBBond::GetSelected() {
 			return selected;
 		}
+
 
 		void PDBBond::SetAtom0Ix(unsigned long long ix) {
 			atom0Ix = ix;

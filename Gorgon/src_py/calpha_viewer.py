@@ -701,6 +701,7 @@ residues in the Chain object.
                 atom = CAlphaRenderer.getAtomFromHitStack(self.renderer, hits[0], False, *hits[1:])
                 CAlphaRenderer.deleteAtomFromVisualization(self.renderer, atom.getHashKey())
                 self.deletedAtoms.append(atom.getResSeq())
+                print self.deletedAtoms
                 self.emitModelChanged()
                 #
             else:

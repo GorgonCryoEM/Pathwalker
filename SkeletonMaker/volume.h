@@ -4889,7 +4889,7 @@ public:
 								Vector3f ev = eigensolver->eigenvalues();
 								vector<float> first2Eigenvalues;
 								first2Eigenvalues.push_back(ev(0));
-								first2Eigenvalues.push_back(ev(0));
+								first2Eigenvalues.push_back(ev(1));
 								return first2Eigenvalues;
 							}
 
@@ -4912,6 +4912,7 @@ public:
 								}
 								eigenValue1 = ev(0);
 								eigenValue2 = ev(1);
+								//cout << "evs " << ev(0) << " " << ev(1) << " " << ev(2) << endl;
 								/**
 								Vector3f eVectors0 = eigensolver->eigenvectors().col(0).normalized();
 								Vector3f eVectors1 = eigensolver->eigenvectors().col(1).normalized();
@@ -10540,34 +10541,12 @@ return 0 ;
 							maxCurveSaliencies.push_back(segments[i].relativeSaliencies[1]);
 							maxCurveSaliencies.push_back(segments[i].relativeSaliencies[2]);
 							maxCurveIntensities.push_back(segments[i].localIntensity);
-							//float[3] origMaxEigenvalue;
-							//origMaxEigenvalue[0] = segments[i].eigenValue1;
-							//origMaxEigenvalue[1] = segments[i].eigenValue2;
-							//origMaxEigenvalue[2] = segments[i].firstEigenvalue;
 
-							//float[3] displayMaxEigenvalue;
-							//gorgonDisplayPos(displayMaxEigenvalue, origMaxEigenvalue);
-
-							//maxCurveEigenvalues.push_back(displayMaxEigenvalue[2]);
-							//maxCurveEigenvalues0.push_back(displayMaxEigenvalue[0]);
-							//maxCurveEigenvalues1.push_back(displayMaxEigenvalue[1]);
 							maxCurveEigenvalues.push_back(segments[i].firstEigenvalue);
 							maxCurveEigenvalues0.push_back(segments[i].eigenValue1);
 							maxCurveEigenvalues1.push_back(segments[i].eigenValue2);
-							//cout << "segment eigenvalues " << segments[i].eigenValue1 << " " << segments[i].eigenValue2 << " " << segments[i].firstEigenvalue << endl;
-							//int maxCurveSize = segments[i].eigenVectors.size() / 3;
+
 							for(int j = 0; j < segments[i].eigenVectors.size(); j++) {
-								//float origEigenvector[3];
-								//origEigenvector[0] = segments[i].eigenVectors[3*j];
-								//origEigenvector[1] = segments[i].eigenVectors[3*j+1];
-								//origEigenvector[2] = segments[i].eigenVectors[3*j+2];
-
-								//float displayEigenVector[3];
-								//currentData->reverseShowPos(displayEigenVector, origEigenvector);
-
-								//maxCurveEigenvectors.push_back(displayEigenVector[0]);
-								//maxCurveEigenvectors.push_back(displayEigenVector[1]);
-								//maxCurveEigenvectors.push_back(displayEigenVector[2]);
 
 								maxCurveEigenvectors.push_back(segments[i].eigenVectors[j]);
 							}
@@ -10586,10 +10565,9 @@ return 0 ;
 							minCurveIntensities.push_back(segments[i].localIntensity);
 							minCurveEigenvalues.push_back(segments[i].firstEigenvalue);
 
-							float eigenValue0 = segments[i].relativeSaliencies[2] * segments[i].firstEigenvalue;
-							minCurveEigenvalues0.push_back(eigenValue0);
-							float eigenValue1 = (segments[i].relativeSaliencies[1] * segments[i].firstEigenvalue) + eigenValue0;
-							minCurveEigenvalues1.push_back(eigenValue1);
+							minCurveEigenvalues.push_back(segments[i].firstEigenvalue);
+							minCurveEigenvalues0.push_back(segments[i].eigenValue1);
+							minCurveEigenvalues1.push_back(segments[i].eigenValue2);
 							for(int j = 0; j < segments[i].eigenVectors.size(); j++) {
 								minCurveEigenvectors.push_back(segments[i].eigenVectors[j]);
 							}
@@ -10607,11 +10585,9 @@ return 0 ;
 							saddleCurveIntensities.push_back(segments[i].localIntensity);
 							saddleCurveEigenvalues.push_back(segments[i].firstEigenvalue);
 
-							float eigenValue0 = segments[i].relativeSaliencies[2] * segments[i].firstEigenvalue;
-							saddleCurveEigenvalues0.push_back(eigenValue0);
-							float eigenValue1 = (segments[i].relativeSaliencies[1] * segments[i].firstEigenvalue) + eigenValue0;
-							
-							saddleCurveEigenvalues1.push_back(eigenValue1);
+							saddleCurveEigenvalues.push_back(segments[i].firstEigenvalue);
+							saddleCurveEigenvalues0.push_back(segments[i].eigenValue1);
+							saddleCurveEigenvalues1.push_back(segments[i].eigenValue2);
 							for(int j = 0; j < segments[i].eigenVectors.size(); j++) {
 								saddleCurveEigenvectors.push_back(segments[i].eigenVectors[j]);
 							}
@@ -10859,7 +10835,7 @@ return 0 ;
 					float eigenValue1 = (saliencies[1] * localE) + eigenValue0;
 					minPointEigenvalues1.push_back(eigenValue1);
 					pointsIndices.push_back(point.vertIdx);
-					cout << "min point eigenvalues " << eigenValue0 << " " << eigenValue1 << " " << localE << endl;
+					//cout << "min point eigenvalues " << eigenValue0 << " " << eigenValue1 << " " << localE << endl;
 
 				}
 				
@@ -10893,7 +10869,7 @@ return 0 ;
 					float eigenValue1 = (saliencies[1] * localE) + eigenValue0;
 					maxPointEigenvalues1.push_back(eigenValue1);
 					pointsIndices.push_back(point.vertIdx);
-					cout << "max point eigenvalues " << eigenValue0 << " " << eigenValue1 << " " << localE << endl;
+					//cout << "max point eigenvalues " << eigenValue0 << " " << eigenValue1 << " " << localE << endl;
 				}
 				
 			}
@@ -10925,7 +10901,7 @@ return 0 ;
 					float eigenValue1 = (saliencies[1] * localE) + eigenValue0;
 					saddlePointEigenvalues1.push_back(eigenValue1);
 					pointsIndices.push_back(point.vertIdx);
-					cout << "saddle point eigenvalues " << eigenValue0 << " " << eigenValue1 << " " << localE << endl;
+					//cout << "saddle point eigenvalues " << eigenValue0 << " " << eigenValue1 << " " << localE << endl;
 
 				}
 				

@@ -72,9 +72,6 @@ ADD_LIBRARY(pyGORGON MODULE Gorgon/src_cpp/LibPyGorgon.cpp)
 target_link_libraries(pyGORGON ${TBB_LIBRARIES})
 target_link_libraries(pyGORGON ${GORGON_LIBRARIES})
 
-
-#target_link_libraries(pyGORGON ${TBB_LIBRARIES})
-
 # --------------------------------------------------------------------
 # C++11 flags
 # --------------------------------------------------------------------
@@ -108,13 +105,24 @@ install(TARGETS pyGORGON
         COMPONENT "Gorgon"
         )
 
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/Gorgon/src_py/
+install(
+DIRECTORY ${CMAKE_SOURCE_DIR}/Gorgon/src_py/
         DESTINATION ${run_dir}
         #USE_SOURCE_PERMISSIONS
         COMPONENT "Gorgon"
         FILES_MATCHING
         PATTERN "*"
+        
         )
+
+install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E rename
+                                        ${LIBRARY_OUTPUT_PATH}/libpyGORGON.so
+                                        ${run_dir}/libpyGORGON.so)"
+                                        DESTINATION ${run_dir}
+                                        COMPONENT "Gorgon"
+                                        )
+
+
 
 add_custom_target(Gorgon
         COMMAND ${CMAKE_COMMAND} -DCOMPONENT=Gorgon -P cmake_install.cmake

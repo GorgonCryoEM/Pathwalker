@@ -1450,41 +1450,13 @@
     	//Matrix4 transMatrix  = Matrix4::Translation(Translation);
     	
     	return rotMatrix;
-    	//return rotMatrix2 * rotMatrix;
-    	//Vector3DFloat segmentDirection = maxPt - minPt;
-    	//segmentDirection.Normalize();
 
-
-
-    	//Vector3DFloat segDirMinPt = Vector3DFloat(minPt.X(), minPt.Y(), minPt.Z());
-    	//segDirMinPt.Normalize();
-    	//Vector3 segDir = Vector3(segDirMinPt.X(), segDirMinPt.Y(), segDirMinPt.Z());
-    	
-    	//Vector3 segDir = rotMatrix * v1Vector;
-    	
-    	//cout << "segdir " << segDir[0] << " " << segDir[1] << " " << segDir[2] << endl;
-    	
-    	//return segDir;
-    	//Vector3DFloat segDirMaxPt = Vector3DFloat(maxPt.X(), maxPt.Y(), maxPt.Z());
-    	//segDirMaxPt.Normalize();
-    	//Vector3 segDir1 = Vector3(segDirMaxPt.X(), segDirMaxPt.Y(), segDirMaxPt.Z());
-    	//segDir1 = rotMatrix * segDir1;
-
-    	//cout << "segdir1 " << segDir1[0] << " " << segDir1[1] << " " << segDir1[2] << endl;
-
-    	//segmentDirection.Normalize();
-    	//glPushMatrix();
-    	//glRotatef( rot_angle * 57.2957795, crossPNormalized.X(), crossPNormalized.Y(), crossPNormalized.Z() );
-			
-			//glTranslatef(avgX, avgY, avgZ);
-			//CAlphaRenderer::DrawCylinder(minPt, maxPt, 0.1);
-			//CAlphaRenderer::DrawCylinder(Vector3DFloat(0.0, 0.0, 0.0), segmentDirection, 0.1);
-			//glPopMatrix();
 			
 		}
 		//need translation
 		void DrawEllipsoid(unsigned int uiStacks, unsigned int uiSlices, float fA, float fB, float fC, float x, float y, float z, float target_dirx, float target_diry, float target_dirz, Vector3DFloat dir1, Vector3DFloat dir2)
 		{
+			OpenGLUtils::SetColor(0.6, 0.1, 0.85, 1.0);
 			GLfloat ambient_light[]= { 1.0f, 1.0f, 2.0f, 1.0f };
 						glLightModelfv(GL_LIGHT_MODEL_AMBIENT,ambient_light);
 						glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
@@ -1528,12 +1500,13 @@
 			target_dir_mid[2] = dir1.Z();
 			glPushMatrix();
 			glTranslatef(x,y,z);
-			float rot_angle = acos(getDotP(target_dir, xaxis));
-				cout << "rot_angle " << rot_angle << endl;
+				//cout << "rot_angle " << rot_angle << endl;
 			
-			if(fA < fB && fA < fC) {
-				float rot_angle = acos(getDotP(target_dir, xaxis));
-				cout << "rot_angle " << rot_angle << endl;
+			if(fA <= fB && fA <= fC) {
+				
+				float dotP = getDotP(target_dir, xaxis);
+				float rot_angle = acos(dotP);
+				//cout << "rot_angle " << dotP << " " << rot_angle << endl;
 				if( fabs(rot_angle) > 0.0001 )
 				{
 					float * cross_p = crossProduct(target_dir, xaxis);
@@ -1541,7 +1514,7 @@
     			crossPNormalized.Normalize();
      			glRotatef(rot_angle * (180.0 / M_PI), crossPNormalized.X(), crossPNormalized.Y(), crossPNormalized.Z() );
 					//z greatest dir
-					/**
+					
 					if(fB < fC) {
 						rot_angle = acos(getDotP(target_dir_max , zaxis));
 						cross_p = crossProduct(target_dir_max, zaxis);
@@ -1570,23 +1543,24 @@
 						glRotatef( rot_angle * (180.0 / M_PI), crossPNormalized.X(), crossPNormalized.Y(), crossPNormalized.Z() );
 						
 					}
-					**/
+					
 				}
 
 			}
 				
 					
 					//y smallest
-			else if(fB < fC && fB < fA) {
-				float rot_angle = acos(getDotP(target_dir, yaxis));
-				cout << "rot_angle " << rot_angle << endl;
+			else if(fB <= fC && fB <= fA) {
+				float dotP = getDotP(target_dir, yaxis);
+				float rot_angle = acos(dotP);
+				//cout << "rot_angle " << dotP << " " << rot_angle << endl;
 				if( fabs(rot_angle) > 0.0001 )
 				{
 					float * cross_p = crossProduct(target_dir, yaxis);
 					Vector3DFloat crossPNormalized = Vector3DFloat(cross_p[0], cross_p[1],  cross_p[2]);
     			crossPNormalized.Normalize();
     			glRotatef(rot_angle * (180.0 / M_PI), crossPNormalized.X(), crossPNormalized.Y(), crossPNormalized.Z() );
-					/**
+					
 					if(fA < fC) {
 						rot_angle = acos(getDotP(target_dir_max , zaxis));
 						cross_p = crossProduct(target_dir_max, zaxis);
@@ -1602,7 +1576,8 @@
 						
 					}
 					else {
-						rot_angle = acos(getDotP(target_dir_max , xaxis));
+						float dotP = getDotP(target_dir_max , xaxis);
+						rot_angle = acos(dotP);
 						cross_p = crossProduct(target_dir_max, xaxis);
 						crossPNormalized = Vector3DFloat(cross_p[0], cross_p[1],  cross_p[2]);
 						crossPNormalized.Normalize();
@@ -1615,7 +1590,7 @@
 						glRotatef( rot_angle * (180.0 / M_PI), crossPNormalized.X(), crossPNormalized.Y(), crossPNormalized.Z() );
 						
 					}
-					**/
+					
 				}
 
 			}
@@ -1624,16 +1599,19 @@
 					
 					//z smallest
 					
-			else if(fC < fA && fC < fB) {
-				float rot_angle = acos(getDotP(target_dir, zaxis));
-				cout << "rot_angle " << rot_angle << endl;
+			else if(fC <= fA && fC <= fB) {
+
+				
+				float dotP = getDotP(target_dir_max , zaxis);
+				float rot_angle = acos(dotP);
+				//cout << "rot_angle " << " " << dotP << " " << rot_angle << endl;
 				if( fabs(rot_angle) > 0.0001 )
 				{
 					float * cross_p = crossProduct(target_dir, zaxis);
 					Vector3DFloat crossPNormalized = Vector3DFloat(cross_p[0], cross_p[1],  cross_p[2]);
     			crossPNormalized.Normalize();
     			glRotatef(rot_angle * (180.0 / M_PI), crossPNormalized.X(), crossPNormalized.Y(), crossPNormalized.Z() );
-					/**
+					
 					if(fA < fB) {
 						rot_angle = acos(getDotP(target_dir_max , yaxis));
 						cross_p = crossProduct(target_dir_max, yaxis);
@@ -1662,7 +1640,7 @@
 						glRotatef( rot_angle * (180.0 / M_PI), crossPNormalized.X(), crossPNormalized.Y(), crossPNormalized.Z() );
 						
 					}
-					**/
+					
 				}
 			}
 					
@@ -2013,7 +1991,7 @@
 						glBegin(GL_QUADS);
 						//glBegin(GL_POLYGON);
 						//glTexCoord3d(quad.p1[0], quad.p1[1], quad.p1[2]);
-						cout << "quadp1 " << quad.p1[0] << " " << quad.p2[0] << " " << quad.p3[0] << " " << quad.p4[0] << endl;
+						//cout << "quadp1 " << quad.p1[0] << " " << quad.p2[0] << " " << quad.p3[0] << " " << quad.p4[0] << endl;
 
 						glNormal3f(quad.normal[0], quad.normal[1], quad.normal[2]);
 						glVertex3f(quad.p1[0], quad.p1[1], quad.p1[2]);
@@ -2123,16 +2101,29 @@
 						//float e1Size = 1.5 / (-log(quad.eigenValue0));
 						//float e2Size = 1.5 / (-log(quad.eigenValue0));
 						if(ellipsoidVisible) {
-							float e0Size = 20.0*quad.eigenValue0;
-							float e1Size = 20.0*quad.eigenValue1;
-							float e2Size = 20.0*quad.eigenValue;
+							float e0Size = quad.eigenValue0;
+							float e1Size = quad.eigenValue1;
+							float e2Size = quad.eigenValue;
 							Vector3DFloat bondDir1 = Vector3DFloat(bondDirection1[0], bondDirection1[1], bondDirection1[2]);
 							bondDir1.Normalize();
 							Vector3DFloat bondDir2 = Vector3DFloat(bondDirection2[0], bondDirection2[1], bondDirection2[2]);
 							bondDir2.Normalize();
 							OpenGLUtils::SetColor(1.0, 0.0, 0.1, 1.0);
+							float drawScale = 1.0;
+									if (ellipsoidScaleFactor != 0) {
+										if(ellipsoidScaleFactor > 0) {
+											for(int j = 0; j < ellipsoidScaleFactor; j++) {
+												drawScale *= 10.0;
+											}
+										}
+										else if(ellipsoidScaleFactor < 0) {
+											for(int j = 0; j < ellipsoidScaleFactor; j++) {
+												drawScale /= 10.0;
+											}
+										}
+								}
 							//cout << "e1 e2 e3 " << quad.eigenValue0 << " " << quad.eigenValue1 << " " << quad.eigenValue << " " << quad.eigenVector0[0] << " " << quad.eigenVector0[1] << " " << quad.eigenVector0[2] << " " << quad.eigenVector1[0] << " " << quad.eigenVector1[1] << " " << quad.eigenVector1[2] << " " << quad.eigenVector2[0] << " " << quad.eigenVector2[1] << " " << quad.eigenVector2[2] << " " << e1 << " " << e2 << " " << e3 << endl;
-							DrawEllipsoid(10, 10, ellipsoidScale * e0Size, ellipsoidScale * e1Size, ellipsoidScale * e2Size, (quad.p1[0] + quad.p2[0] + quad.p3[0] + quad.p4[0])/4.0, (quad.p1[1] + quad.p2[1] + quad.p3[1] + quad.p4[1])/4.0, (quad.p1[2] + quad.p2[2] + quad.p3[2] + quad.p4[2])/4.0, e1, e2, e3, bondDir1, bondDir2);
+							DrawEllipsoid(10, 10, drawScale * ellipsoidScale * e0Size, drawScale * ellipsoidScale * e1Size, drawScale * ellipsoidScale * e2Size, (quad.p1[0] + quad.p2[0] + quad.p3[0] + quad.p4[0])/4.0, (quad.p1[1] + quad.p2[1] + quad.p3[1] + quad.p4[1])/4.0, (quad.p1[2] + quad.p2[2] + quad.p3[2] + quad.p4[2])/4.0, e1, e2, e3, bondDir1, bondDir2);
 						}
 					}
 			}
@@ -3480,16 +3471,7 @@
 														segmentDirection.Normalize();
 							display = true;
 								
-								/**
-									float e0Size = bonds[i].eigenValue0;
-									float e1Size = bonds[i].eigenValue1;
-									float e2Size = bonds[i].eigenvalue;
-									cout << "ellipsoid sizes " << e0Size << " " << e1Size << " " << e2Size << endl;
 
-									if(ellipsoidVisible) {
-										DrawEllipsoid(10, 10, 20.0*ellipsoidScale * e0Size, 20.0*ellipsoidScale * e1Size, 20.0*ellipsoidScale * e2Size, (xPos0 + xPos1)/2.0, (yPos0 + yPos1)/2.0, (zPos0 + zPos1)/2.0, bondDirection[0], bondDirection[1], bondDirection[2], bondDNormalized1, bondDNormalized2);
-									}
-									**/
 									float pointR = pointRatio;
 									float curveR = curveRatio;
 									float surfaceR = surfaceRatio;
@@ -3647,16 +3629,6 @@
 								**/
 								display = true;
 								
-								/**
-									float e0Size = bonds[i].eigenValue0;
-									float e1Size = bonds[i].eigenValue1;
-									float e2Size = bonds[i].eigenvalue;
-									cout << "ellipsoid sizes " << e0Size << " " << e1Size << " " << e2Size << endl;
-
-									if(ellipsoidVisible) {
-										DrawEllipsoid(10, 10, 20.0*ellipsoidScale * e0Size, 20.0*ellipsoidScale * e1Size, 20.0*ellipsoidScale * e2Size, (xPos0 + xPos1)/2.0, (yPos0 + yPos1)/2.0, (zPos0 + zPos1)/2.0, bondDirection[0], bondDirection[1], bondDirection[2], bondDNormalized1, bondDNormalized2);
-									}
-									**/
 									float pointR = pointRatio;
 									float curveR = curveRatio;
 									float surfaceR = surfaceRatio;
@@ -3701,7 +3673,7 @@
 								OpenGLUtils::SetColor(0.6, 0.1, 0.85, 1.0);
 								display = true;
 								displayMin = true;
-
+								/**
 								float xaxis[3];
 								xaxis[0] = 1.0;
 								xaxis[1] = 0.0;
@@ -3731,6 +3703,7 @@
 								if(ellipsoidVisible) {
 									DrawEllipsoid(10, 10, 20.0 * ellipsoidScale * bonds[i].eigenValue0, 20.0* ellipsoidScale * bonds[i].eigenValue1, 20.0 * ellipsoidScale * bonds[i].eigenvalue, (xPos0 + xPos1)/2.0, (yPos0 + yPos1)/2.0, (zPos0 + zPos1)/2.0, segmentDirection[0], segmentDirection[1], segmentDirection[2], Vector3DFloat(1.0, 1.0, 1.0), Vector3DFloat(1.0,1.0,1.0));
 								}
+								**/
 								
 									float pointR = pointRatio;
 									float curveR = curveRatio;
@@ -3776,6 +3749,7 @@
 							if(bonds[i].saddleOn) {
 								OpenGLUtils::SetColor(0.3, 0.3, 0.3, 1.0);
 								display = true;
+								/**
 
 																float xaxis[3];
 								xaxis[0] = 1.0;
@@ -3805,6 +3779,7 @@
 								if(ellipsoidVisible) {
 									DrawEllipsoid(10, 10, 20.0 * ellipsoidScale * bonds[i].eigenValue0, 20.0*ellipsoidScale * bonds[i].eigenValue1, 20.0 * ellipsoidScale * bonds[i].eigenvalue, (xPos0 + xPos1)/2.0, (yPos0 + yPos1)/2.0, (zPos0 + zPos1)/2.0, bondDirection[0], bondDirection[1], bondDirection[2], Vector3DFloat(1.0, 1.0, 1.0), Vector3DFloat(1.0, 1.0, 1.0));
 								}
+								**/
 									float pointR = pointRatio;
 									float curveR = curveRatio;
 									float surfaceR = surfaceRatio;
@@ -3856,6 +3831,7 @@
 
 
 							OpenGLUtils::SetColor(0.5, 0.5, 1.0, 0.6);
+							/**
 							float sqrtMin0 = log(sqrt(maxCurveEigenVMin0));
 							float sqrtMin1 = log(sqrt(maxCurveEigenVMin1));
 							float sqrtMin2 = log(sqrt(maxCurveEigenVMin2));
@@ -3878,7 +3854,8 @@
 							}
 							float maxLogEigen = sqrtMaxEigen;
 							float minLogEigen = sqrtMinEigen;
-	
+							**/
+							
 								float bondDirection[3];
 								float bondDirection1[3];
 								float bondDirection2[3];
@@ -3956,14 +3933,14 @@
 								
 								
 								Vector3DFloat bondDNormalized = Vector3DFloat(bondDirection[0], bondDirection[1], bondDirection[2]);
-								//bondDNormalized.Normalize();
-								//bondDirection[0] = bondDNormalized.X();
-								//bondDirection[1] = bondDNormalized.Y();
-								//bondDirection[2] = bondDNormalized.Z();
+								bondDNormalized.Normalize();
+								bondDirection[0] = bondDNormalized.X();
+								bondDirection[1] = bondDNormalized.Y();
+								bondDirection[2] = bondDNormalized.Z();
 
-								bondDirection[0] = fabs(xPos1 - xPos0);
-								bondDirection[1] = fabs(yPos1 - yPos0);
-								bondDirection[2] = fabs(zPos1 - zPos0);
+								//bondDirection[0] = fabs(xPos1 - xPos0);
+								//bondDirection[1] = fabs(yPos1 - yPos0);
+								//bondDirection[2] = fabs(zPos1 - zPos0);
 								cout << "bond direction " << bondDirection[0] << " " << bondDirection[1] << " " << bondDirection[2] << endl;
 
 								Vector3DFloat bondDNormalized1 = Vector3DFloat(bondDirection1[0], bondDirection1[1], bondDirection1[2]);
@@ -3978,38 +3955,7 @@
 									float e0Size = bonds[i].eigenValue0;
 									float e1Size = bonds[i].eigenValue1;
 									float e2Size = bonds[i].eigenvalue;
-									/**
-									float eAvg = (e0Size + e1Size + e2Size) / 2.0;
-									float scale = 0;
-									if (eAvg < 0.1) {
-										while(eAvg < 0.1) {
-											eAvg = 10.0 * eAvg;
-											scale++;
-										}
-									}
-									else if(eAvg > 10.0) {
-										while(eAvg > 10.0) {
-											eAvg /= 10.0;
-											scale--;
-										}
-									}
-									if(scale != 0 ){
-										if(scale > 0) {
-											for(int i = 0; i < scale; i++) {
-												e0Size = 10.0 * e0Size;
-												e1Size = 10.0 * e1Size;
-												e2Size = 10.0 * e2Size;
-											}
-										}
-										if(scale < 0) {
-											for(int i = 0; i > scale; i--) {
-												e0Size /= 10.0;
-												e1Size /= 10.0;
-												e2Size /= 10.0;
-											}
-										}
-									}
-									**/
+
 
 									float drawScale = 1.0;
 									if (ellipsoidScaleFactor != 0) {
